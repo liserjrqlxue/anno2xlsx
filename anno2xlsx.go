@@ -97,6 +97,8 @@ var FuncInfo = map[string]int{
 }
 
 var AFlist = []string{
+	"GnomAD EAS AF",
+	"GnomAD AF",
 	"1000G ASN AF",
 	"1000G EAS AF",
 	"1000G AF",
