@@ -87,7 +87,9 @@ var AFlist = []string{
 }
 
 func main() {
-	t0 := time.Now()
+	var ts []time.Time
+	var step = 0
+	ts = append(ts, time.Now())
 
 	flag.Parse()
 	if *input == "" || *output == "" {
@@ -97,13 +99,16 @@ func main() {
 
 	// 突变频谱
 	geneDb = loadGeneDb(*geneDbExcel, *geneDbSheet)
-	t1 := time.Now()
-	fmt.Printf("load 突变频谱    took %v to run.\n", t1.Sub(t0))
+	ts = append(ts, time.Now())
+	step++
+	fmt.Printf("load 突变频谱 \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	data, title := simple_util.File2MapArray(*input, "\t")
 	title = append(title, "Tier", "突变频谱")
-	t1 = time.Now()
-	fmt.Printf("load anno file  took %v to run.\n", t1.Sub(t0))
+	title = append(title, geneDiseaseDbColumn...)
+	ts = append(ts, time.Now())
+	step++
+	fmt.Printf("load anno file \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	var stats = make(map[string]int)
 	outputXlsx := xlsx.NewFile()
@@ -174,9 +179,10 @@ func main() {
 
 	err = outputXlsx.Save(*output)
 	simple_util.CheckErr(err)
-	t3 := time.Now()
-	fmt.Printf("save excel file took %v to run.\n", t3.Sub(t2))
-	fmt.Printf("total work took      %v to run.\n", t3.Sub(t0))
+	ts = append(ts, time.Now())
+	step++
+	fmt.Printf("save excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	fmt.Printf("total work \ttook %v to run.\n", ts[step].Sub(ts[0]))
 }
 
 func checkAF(item map[string]string, threshold float64) bool {
