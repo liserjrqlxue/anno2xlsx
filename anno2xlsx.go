@@ -201,19 +201,19 @@ func checkAF(item map[string]string, threshold float64) bool {
 }
 
 func loadGeneDb(excelFile, sheetName string) map[string]string {
-	geneDbXlsx, err := excelize.OpenFile(excelFile)
+	xlsxFh, err := excelize.OpenFile(excelFile)
 	simple_util.CheckErr(err)
-	geneDbRows := geneDbXlsx.GetRows(sheetName)
-	var geneDbTitle []string
+	rows := xlsxFh.GetRows(sheetName)
+	var title []string
 	var geneDb = make(map[string]string)
 
-	for i, row := range geneDbRows {
+	for i, row := range rows {
 		if i == 0 {
-			geneDbTitle = row
+			title = row
 		} else {
 			var dataHash = make(map[string]string)
 			for j, cell := range row {
-				dataHash[geneDbTitle[j]] = cell
+				dataHash[title[j]] = cell
 			}
 			if geneDb[dataHash["基因名"]] == "" {
 				geneDb[dataHash["基因名"]] = dataHash["突变/致病多样性-补充/更正"]
