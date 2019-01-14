@@ -43,6 +43,16 @@ var (
 		"Sheet1",
 		"sheet name of 突变频谱 database in excel",
 	)
+	geneDiseaseDbExcel = flag.String(
+		"geneDisease",
+		dbPath+"全外基因-疾病集-20190109.xlsx",
+		"database of 基因-疾病数据库",
+	)
+	geneDiseaseSheet = flag.String(
+		"geneDiseaseSheet",
+		"Database",
+		"sheet name of geneDiseaseDbExcel",
+	)
 )
 
 // regexp
@@ -55,6 +65,17 @@ var (
 
 // 突变频谱
 var geneDb = make(map[string]string)
+
+// 基因-疾病
+var geneDiseaseDb = make(map[string]map[string]string)
+var geneDiseaseDbColumn = []string{
+	"Disease NameEN",
+	"Disease NameCH",
+	"Inheritance",
+	"GeneralizationEN",
+	"GeneralizationCH",
+	"SystemSort",
+}
 
 // Tier1 >0
 // LoF 2
@@ -103,6 +124,13 @@ func main() {
 	step++
 	fmt.Printf("load 突变频谱 \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
+	// 基因-疾病
+	geneDiseaseDb = loadGeneDiseaseDb(*geneDiseaseDbExcel, *geneDiseaseSheet)
+	ts = append(ts, time.Now())
+	step++
+	fmt.Printf("load 基因-疾病 \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+
+	// anno
 	data, title := simple_util.File2MapArray(*input, "\t")
 	title = append(title, "Tier", "突变频谱")
 	title = append(title, geneDiseaseDbColumn...)
@@ -124,6 +152,17 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
+
+		gene := item["Gene Symbol"]
+		// 突变频谱
+		item["突变频谱"] = geneDb[gene]
+		// 基因-疾病
+		gDiseaseDb := geneDiseaseDb[gene]
+		for _, key := range geneDiseaseDbColumn {
+			item[key] = gDiseaseDb[key]
+		}
+
+		// Tier
 		if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
 			stats["HGMD/ClinVar"]++
 			if checkAF(item, 0.01) {
@@ -223,4 +262,35 @@ func loadGeneDb(excelFile, sheetName string) map[string]string {
 		}
 	}
 	return geneDb
+}
+
+func loadGeneDiseaseDb(excelFile, sheetName string) map[string]map[string]string {
+	xlsxFh, err := excelize.OpenFile(excelFile)
+	simple_util.CheckErr(err)
+	rows := xlsxFh.GetRows(sheetName)
+	var title []string
+	var geneDiseaseDb = make(map[string]map[string]string)
+
+	for i, row := range rows {
+		if i == 0 {
+			title = row
+		} else {
+			var dataHash = make(map[string]string)
+			for j, cell := range row {
+				dataHash[title[j]] = cell
+			}
+			gene := dataHash["Gene/Locus"]
+			if geneDiseaseDb[gene] == nil {
+				geneDiseaseDb[gene] = dataHash
+			} else {
+				//var newDataHash=make(map[string]string)
+				for _, key := range title {
+					//newDataHash[key]=geneDiseaseDb[gene][key]+"\n"+dataHash[key]
+					geneDiseaseDb[gene][key] = geneDiseaseDb[gene][key] + "\n" + dataHash[key]
+				}
+			}
+		}
+	}
+
+	return geneDiseaseDb
 }
