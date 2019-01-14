@@ -3,12 +3,22 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"time"
+)
+
+// os
+var (
+	ex, _  = os.Executable()
+	exPath = filepath.Dir(ex)
+	pSep   = string(os.PathSeparator)
+	dbPath = exPath + pSep + "db" + pSep
 )
 
 // flag
@@ -23,6 +33,16 @@ var (
 		"",
 		"output xlsx name",
 	)
+	geneDbExcel = flag.String(
+		"geneDb",
+		dbPath+"基因库-更新版基因特征谱-加动态突变-20190110.xlsx",
+		"database of 突变频谱",
+	)
+	geneDbSheet = flag.String(
+		"geneDbSheet",
+		"Sheet1",
+		"sheet name of 突变频谱 database in excel",
+	)
 )
 
 // regexp
@@ -32,6 +52,9 @@ var (
 	//indexReg   = regexp.MustCompile(`\d+\.\s+`)
 	//newlineReg = regexp.MustCompile(`\n+`)
 )
+
+// 突变频谱
+var geneDb = make(map[string]string)
 
 // Tier1 >0
 // LoF 2
@@ -71,10 +94,16 @@ func main() {
 		flag.Usage()
 		os.Exit(0)
 	}
-	data, title := simple_util.File2MapArray(*input, "\t")
-	title = append(title, "Tier")
+
+	// 突变频谱
+	geneDb = loadGeneDb(*geneDbExcel, *geneDbSheet)
 	t1 := time.Now()
-	fmt.Printf("load anno file took  %v to run.\n", t1.Sub(t0))
+	fmt.Printf("load 突变频谱    took %v to run.\n", t1.Sub(t0))
+
+	data, title := simple_util.File2MapArray(*input, "\t")
+	title = append(title, "Tier", "突变频谱")
+	t1 = time.Now()
+	fmt.Printf("load anno file  took %v to run.\n", t1.Sub(t0))
 
 	var stats = make(map[string]int)
 	outputXlsx := xlsx.NewFile()
@@ -103,6 +132,7 @@ func main() {
 			stats["B/LB"]++
 			continue
 		}
+		stats["Keep"]++
 
 		if checkAF(item, 0.01) {
 			stats["noB/LB AF<=0.01"]++
@@ -122,7 +152,8 @@ func main() {
 			stats["Tier1"]++
 		}
 
-		stats["Keep"]++
+		item["突变频谱"] = geneDb[item["Gene Symbol"]]
+
 		outputRow = outputSheet.AddRow()
 		for _, str := range title {
 			outputCell := outputRow.AddCell()
@@ -161,4 +192,29 @@ func checkAF(item map[string]string, threshold float64) bool {
 		}
 	}
 	return true
+}
+
+func loadGeneDb(excelFile, sheetName string) map[string]string {
+	geneDbXlsx, err := excelize.OpenFile(excelFile)
+	simple_util.CheckErr(err)
+	geneDbRows := geneDbXlsx.GetRows(sheetName)
+	var geneDbTitle []string
+	var geneDb = make(map[string]string)
+
+	for i, row := range geneDbRows {
+		if i == 0 {
+			geneDbTitle = row
+		} else {
+			var dataHash = make(map[string]string)
+			for j, cell := range row {
+				dataHash[geneDbTitle[j]] = cell
+			}
+			if geneDb[dataHash["基因名"]] == "" {
+				geneDb[dataHash["基因名"]] = dataHash["突变/致病多样性-补充/更正"]
+			} else {
+				geneDb[dataHash["基因名"]] = geneDb[dataHash["基因名"]] + ";" + dataHash["突变/致病多样性-补充/更正"]
+			}
+		}
+	}
+	return geneDb
 }
