@@ -176,27 +176,34 @@ func main() {
 			stats["B/LB"]++
 			continue
 		}
-		stats["Keep"]++
 
-		if checkAF(item, 0.01) {
-			stats["noB/LB AF<=0.01"]++
-			if FuncInfo[item["Function"]] > 0 {
-				item["Tier"] = "Tier1"
-				stats["noB/LB Tier1"]++
-			} else if item["Tier"] != "Tier1" {
-				item["Tier"] = "Tier2"
-				stats["noB/LB Tier2"]++
+		if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
+			stats["noB/LB"]++
+			if checkAF(item, 0.01) {
+				stats["low AF"]++
+				if gDiseaseDb != nil {
+					stats["OMIM Gene"]++
+					if FuncInfo[item["Function"]] > 0 {
+						item["Tier"] = "Tier1"
+						stats["Function"]++
+					}
+				} else {
+					stats["noB/LB AF noGene"]++
+				}
+			} else {
+				stats["noB/LB noAF"]++
 			}
-		} else if item["Tier"] != "Tier1" {
-			item["Tier"] = "Tier2"
-			stats["noB/LB Tier2"]++
+			if item["Tier"] != "Tier1" {
+				item["Tier"] = "Tier2"
+			}
 		}
 
 		if item["Tier"] == "Tier1" {
 			stats["Tier1"]++
+		} else if item["Tier"] == "Tier2" {
+			stats["Tier2"]++
 		}
-
-		item["突变频谱"] = geneDb[item["Gene Symbol"]]
+		stats["Retain"]++
 
 		outputRow = outputSheet.AddRow()
 		for _, str := range title {
@@ -204,17 +211,21 @@ func main() {
 			outputCell.SetString(item[str])
 		}
 	}
-	fmt.Printf("Total        Variant : %d\n", stats["Total"])
-	fmt.Printf("HGMD/ClinVar Hit     : %d\n", stats["HGMD/ClinVar"])
-	fmt.Printf("HGMD/ClinVar Tier1   : %d\n", stats["HGMD/ClinVar Tier1"])
-	fmt.Printf("B/LB         Skip    : %d\n", stats["B/LB"])
-	fmt.Printf("no B/LB   AF<=0.01   : %d\n", stats["noB/LB AF<=0.01"])
-	fmt.Printf("no B/LB      Tier1   : %d\n", stats["noB/LB Tier1"])
-	fmt.Printf("no B/LB      Tier2   : %d\n", stats["noB/LB Tier2"])
-	fmt.Printf("Keep         Variant : %d\n", stats["Keep"])
-	fmt.Printf("Keep Tier1   Variant : %d\n", stats["Tier1"])
-	t2 := time.Now()
-	fmt.Printf("create excel took    %v to run.\n", t2.Sub(t1))
+
+	fmt.Printf("Total         Count  : %d\n", stats["Total"])
+	fmt.Printf("HGMD/ClinVar  Hit    : %d\n", stats["HGMD/ClinVar"])
+	fmt.Printf(" HGMD/ClinVar Tier1  : %d\n", stats["HGMD/ClinVar Tier1"])
+	fmt.Printf(" HGMD/ClinVar Tier2  : %d\n", stats["HGMD/ClinVar Tier2"])
+	fmt.Printf("ACMG         Hit     : %d\n", stats["noB/LB"])
+	fmt.Printf(" lowAF       Hit     : %d\n", stats["low AF"])
+	fmt.Printf("  OMIM Gene  Hit     : %d\n", stats["OMIM Gene"])
+	fmt.Printf("   Function  Hit     : %d\n", stats["Function"])
+	fmt.Printf("Retain       Count   : %d\n", stats["Retain"])
+	fmt.Printf(" Tier1       Count   : %d\n", stats["Tier1"])
+	fmt.Printf(" Tier2       Count   : %d\n", stats["Tier2"])
+	ts = append(ts, time.Now())
+	step++
+	fmt.Printf("create excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	err = outputXlsx.Save(*output)
 	simple_util.CheckErr(err)
