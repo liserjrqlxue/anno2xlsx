@@ -77,23 +77,26 @@ var geneDiseaseDbColumn = []string{
 	"SystemSort",
 }
 
-// Tier1 >0
-// LoF 2
+// Tier1 >1
+// LoF 3
 var FuncInfo = map[string]int{
-	"splice-3":   2,
-	"splice-5":   2,
-	"inti-loss":  2,
-	"alt-start":  2,
-	"frameshift": 2,
-	"nonsense":   2,
-	"stop-gain":  2,
-	"span":       2,
-	"missense":   1,
-	"cds-del":    1,
-	"cds-indel":  1,
-	"cds-ins":    1,
-	"splice-10":  1,
-	"splice+10":  1,
+	"splice-3":     3,
+	"splice-5":     3,
+	"inti-loss":    3,
+	"alt-start":    3,
+	"frameshift":   3,
+	"nonsense":     3,
+	"stop-gain":    3,
+	"span":         3,
+	"missense":     2,
+	"cds-del":      2,
+	"cds-indel":    2,
+	"cds-ins":      2,
+	"splice-10":    2,
+	"splice+10":    2,
+	"coding-synon": 1,
+	"splice-20":    1,
+	"splice+20":    1,
 }
 
 var AFlist = []string{
@@ -185,9 +188,15 @@ func main() {
 				stats["low AF"]++
 				if gDiseaseDb != nil {
 					stats["OMIM Gene"]++
-					if FuncInfo[item["Function"]] > 0 {
+					if FuncInfo[item["Function"]] > 1 {
 						item["Tier"] = "Tier1"
 						stats["Function"]++
+					} else if FuncInfo[item["Function"]] > 0 {
+						//pp3,err:=strconv.Atoi(item["PP3"])
+						//if err==nil && pp3>0{
+						item["Tier"] = "Tier1"
+						stats["Function"]++
+						//}
 					}
 				} else {
 					stats["noB/LB AF noGene"]++
