@@ -181,44 +181,95 @@ func main() {
 		}
 
 		// Tier
+		if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
+			stats["noB/LB"]++
+			if isDenovo.MatchString(item["Zygosity"]) {
+				stats["isDenovo noB/LB"]++
+				if checkAF(item, 0.01) {
+					stats["low AF"]++
+					stats["Denovo AF"]++
+					if gDiseaseDb != nil {
+						stats["OMIM Gene"]++
+						stats["Denovo Gene"]++
+						if FuncInfo[item["Function"]] > 1 {
+							item["Tier"] = "Tier1"
+							stats["Function"]++
+							stats["Denovo Function"]++
+						} else if FuncInfo[item["Function"]] > 0 {
+							//pp3,err:=strconv.Atoi(item["PP3"])
+							//if err==nil && pp3>0{
+							item["Tier"] = "Tier1"
+							stats["Function"]++
+							stats["Denovo Function"]++
+						} else {
+							item["Tier"] = "Tier2"
+							stats["noFunction"]++
+							stats["Denovo noFunction"]++
+						}
+					} else {
+						item["Tier"] = "Tier2"
+						stats["noB/LB AF noGene"]++
+						stats["Denovo noGene"]++
+					}
+				} else {
+					item["Tier"] = "Tier2"
+					stats["noB/LB noAF"]++
+					stats["Denovo noAF"]++
+				}
+				if item["Tier"] == "Tier1" {
+					stats["Denovo Tier1"]++
+				} else {
+					stats["Denovo Tier2"]++
+				}
+			} else {
+				stats["noDenovo noB/LB"]++
+				if checkAF(item, 0.01) {
+					stats["low AF"]++
+					stats["noDenovo AF"]++
+					if gDiseaseDb != nil {
+						stats["OMIM Gene"]++
+						stats["noDenovo Gene"]++
+						if FuncInfo[item["Function"]] > 1 {
+							item["Tier"] = "Tier1"
+							stats["Function"]++
+							stats["noDenovo Function"]++
+						} else if FuncInfo[item["Function"]] > 0 {
+							//pp3,err:=strconv.Atoi(item["PP3"])
+							//if err==nil && pp3>0{
+							item["Tier"] = "Tier1"
+							stats["Function"]++
+							stats["noDenovo Function"]++
+							//}
+						} else {
+							item["Tier"] = "Tier2"
+							stats["noFunction"]++
+							stats["noDenovo noFunction"]++
+						}
+					} else {
+						item["Tier"] = "Tier3"
+						stats["noB/LB AF noGene"]++
+						stats["noDenovo noGene"]++
+					}
+				} else {
+					item["Tier"] = "Tier3"
+					stats["noB/LB noAF"]++
+					stats["noDenovo noAF"]++
+				}
+			}
+		} else if isDenovo.MatchString(item["Zygosity"]) {
+			stats["Denovo B/LB"]++
+		}
+
 		if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
 			stats["HGMD/ClinVar"]++
 			if checkAF(item, 0.01) {
 				item["Tier"] = "Tier1"
 				stats["HGMD/ClinVar Tier1"]++
 			} else {
-				item["Tier"] = "Tier2"
-				stats["HGMD/ClinVar Tier2"]++
-			}
-		} else if item["ACMG"] == "Benign" || item["ACMG"] == "Likely Benign" {
-			stats["B/LB"]++
-			continue
-		}
-
-		if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
-			stats["noB/LB"]++
-			if checkAF(item, 0.01) {
-				stats["low AF"]++
-				if gDiseaseDb != nil {
-					stats["OMIM Gene"]++
-					if FuncInfo[item["Function"]] > 1 {
-						item["Tier"] = "Tier1"
-						stats["Function"]++
-					} else if FuncInfo[item["Function"]] > 0 {
-						//pp3,err:=strconv.Atoi(item["PP3"])
-						//if err==nil && pp3>0{
-						item["Tier"] = "Tier1"
-						stats["Function"]++
-						//}
-					}
-				} else {
-					stats["noB/LB AF noGene"]++
+				if item["Tier"] != "Tier1" {
+					item["Tier"] = "Tier2"
 				}
-			} else {
-				stats["noB/LB noAF"]++
-			}
-			if item["Tier"] != "Tier1" {
-				item["Tier"] = "Tier2"
+				stats["HGMD/ClinVar Tier2"]++
 			}
 		}
 
@@ -226,6 +277,10 @@ func main() {
 			stats["Tier1"]++
 		} else if item["Tier"] == "Tier2" {
 			stats["Tier2"]++
+		} else if item["Tier"] == "Tier3" {
+			stats["Tier3"]++
+		} else {
+			continue
 		}
 		stats["Retain"]++
 
@@ -235,18 +290,37 @@ func main() {
 			outputCell.SetString(item[str])
 		}
 	}
+	fmt.Printf("Total               Count : %d\n", stats["Total"])
+	fmt.Printf("  noProband         Count : %d\n", stats["noProband"])
 
-	fmt.Printf("Total         Count  : %d\n", stats["Total"])
-	fmt.Printf("HGMD/ClinVar  Hit    : %d\n", stats["HGMD/ClinVar"])
-	fmt.Printf(" HGMD/ClinVar Tier1  : %d\n", stats["HGMD/ClinVar Tier1"])
-	fmt.Printf(" HGMD/ClinVar Tier2  : %d\n", stats["HGMD/ClinVar Tier2"])
-	fmt.Printf("ACMG         Hit     : %d\n", stats["noB/LB"])
-	fmt.Printf(" lowAF       Hit     : %d\n", stats["low AF"])
-	fmt.Printf("  OMIM Gene  Hit     : %d\n", stats["OMIM Gene"])
-	fmt.Printf("   Function  Hit     : %d\n", stats["Function"])
-	fmt.Printf("Retain       Count   : %d\n", stats["Retain"])
-	fmt.Printf(" Tier1       Count   : %d\n", stats["Tier1"])
-	fmt.Printf(" Tier2       Count   : %d\n", stats["Tier2"])
+	fmt.Printf("Denovo              Hit   : %d\n", stats["Denovo"])
+	fmt.Printf("  Denovo B/LB       Hit   : %d\n", stats["Denovo B/LB"])
+	fmt.Printf("  Denovo Tier1      Hit   : %d\n", stats["Denovo Tier1"])
+	fmt.Printf("  Denovo Tier2      Hit   : %d\n", stats["Denovo Tier2"])
+
+	fmt.Printf("ACMG noB/LB         Hit   : %d\n", stats["noB/LB"])
+	fmt.Printf("  +isDenovo         Hit   : %d\n", stats["isDenovo noB/LB"])
+	fmt.Printf("    +isAF           Hit   : %d\n", stats["Denovo AF"])
+	fmt.Printf("      +isGene       Hit   : %d\n", stats["Denovo Gene"])
+	fmt.Printf("        +isFunction Hit   : %d\tTier1\n", stats["Denovo Function"])
+	fmt.Printf("        +noFunction Hit   : %d\n", stats["Denovo noFunction"])
+	fmt.Printf("      +noGene       Hit   : %d\n", stats["Denovo noGene"])
+	fmt.Printf("    +noAF           Hit   : %d\n", stats["Denovo noAF"])
+	fmt.Printf("  +noDenovo         Hit   : %d\n", stats["noDenovo noB/LB"])
+	fmt.Printf("    +isAF           Hit   : %d\n", stats["noDenovo AF"])
+	fmt.Printf("      +isGene       Hit   : %d\n", stats["noDenovo Gene"])
+	fmt.Printf("        +isFunction Hit   : %d\tTier1\n", stats["noDenovo Function"])
+	fmt.Printf("        +noFunction Hit   : %d\tTier2\n", stats["noDenovo noFunction"])
+	fmt.Printf("      +noGene       Hit   : %d\n", stats["noDenovo noGene"])
+	fmt.Printf("    +noAF           Hit   : %d\n", stats["noDenovo noAF"])
+
+	fmt.Printf("HGMD/ClinVar        Hit   : %d\n", stats["HGMD/ClinVar"])
+	fmt.Printf("  isAF              Hit   : %d\tTier1\n", stats["HGMD/ClinVar Tier1"])
+	fmt.Printf("  noAF              Hit   : %d\tTier2\n", stats["HGMD/ClinVar Tier2"])
+	fmt.Printf("Retain              Count : %d\n", stats["Retain"])
+	fmt.Printf("  Tier1             Count : %d\n", stats["Tier1"])
+	fmt.Printf("  Tier2             Count : %d\n", stats["Tier2"])
+	fmt.Printf("  Tier3             Count : %d\n", stats["Tier3"])
 	ts = append(ts, time.Now())
 	step++
 	fmt.Printf("create excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
