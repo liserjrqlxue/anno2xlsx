@@ -65,6 +65,8 @@ var (
 	isClinvar = regexp.MustCompile("Pathogenic|Likely_pathogenic")
 	//indexReg   = regexp.MustCompile(`\d+\.\s+`)
 	//newlineReg = regexp.MustCompile(`\n+`)
+	isDenovo  = regexp.MustCompile(`NA;NA$`)
+	noProband = regexp.MustCompile(`^NA`)
 )
 
 // 突变频谱
@@ -168,6 +170,14 @@ func main() {
 		gDiseaseDb := geneDiseaseDb[gene]
 		for _, key := range geneDiseaseDbColumn {
 			item[key] = gDiseaseDb[key]
+		}
+
+		if isDenovo.MatchString(item["Zygosity"]) {
+			stats["Denovo"]++
+		}
+		if noProband.MatchString(item["Zygosity"]) {
+			stats["noProband"]++
+			continue
 		}
 
 		// Tier
