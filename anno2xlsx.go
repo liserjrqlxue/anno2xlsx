@@ -53,6 +53,10 @@ var (
 		"Database",
 		"sheet name of geneDiseaseDbExcel",
 	)
+	save = flag.Bool(
+		"save",
+		true,
+		"if save to excel")
 )
 
 // regexp
@@ -157,7 +161,6 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
-
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
@@ -238,11 +241,14 @@ func main() {
 	step++
 	fmt.Printf("create excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
-	err = outputXlsx.Save(*output)
-	simple_util.CheckErr(err)
-	ts = append(ts, time.Now())
-	step++
-	fmt.Printf("save excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	if *save {
+		err = outputXlsx.Save(*output)
+		simple_util.CheckErr(err)
+		ts = append(ts, time.Now())
+		step++
+		fmt.Printf("save excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	}
+
 	fmt.Printf("total work \ttook %v to run.\n", ts[step].Sub(ts[0]))
 }
 
