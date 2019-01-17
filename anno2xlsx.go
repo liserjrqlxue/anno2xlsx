@@ -65,7 +65,7 @@ var (
 var (
 	isHgmd    = regexp.MustCompile("DM")
 	isClinvar = regexp.MustCompile("Pathogenic|Likely_pathogenic")
-	//indexReg   = regexp.MustCompile(`\d+\.\s+`)
+	indexReg  = regexp.MustCompile(`\d+\.\s+`)
 	//newlineReg = regexp.MustCompile(`\n+`)
 	isDenovo  = regexp.MustCompile(`NA;NA$`)
 	noProband = regexp.MustCompile(`^NA`)
@@ -206,6 +206,7 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
+		item = updateSnv(item)
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
