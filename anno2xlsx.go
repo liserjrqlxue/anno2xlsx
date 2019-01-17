@@ -241,7 +241,7 @@ func main() {
 							stats["noDenovo Function"]++
 							//}
 						} else {
-							item["Tier"] = "Tier2"
+							item["Tier"] = "Tier3"
 							stats["noFunction"]++
 							stats["noDenovo noFunction"]++
 						}
@@ -310,7 +310,7 @@ func main() {
 	fmt.Printf("    +isAF           Hit   : %d\n", stats["noDenovo AF"])
 	fmt.Printf("      +isGene       Hit   : %d\n", stats["noDenovo Gene"])
 	fmt.Printf("        +isFunction Hit   : %d\tTier1\n", stats["noDenovo Function"])
-	fmt.Printf("        +noFunction Hit   : %d\tTier2\n", stats["noDenovo noFunction"])
+	fmt.Printf("        +noFunction Hit   : %d\n", stats["noDenovo noFunction"])
 	fmt.Printf("      +noGene       Hit   : %d\n", stats["noDenovo noGene"])
 	fmt.Printf("    +noAF           Hit   : %d\n", stats["noDenovo noAF"])
 
