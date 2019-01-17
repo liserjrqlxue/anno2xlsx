@@ -182,25 +182,25 @@ func main() {
 	}
 	ts = append(ts, time.Now())
 	step++
-	fmt.Printf("load template \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	logTime(ts, step-1, step, "load template")
 
 	// 突变频谱
 	geneDb = loadGeneDb(*geneDbExcel, *geneDbSheet)
 	ts = append(ts, time.Now())
 	step++
-	fmt.Printf("load 突变频谱 \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	logTime(ts, step-1, step, "load 突变频谱")
 
 	// 基因-疾病
 	geneDiseaseDb = loadGeneDiseaseDb(*geneDiseaseDbExcel, *geneDiseaseSheet)
 	ts = append(ts, time.Now())
 	step++
-	fmt.Printf("load 基因-疾病 \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	logTime(ts, step-1, step, "load 基因-疾病")
 
 	// anno
 	data, _ := simple_util.File2MapArray(*input, "\t")
 	ts = append(ts, time.Now())
 	step++
-	fmt.Printf("load anno file \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	logTime(ts, step-1, step, "load anno file")
 
 	var stats = make(map[string]int)
 
@@ -216,6 +216,7 @@ func main() {
 			item[key] = gDiseaseDb[key]
 		}
 
+		// Tier
 		if isDenovo.MatchString(item["Zygosity"]) {
 			stats["Denovo"]++
 		}
@@ -223,8 +224,6 @@ func main() {
 			stats["noProband"]++
 			continue
 		}
-
-		// Tier
 		if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
 			stats["noB/LB"]++
 			if isDenovo.MatchString(item["Zygosity"]) {
@@ -371,7 +370,7 @@ func main() {
 	fmt.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
 	ts = append(ts, time.Now())
 	step++
-	fmt.Printf("create excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+	logTime(ts, step-1, step, "update info")
 
 	if *save {
 		for _, flg := range flags {
@@ -379,10 +378,16 @@ func main() {
 			simple_util.CheckErr(err)
 			ts = append(ts, time.Now())
 			step++
-			fmt.Printf("save %s \ttook %7.3fs to run.\n", flg, ts[step].Sub(ts[step-1]).Seconds())
+			logTime(ts, step-1, step, "save "+flg)
 		}
 	}
-	fmt.Printf("total work \ttook %7.3fs to run.\n", ts[step].Sub(ts[0]).Seconds())
+	logTime(ts, 0, step, "total work")
+}
+
+func logTime(timeList []time.Time, step1, step2 int, message string) {
+	trim := 3*8 - 1
+	str := simple_util.FormatWidth(trim, message, ' ')
+	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
 func checkAF(item map[string]string, threshold float64) bool {
