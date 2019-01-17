@@ -15,10 +15,11 @@ import (
 
 // os
 var (
-	ex, _  = os.Executable()
-	exPath = filepath.Dir(ex)
-	pSep   = string(os.PathSeparator)
-	dbPath = exPath + pSep + "db" + pSep
+	ex, _        = os.Executable()
+	exPath       = filepath.Dir(ex)
+	pSep         = string(os.PathSeparator)
+	dbPath       = exPath + pSep + "db" + pSep
+	templatePath = exPath + pSep + "template" + pSep
 )
 
 // flag
@@ -28,10 +29,10 @@ var (
 		"",
 		"input anno txt",
 	)
-	output = flag.String(
-		"output",
+	prefix = flag.String(
+		"prefix",
 		"",
-		"output xlsx name",
+		"output xlsx prefix.tier{1,2,3}.xlsx",
 	)
 	geneDbExcel = flag.String(
 		"geneDb",
@@ -56,7 +57,8 @@ var (
 	save = flag.Bool(
 		"save",
 		true,
-		"if save to excel")
+		"if save to excel",
+	)
 )
 
 // regexp
@@ -118,16 +120,69 @@ var AFlist = []string{
 	"Panel AlleleFreq",
 }
 
+type xlsxTemplate struct {
+	flag      string
+	template  string
+	xlsx      *xlsx.File
+	sheetName string
+	sheet     *xlsx.Sheet
+	title     []string
+	output    string
+}
+
+var tier2xlsx = map[string]map[string]bool{
+	"Tier1": {
+		"Tier1": true,
+	},
+	"Tier2": {
+		"Tier1": true,
+		"Tier2": true,
+	},
+	"Tier3": {
+		"Tier1": true,
+		"Tier2": true,
+		"Tier3": true,
+	},
+}
+
+var err error
+
 func main() {
 	var ts []time.Time
 	var step = 0
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *input == "" || *output == "" {
+	if *input == "" || *prefix == "" {
 		flag.Usage()
 		os.Exit(0)
 	}
+
+	// load tier template
+	var tiers = make(map[string]xlsxTemplate)
+	var flags = []string{
+		"Tier1",
+		"Tier2",
+		"Tier3",
+	}
+	for _, flg := range flags {
+		var tier = xlsxTemplate{
+			flag:      flg,
+			template:  templatePath + flg + ".xlsx",
+			sheetName: flg,
+			output:    *prefix + "." + flg + ".xlsx",
+		}
+		tier.xlsx, err = xlsx.OpenFile(tier.template)
+		simple_util.CheckErr(err)
+		tier.sheet = tier.xlsx.Sheet[tier.sheetName]
+		for _, cell := range tier.sheet.Row(0).Cells {
+			tier.title = append(tier.title, cell.String())
+		}
+		tiers[flg] = tier
+	}
+	ts = append(ts, time.Now())
+	step++
+	fmt.Printf("load template \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	// 突变频谱
 	geneDb = loadGeneDb(*geneDbExcel, *geneDbSheet)
@@ -142,24 +197,12 @@ func main() {
 	fmt.Printf("load 基因-疾病 \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	// anno
-	data, title := simple_util.File2MapArray(*input, "\t")
-	title = append(title, "Tier", "突变频谱")
-	title = append(title, geneDiseaseDbColumn...)
+	data, _ := simple_util.File2MapArray(*input, "\t")
 	ts = append(ts, time.Now())
 	step++
 	fmt.Printf("load anno file \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	var stats = make(map[string]int)
-	outputXlsx := xlsx.NewFile()
-	outputSheet, err := outputXlsx.AddSheet("filter_variant")
-	simple_util.CheckErr(err)
-
-	var outputRow = outputSheet.AddRow()
-
-	for _, str := range title {
-		outputCell := outputRow.AddCell()
-		outputCell.SetString(str)
-	}
 
 	stats["Total"] = len(data)
 	for _, item := range data {
@@ -284,56 +327,61 @@ func main() {
 		}
 		stats["Retain"]++
 
-		outputRow = outputSheet.AddRow()
-		for _, str := range title {
-			outputCell := outputRow.AddCell()
-			outputCell.SetString(item[str])
+		// add to excel
+		for _, flg := range flags {
+			if tier2xlsx[flg][item["Tier"]] {
+				tierRow := tiers[flg].sheet.AddRow()
+				for _, str := range tiers[flg].title {
+					tierRow.AddCell().SetString(item[str])
+				}
+			}
 		}
 	}
-	fmt.Printf("Total               Count : %d\n", stats["Total"])
-	fmt.Printf("  noProband         Count : %d\n", stats["noProband"])
+	fmt.Printf("Total               Count : %7d\n", stats["Total"])
+	fmt.Printf("  noProband         Count : %7d\n", stats["noProband"])
 
-	fmt.Printf("Denovo              Hit   : %d\n", stats["Denovo"])
-	fmt.Printf("  Denovo B/LB       Hit   : %d\n", stats["Denovo B/LB"])
-	fmt.Printf("  Denovo Tier1      Hit   : %d\n", stats["Denovo Tier1"])
-	fmt.Printf("  Denovo Tier2      Hit   : %d\n", stats["Denovo Tier2"])
+	fmt.Printf("Denovo              Hit   : %7d\n", stats["Denovo"])
+	fmt.Printf("  Denovo B/LB       Hit   : %7d\n", stats["Denovo B/LB"])
+	fmt.Printf("  Denovo Tier1      Hit   : %7d\n", stats["Denovo Tier1"])
+	fmt.Printf("  Denovo Tier2      Hit   : %7d\n", stats["Denovo Tier2"])
 
-	fmt.Printf("ACMG noB/LB         Hit   : %d\n", stats["noB/LB"])
-	fmt.Printf("  +isDenovo         Hit   : %d\n", stats["isDenovo noB/LB"])
-	fmt.Printf("    +isAF           Hit   : %d\n", stats["Denovo AF"])
-	fmt.Printf("      +isGene       Hit   : %d\n", stats["Denovo Gene"])
-	fmt.Printf("        +isFunction Hit   : %d\tTier1\n", stats["Denovo Function"])
-	fmt.Printf("        +noFunction Hit   : %d\n", stats["Denovo noFunction"])
-	fmt.Printf("      +noGene       Hit   : %d\n", stats["Denovo noGene"])
-	fmt.Printf("    +noAF           Hit   : %d\n", stats["Denovo noAF"])
-	fmt.Printf("  +noDenovo         Hit   : %d\n", stats["noDenovo noB/LB"])
-	fmt.Printf("    +isAF           Hit   : %d\n", stats["noDenovo AF"])
-	fmt.Printf("      +isGene       Hit   : %d\n", stats["noDenovo Gene"])
-	fmt.Printf("        +isFunction Hit   : %d\tTier1\n", stats["noDenovo Function"])
-	fmt.Printf("        +noFunction Hit   : %d\n", stats["noDenovo noFunction"])
-	fmt.Printf("      +noGene       Hit   : %d\n", stats["noDenovo noGene"])
-	fmt.Printf("    +noAF           Hit   : %d\n", stats["noDenovo noAF"])
+	fmt.Printf("ACMG noB/LB         Hit   : %7d\n", stats["noB/LB"])
+	fmt.Printf("  +isDenovo         Hit   : %7d\n", stats["isDenovo noB/LB"])
+	fmt.Printf("    +isAF           Hit   : %7d\n", stats["Denovo AF"])
+	fmt.Printf("      +isGene       Hit   : %7d\n", stats["Denovo Gene"])
+	fmt.Printf("        +isFunction Hit   : %7d\tTier1\n", stats["Denovo Function"])
+	fmt.Printf("        +noFunction Hit   : %7d\n", stats["Denovo noFunction"])
+	fmt.Printf("      +noGene       Hit   : %7d\n", stats["Denovo noGene"])
+	fmt.Printf("    +noAF           Hit   : %7d\n", stats["Denovo noAF"])
+	fmt.Printf("  +noDenovo         Hit   : %7d\n", stats["noDenovo noB/LB"])
+	fmt.Printf("    +isAF           Hit   : %7d\n", stats["noDenovo AF"])
+	fmt.Printf("      +isGene       Hit   : %7d\n", stats["noDenovo Gene"])
+	fmt.Printf("        +isFunction Hit   : %7d\tTier1\n", stats["noDenovo Function"])
+	fmt.Printf("        +noFunction Hit   : %7d\n", stats["noDenovo noFunction"])
+	fmt.Printf("      +noGene       Hit   : %7d\n", stats["noDenovo noGene"])
+	fmt.Printf("    +noAF           Hit   : %7d\n", stats["noDenovo noAF"])
 
-	fmt.Printf("HGMD/ClinVar        Hit   : %d\n", stats["HGMD/ClinVar"])
-	fmt.Printf("  isAF              Hit   : %d\tTier1\n", stats["HGMD/ClinVar Tier1"])
-	fmt.Printf("  noAF              Hit   : %d\tTier2\n", stats["HGMD/ClinVar Tier2"])
-	fmt.Printf("Retain              Count : %d\n", stats["Retain"])
-	fmt.Printf("  Tier1             Count : %d\n", stats["Tier1"])
-	fmt.Printf("  Tier2             Count : %d\n", stats["Tier2"])
-	fmt.Printf("  Tier3             Count : %d\n", stats["Tier3"])
+	fmt.Printf("HGMD/ClinVar        Hit   : %7d\n", stats["HGMD/ClinVar"])
+	fmt.Printf("  isAF              Hit   : %7d\tTier1\n", stats["HGMD/ClinVar Tier1"])
+	fmt.Printf("  noAF              Hit   : %7d\tTier2\n", stats["HGMD/ClinVar Tier2"])
+	fmt.Printf("Retain              Count : %7d\n", stats["Retain"])
+	fmt.Printf("  Tier1             Count : %7d\n", stats["Tier1"])
+	fmt.Printf("  Tier2             Count : %7d\n", stats["Tier2"])
+	fmt.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
 	ts = append(ts, time.Now())
 	step++
 	fmt.Printf("create excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
 
 	if *save {
-		err = outputXlsx.Save(*output)
-		simple_util.CheckErr(err)
-		ts = append(ts, time.Now())
-		step++
-		fmt.Printf("save excel \ttook %v to run.\n", ts[step].Sub(ts[step-1]))
+		for _, flg := range flags {
+			err = tiers[flg].xlsx.Save(tiers[flg].output)
+			simple_util.CheckErr(err)
+			ts = append(ts, time.Now())
+			step++
+			fmt.Printf("save %s \ttook %7.3fs to run.\n", flg, ts[step].Sub(ts[step-1]).Seconds())
+		}
 	}
-
-	fmt.Printf("total work \ttook %v to run.\n", ts[step].Sub(ts[0]))
+	fmt.Printf("total work \ttook %7.3fs to run.\n", ts[step].Sub(ts[0]).Seconds())
 }
 
 func checkAF(item map[string]string, threshold float64) bool {
