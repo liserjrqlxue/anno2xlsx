@@ -337,6 +337,25 @@ func main() {
 			}
 		}
 	}
+
+	logTierStats(stats)
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "update info")
+
+	if *save {
+		for _, flg := range flags {
+			err = tiers[flg].xlsx.Save(tiers[flg].output)
+			simple_util.CheckErr(err)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "save "+flg)
+		}
+	}
+	logTime(ts, 0, step, "total work")
+}
+
+func logTierStats(stats map[string]int) {
 	fmt.Printf("Total               Count : %7d\n", stats["Total"])
 	fmt.Printf("  noProband         Count : %7d\n", stats["noProband"])
 
@@ -368,20 +387,6 @@ func main() {
 	fmt.Printf("  Tier1             Count : %7d\n", stats["Tier1"])
 	fmt.Printf("  Tier2             Count : %7d\n", stats["Tier2"])
 	fmt.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "update info")
-
-	if *save {
-		for _, flg := range flags {
-			err = tiers[flg].xlsx.Save(tiers[flg].output)
-			simple_util.CheckErr(err)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "save "+flg)
-		}
-	}
-	logTime(ts, 0, step, "total work")
 }
 
 func logTime(timeList []time.Time, step1, step2 int, message string) {
