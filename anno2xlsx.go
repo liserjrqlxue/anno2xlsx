@@ -8,7 +8,6 @@ import (
 	"github.com/tealeg/xlsx"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 )
 
@@ -64,6 +63,7 @@ var (
 var geneDb = make(map[string]string)
 
 // 基因-疾病
+var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
 var geneDiseaseDbColumn = []string{
 	"Disease NameEN",
@@ -72,41 +72,6 @@ var geneDiseaseDbColumn = []string{
 	"GeneralizationEN",
 	"GeneralizationCH",
 	"SystemSort",
-}
-
-// Tier1 >1
-// LoF 3
-var FuncInfo = map[string]int{
-	"splice-3":     3,
-	"splice-5":     3,
-	"inti-loss":    3,
-	"alt-start":    3,
-	"frameshift":   3,
-	"nonsense":     3,
-	"stop-gain":    3,
-	"span":         3,
-	"missense":     2,
-	"cds-del":      2,
-	"cds-indel":    2,
-	"cds-ins":      2,
-	"splice-10":    2,
-	"splice+10":    2,
-	"coding-synon": 1,
-	"splice-20":    1,
-	"splice+20":    1,
-}
-
-var AFlist = []string{
-	"GnomAD EAS AF",
-	"GnomAD AF",
-	"1000G ASN AF",
-	"1000G EAS AF",
-	"1000G AF",
-	"ESP6500 AF",
-	"ExAC EAS AF",
-	"ExAC AF",
-	"PVFD AF",
-	"Panel AlleleFreq",
 }
 
 type xlsxTemplate struct {
@@ -174,13 +139,13 @@ func main() {
 	logTime(ts, step-1, step, "load template")
 
 	// 突变频谱
-	geneDb = loadGeneDb(*geneDbExcel, *geneDbSheet)
+	loadGeneDb(*geneDbExcel, *geneDbSheet, geneDb)
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load 突变频谱")
 
 	// 基因-疾病
-	geneDiseaseDb = loadGeneDiseaseDb(*geneDiseaseDbExcel, *geneDiseaseSheet)
+	loadGeneDiseaseDb(*geneDiseaseDbExcel, *geneDiseaseSheet, geneDiseaseDb, geneList)
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load 基因-疾病")
@@ -275,27 +240,11 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
-func checkAF(item map[string]string, threshold float64) bool {
-	for _, key := range AFlist {
-		af := item[key]
-		if af == "" || af == "." {
-			continue
-		}
-		AF, err := strconv.ParseFloat(af, 64)
-		simple_util.CheckErr(err)
-		if AF > threshold {
-			return false
-		}
-	}
-	return true
-}
-
-func loadGeneDb(excelFile, sheetName string) map[string]string {
+func loadGeneDb(excelFile, sheetName string, geneDb map[string]string) {
 	xlsxFh, err := excelize.OpenFile(excelFile)
 	simple_util.CheckErr(err)
 	rows := xlsxFh.GetRows(sheetName)
 	var title []string
-	var geneDb = make(map[string]string)
 
 	for i, row := range rows {
 		if i == 0 {
@@ -312,15 +261,14 @@ func loadGeneDb(excelFile, sheetName string) map[string]string {
 			}
 		}
 	}
-	return geneDb
+	return
 }
 
-func loadGeneDiseaseDb(excelFile, sheetName string) map[string]map[string]string {
+func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map[string]string, geneList map[string]bool) {
 	xlsxFh, err := excelize.OpenFile(excelFile)
 	simple_util.CheckErr(err)
 	rows := xlsxFh.GetRows(sheetName)
 	var title []string
-	var geneDiseaseDb = make(map[string]map[string]string)
 
 	for i, row := range rows {
 		if i == 0 {
@@ -331,17 +279,15 @@ func loadGeneDiseaseDb(excelFile, sheetName string) map[string]map[string]string
 				dataHash[title[j]] = cell
 			}
 			gene := dataHash["Gene/Locus"]
+			geneList[gene] = true
 			if geneDiseaseDb[gene] == nil {
 				geneDiseaseDb[gene] = dataHash
 			} else {
-				//var newDataHash=make(map[string]string)
 				for _, key := range title {
-					//newDataHash[key]=geneDiseaseDb[gene][key]+"\n"+dataHash[key]
 					geneDiseaseDb[gene][key] = geneDiseaseDb[gene][key] + "\n" + dataHash[key]
 				}
 			}
 		}
 	}
-
-	return geneDiseaseDb
+	return
 }
