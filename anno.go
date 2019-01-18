@@ -1,11 +1,35 @@
 package main
 
+// map[string]string update
 import (
+	"github.com/liserjrqlxue/simple-util"
 	"regexp"
 	//"github.com/liserjrqlxue/acmg2015"
 	"strconv"
 	"strings"
 )
+
+// Tier1 >1
+// LoF 3
+var FuncInfo = map[string]int{
+	"splice-3":     3,
+	"splice-5":     3,
+	"inti-loss":    3,
+	"alt-start":    3,
+	"frameshift":   3,
+	"nonsense":     3,
+	"stop-gain":    3,
+	"span":         3,
+	"missense":     2,
+	"cds-del":      2,
+	"cds-indel":    2,
+	"cds-ins":      2,
+	"splice-10":    2,
+	"splice+10":    2,
+	"coding-synon": 1,
+	"splice-20":    1,
+	"splice+20":    1,
+}
 
 var long2short = map[string]string{
 	"Pathogenic":             "P",
@@ -247,4 +271,32 @@ func addTier(item map[string]string, stats map[string]int) {
 	}
 	stats["Retain"]++
 	return
+}
+
+var AFlist = []string{
+	"GnomAD EAS AF",
+	"GnomAD AF",
+	"1000G ASN AF",
+	"1000G EAS AF",
+	"1000G AF",
+	"ESP6500 AF",
+	"ExAC EAS AF",
+	"ExAC AF",
+	"PVFD AF",
+	"Panel AlleleFreq",
+}
+
+func checkAF(item map[string]string, threshold float64) bool {
+	for _, key := range AFlist {
+		af := item[key]
+		if af == "" || af == "." {
+			continue
+		}
+		AF, err := strconv.ParseFloat(af, 64)
+		simple_util.CheckErr(err)
+		if AF > threshold {
+			return false
+		}
+	}
+	return true
 }
