@@ -8,7 +8,6 @@ import (
 	"github.com/tealeg/xlsx"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"time"
 )
@@ -59,16 +58,6 @@ var (
 		true,
 		"if save to excel",
 	)
-)
-
-// regexp
-var (
-	isHgmd    = regexp.MustCompile("DM")
-	isClinvar = regexp.MustCompile("Pathogenic|Likely_pathogenic")
-	indexReg  = regexp.MustCompile(`\d+\.\s+`)
-	//newlineReg = regexp.MustCompile(`\n+`)
-	isDenovo  = regexp.MustCompile(`NA;NA$`)
-	noProband = regexp.MustCompile(`^NA`)
 )
 
 // 突变频谱
@@ -206,7 +195,7 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
-		item = updateSnv(item)
+		updateSnv(item)
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
@@ -216,116 +205,7 @@ func main() {
 			item[key] = gDiseaseDb[key]
 		}
 
-		// Tier
-		if isDenovo.MatchString(item["Zygosity"]) {
-			stats["Denovo"]++
-		}
-		if noProband.MatchString(item["Zygosity"]) {
-			stats["noProband"]++
-			continue
-		}
-		if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
-			stats["noB/LB"]++
-			if isDenovo.MatchString(item["Zygosity"]) {
-				stats["isDenovo noB/LB"]++
-				if checkAF(item, 0.01) {
-					stats["low AF"]++
-					stats["Denovo AF"]++
-					if gDiseaseDb != nil {
-						stats["OMIM Gene"]++
-						stats["Denovo Gene"]++
-						if FuncInfo[item["Function"]] > 1 {
-							item["Tier"] = "Tier1"
-							stats["Function"]++
-							stats["Denovo Function"]++
-						} else if FuncInfo[item["Function"]] > 0 {
-							//pp3,err:=strconv.Atoi(item["PP3"])
-							//if err==nil && pp3>0{
-							item["Tier"] = "Tier1"
-							stats["Function"]++
-							stats["Denovo Function"]++
-						} else {
-							item["Tier"] = "Tier2"
-							stats["noFunction"]++
-							stats["Denovo noFunction"]++
-						}
-					} else {
-						item["Tier"] = "Tier2"
-						stats["noB/LB AF noGene"]++
-						stats["Denovo noGene"]++
-					}
-				} else {
-					item["Tier"] = "Tier2"
-					stats["noB/LB noAF"]++
-					stats["Denovo noAF"]++
-				}
-				if item["Tier"] == "Tier1" {
-					stats["Denovo Tier1"]++
-				} else {
-					stats["Denovo Tier2"]++
-				}
-			} else {
-				stats["noDenovo noB/LB"]++
-				if checkAF(item, 0.01) {
-					stats["low AF"]++
-					stats["noDenovo AF"]++
-					if gDiseaseDb != nil {
-						stats["OMIM Gene"]++
-						stats["noDenovo Gene"]++
-						if FuncInfo[item["Function"]] > 1 {
-							item["Tier"] = "Tier1"
-							stats["Function"]++
-							stats["noDenovo Function"]++
-						} else if FuncInfo[item["Function"]] > 0 {
-							//pp3,err:=strconv.Atoi(item["PP3"])
-							//if err==nil && pp3>0{
-							item["Tier"] = "Tier1"
-							stats["Function"]++
-							stats["noDenovo Function"]++
-							//}
-						} else {
-							item["Tier"] = "Tier3"
-							stats["noFunction"]++
-							stats["noDenovo noFunction"]++
-						}
-					} else {
-						item["Tier"] = "Tier3"
-						stats["noB/LB AF noGene"]++
-						stats["noDenovo noGene"]++
-					}
-				} else {
-					item["Tier"] = "Tier3"
-					stats["noB/LB noAF"]++
-					stats["noDenovo noAF"]++
-				}
-			}
-		} else if isDenovo.MatchString(item["Zygosity"]) {
-			stats["Denovo B/LB"]++
-		}
-
-		if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
-			stats["HGMD/ClinVar"]++
-			if checkAF(item, 0.01) {
-				item["Tier"] = "Tier1"
-				stats["HGMD/ClinVar Tier1"]++
-			} else {
-				if item["Tier"] != "Tier1" {
-					item["Tier"] = "Tier2"
-				}
-				stats["HGMD/ClinVar Tier2"]++
-			}
-		}
-
-		if item["Tier"] == "Tier1" {
-			stats["Tier1"]++
-		} else if item["Tier"] == "Tier2" {
-			stats["Tier2"]++
-		} else if item["Tier"] == "Tier3" {
-			stats["Tier3"]++
-		} else {
-			continue
-		}
-		stats["Retain"]++
+		addTier(item, stats)
 
 		// add to excel
 		for _, flg := range flags {
