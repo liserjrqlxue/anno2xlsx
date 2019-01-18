@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
 	"os"
@@ -160,7 +161,7 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
-		updateSnv(item)
+		anno.UpdateSnv(item)
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
@@ -170,7 +171,7 @@ func main() {
 			item[key] = gDiseaseDb[key]
 		}
 
-		addTier(item, stats)
+		anno.AddTier(item, stats, geneList)
 
 		// add to excel
 		for _, flg := range flags {

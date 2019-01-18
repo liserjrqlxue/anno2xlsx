@@ -1,4 +1,4 @@
-package main
+package anno
 
 // map[string]string update
 import (
@@ -54,7 +54,7 @@ var (
 	noProband = regexp.MustCompile(`^NA`)
 )
 
-func updateSnv(dataHash map[string]string) {
+func UpdateSnv(dataHash map[string]string) {
 
 	// pHGVS= pHGVS1+"|"+pHGVS3
 	dataHash["pHGVS"] = dataHash["pHGVS1"] + " | " + dataHash["pHGVS3"]
@@ -157,9 +157,8 @@ func updateSnv(dataHash map[string]string) {
 	return
 }
 
-func addTier(item map[string]string, stats map[string]int) {
+func AddTier(item map[string]string, stats map[string]int, geneList map[string]bool) {
 	gene := item["Gene Symbol"]
-	gDiseaseDb := geneDiseaseDb[gene]
 	// Tier
 	if isDenovo.MatchString(item["Zygosity"]) {
 		stats["Denovo"]++
@@ -175,7 +174,7 @@ func addTier(item map[string]string, stats map[string]int) {
 			if checkAF(item, 0.01) {
 				stats["low AF"]++
 				stats["Denovo AF"]++
-				if gDiseaseDb != nil {
+				if geneList[gene] {
 					stats["OMIM Gene"]++
 					stats["Denovo Gene"]++
 					if FuncInfo[item["Function"]] > 1 {
@@ -213,7 +212,7 @@ func addTier(item map[string]string, stats map[string]int) {
 			if checkAF(item, 0.01) {
 				stats["low AF"]++
 				stats["noDenovo AF"]++
-				if gDiseaseDb != nil {
+				if geneList[gene] {
 					stats["OMIM Gene"]++
 					stats["noDenovo Gene"]++
 					if FuncInfo[item["Function"]] > 1 {
