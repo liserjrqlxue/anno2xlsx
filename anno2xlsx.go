@@ -45,7 +45,7 @@ var (
 	)
 	geneDiseaseDbExcel = flag.String(
 		"geneDisease",
-		dbPath+"全外基因-疾病集-20190109.xlsx",
+		dbPath+"全外基因基因集整理OMIM-20190122.xlsx",
 		"database of 基因-疾病数据库",
 	)
 	geneDiseaseSheet = flag.String(
