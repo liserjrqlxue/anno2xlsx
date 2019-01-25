@@ -52,6 +52,7 @@ var (
 	//newlineReg = regexp.MustCompile(`\n+`)
 	isDenovo  = regexp.MustCompile(`NA;NA$`)
 	noProband = regexp.MustCompile(`^NA`)
+	isChrAXY  = regexp.MustCompile(`[0-9XY]+$`)
 )
 
 func UpdateSnv(dataHash map[string]string) {
@@ -157,7 +158,7 @@ func UpdateSnv(dataHash map[string]string) {
 	return
 }
 
-func AddTier(item map[string]string, stats map[string]int, geneList map[string]bool) {
+func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool) {
 	gene := item["Gene Symbol"]
 	// Tier
 	if isDenovo.MatchString(item["Zygosity"]) {
@@ -249,14 +250,27 @@ func AddTier(item map[string]string, stats map[string]int, geneList map[string]b
 	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
 		stats["HGMD/ClinVar"]++
 		if checkAF(item, 0.01) {
-			item["Tier"] = "Tier1"
-			stats["HGMD/ClinVar Tier1"]++
+			stats["HGMD/ClinVar isAF"]++
+			if isChrAXY.MatchString(item["#Chr"]) {
+				item["Tier"] = "Tier1"
+				stats["HGMD/ClinVar noMT T1"]++
+			}
 		} else {
-			if item["Tier"] != "Tier1" {
-				item["Tier"] = "Tier2"
+			stats["HGMD/ClinVar noAF"]++
+			if isChrAXY.MatchString(item["#Chr"]) {
+				stats["HGMD/ClinVar noMT T2"]++
+				if item["Tier"] != "Tier1" {
+					item["Tier"] = "Tier2"
+				}
 			}
 			stats["HGMD/ClinVar Tier2"]++
 		}
+	}
+
+	// 特殊位点库
+	if isSpecVar(specVarDb, item["MutationName"]) {
+		item["Tier"] = "Tier1"
+		stats["SpecVar"]++
 	}
 
 	if item["Tier"] == "Tier1" {
@@ -298,4 +312,12 @@ func checkAF(item map[string]string, threshold float64) bool {
 		}
 	}
 	return true
+}
+
+func isSpecVar(db map[string]bool, key string) bool {
+	if db[key] {
+		return db[key]
+	} else {
+		return false
+	}
 }
