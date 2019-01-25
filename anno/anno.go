@@ -263,7 +263,6 @@ func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb m
 					item["Tier"] = "Tier2"
 				}
 			}
-			stats["HGMD/ClinVar Tier2"]++
 		}
 	}
 
@@ -289,8 +288,6 @@ func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb m
 var AFlist = []string{
 	"GnomAD EAS AF",
 	"GnomAD AF",
-	"1000G ASN AF",
-	"1000G EAS AF",
 	"1000G AF",
 	"ESP6500 AF",
 	"ExAC EAS AF",
