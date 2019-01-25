@@ -53,6 +53,10 @@ var (
 		"Database",
 		"sheet name of geneDiseaseDbExcel",
 	)
+	specVarList = flag.String(
+		"specVarList",
+		dbPath+"spec.var.list",
+		"特殊位点库")
 	save = flag.Bool(
 		"save",
 		true,
@@ -74,6 +78,9 @@ var geneDiseaseDbColumn = []string{
 	"GeneralizationCH",
 	"SystemSort",
 }
+
+// 特殊位点库
+var specVarDb = make(map[string]bool)
 
 type xlsxTemplate struct {
 	flag      string
@@ -151,6 +158,14 @@ func main() {
 	step++
 	logTime(ts, step-1, step, "load 基因-疾病")
 
+	// 特殊位点库
+	for _, key := range simple_util.File2Array(*specVarList) {
+		specVarDb[key] = true
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load 特殊位点库")
+
 	// anno
 	data, _ := simple_util.File2MapArray(*input, "\t")
 	ts = append(ts, time.Now())
@@ -171,7 +186,7 @@ func main() {
 			item[key] = gDiseaseDb[key]
 		}
 
-		anno.AddTier(item, stats, geneList)
+		anno.AddTier(item, stats, geneList, specVarDb)
 
 		// add to excel
 		for _, flg := range flags {
@@ -227,8 +242,13 @@ func logTierStats(stats map[string]int) {
 	fmt.Printf("    +noAF           Hit   : %7d\n", stats["noDenovo noAF"])
 
 	fmt.Printf("HGMD/ClinVar        Hit   : %7d\n", stats["HGMD/ClinVar"])
-	fmt.Printf("  isAF              Hit   : %7d\tTier1\n", stats["HGMD/ClinVar Tier1"])
-	fmt.Printf("  noAF              Hit   : %7d\tTier2\n", stats["HGMD/ClinVar Tier2"])
+	fmt.Printf("  isAF              Hit   : %7d\n", stats["HGMD/ClinVar isAF"])
+	fmt.Printf("    noMT            Hit   : %7d\tTier1\n", stats["HGMD/ClinVar noMT T1"])
+	fmt.Printf("  noAF              Hit   : %7d\n", stats["HGMD/ClinVar noAF"])
+	fmt.Printf("    noMT            Hit   : %7d\tTier2\n", stats["HGMD/ClinVar noMT T2"])
+
+	fmt.Printf("SpecVar             Hit   : %7d\n", stats["SpecVar"])
+
 	fmt.Printf("Retain              Count : %7d\n", stats["Retain"])
 	fmt.Printf("  Tier1             Count : %7d\n", stats["Tier1"])
 	fmt.Printf("  Tier2             Count : %7d\n", stats["Tier2"])
