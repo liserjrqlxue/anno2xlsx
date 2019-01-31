@@ -225,17 +225,17 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 	if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
 		stats["noB/LB"]++
 		if checkAF(item, 0.01) {
-			stats["low AF"]++
+			stats["isAF"]++
 			if geneList[gene] {
-				stats["OMIM Gene"]++
+				stats["isGene"]++
 				if FuncInfo[item["Function"]] > 1 {
 					item["Tier"] = "Tier1"
-					stats["Function"]++
+					stats["isFunction"]++
 				} else if FuncInfo[item["Function"]] > 0 {
 					//pp3,err:=strconv.Atoi(item["PP3"])
 					//if err==nil && pp3>0{
 					item["Tier"] = "Tier1"
-					stats["Function"]++
+					stats["isFunction"]++
 					//}
 				} else {
 					item["Tier"] = "Tier3"
@@ -243,11 +243,11 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 				}
 			} else {
 				item["Tier"] = "Tier3"
-				stats["noB/LB AF noGene"]++
+				stats["noGene"]++
 			}
 		} else {
 			item["Tier"] = "Tier3"
-			stats["noB/LB noAF"]++
+			stats["noAF"]++
 		}
 	}
 }
