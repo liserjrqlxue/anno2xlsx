@@ -160,15 +160,107 @@ func UpdateSnv(dataHash map[string]string) {
 	return
 }
 
-func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool) {
+func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio bool) {
+	if isTrio {
+		if noProband.MatchString(item["Zygosity"]) {
+			stats["noProband"]++
+			return
+		}
+		checkTierTrio(item, stats, geneList)
+	} else {
+		checkTierSingle(item, stats, geneList)
+	}
+
+	// HGMD or ClinVar
+	checkHGMDClinVar(item, stats)
+
+	// 特殊位点库
+	checkSpecVar(item, stats, specVarDb)
+
+	if item["Tier"] == "Tier1" {
+		stats["Tier1"]++
+	} else if item["Tier"] == "Tier2" {
+		stats["Tier2"]++
+	} else if item["Tier"] == "Tier3" {
+		stats["Tier3"]++
+	} else {
+		return
+	}
+	stats["Retain"]++
+	return
+}
+
+func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[string]bool) {
+	// 特殊位点库
+	if isSpecVar(specVarDb, item["MutationName"]) {
+		item["Tier"] = "Tier1"
+		stats["SpecVar"]++
+	}
+}
+
+func checkHGMDClinVar(item map[string]string, stats map[string]int) {
+	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
+		stats["HGMD/ClinVar"]++
+		if checkAF(item, 0.01) {
+			stats["HGMD/ClinVar isAF"]++
+			if isChrAXY.MatchString(item["#Chr"]) {
+				item["Tier"] = "Tier1"
+				stats["HGMD/ClinVar noMT T1"]++
+			}
+		} else {
+			stats["HGMD/ClinVar noAF"]++
+			if isChrAXY.MatchString(item["#Chr"]) {
+				stats["HGMD/ClinVar noMT T2"]++
+				if item["Tier"] != "Tier1" {
+					item["Tier"] = "Tier2"
+				}
+			}
+		}
+	}
+}
+
+func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool) {
 	gene := item["Gene Symbol"]
 	// Tier
-	if isDenovo.MatchString(item["Zygosity"]) {
-		stats["Denovo"]++
+	if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
+		stats["noB/LB"]++
+		if checkAF(item, 0.01) {
+			stats["low AF"]++
+			if geneList[gene] {
+				stats["OMIM Gene"]++
+				if FuncInfo[item["Function"]] > 1 {
+					item["Tier"] = "Tier1"
+					stats["Function"]++
+				} else if FuncInfo[item["Function"]] > 0 {
+					//pp3,err:=strconv.Atoi(item["PP3"])
+					//if err==nil && pp3>0{
+					item["Tier"] = "Tier1"
+					stats["Function"]++
+					//}
+				} else {
+					item["Tier"] = "Tier3"
+					stats["noFunction"]++
+				}
+			} else {
+				item["Tier"] = "Tier3"
+				stats["noB/LB AF noGene"]++
+			}
+		} else {
+			item["Tier"] = "Tier3"
+			stats["noB/LB noAF"]++
+		}
 	}
+}
+
+func checkTierTrio(item map[string]string, stats map[string]int, geneList map[string]bool) {
+	gene := item["Gene Symbol"]
+	// Tier
 	if noProband.MatchString(item["Zygosity"]) {
 		stats["noProband"]++
 		return
+	}
+	if isDenovo.MatchString(item["Zygosity"]) {
+		stats["Denovo"]++
 	}
 	if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
 		stats["noB/LB"]++
@@ -248,43 +340,6 @@ func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb m
 	} else if isDenovo.MatchString(item["Zygosity"]) {
 		stats["Denovo B/LB"]++
 	}
-
-	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
-		stats["HGMD/ClinVar"]++
-		if checkAF(item, 0.01) {
-			stats["HGMD/ClinVar isAF"]++
-			if isChrAXY.MatchString(item["#Chr"]) {
-				item["Tier"] = "Tier1"
-				stats["HGMD/ClinVar noMT T1"]++
-			}
-		} else {
-			stats["HGMD/ClinVar noAF"]++
-			if isChrAXY.MatchString(item["#Chr"]) {
-				stats["HGMD/ClinVar noMT T2"]++
-				if item["Tier"] != "Tier1" {
-					item["Tier"] = "Tier2"
-				}
-			}
-		}
-	}
-
-	// 特殊位点库
-	if isSpecVar(specVarDb, item["MutationName"]) {
-		item["Tier"] = "Tier1"
-		stats["SpecVar"]++
-	}
-
-	if item["Tier"] == "Tier1" {
-		stats["Tier1"]++
-	} else if item["Tier"] == "Tier2" {
-		stats["Tier2"]++
-	} else if item["Tier"] == "Tier3" {
-		stats["Tier3"]++
-	} else {
-		return
-	}
-	stats["Retain"]++
-	return
 }
 
 var AFlist = []string{

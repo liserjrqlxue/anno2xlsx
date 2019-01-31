@@ -62,6 +62,11 @@ var (
 		true,
 		"if save to excel",
 	)
+	trio = flag.Bool(
+		"trio",
+		false,
+		"if trio mode",
+	)
 )
 
 // 突变频谱
@@ -186,7 +191,7 @@ func main() {
 			item[key] = gDiseaseDb[key]
 		}
 
-		anno.AddTier(item, stats, geneList, specVarDb)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
 		// add to excel
 		for _, flg := range flags {

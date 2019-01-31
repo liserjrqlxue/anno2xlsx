@@ -62,6 +62,11 @@ var (
 		true,
 		"if save to excel",
 	)
+	trio = flag.Bool(
+		"trio",
+		false,
+		"if trio mode",
+	)
 )
 
 // 突变频谱
@@ -160,7 +165,7 @@ func main() {
 		for _, key := range title {
 			arr = append(arr, item[key])
 		}
-		anno.AddTier(item, stats, geneList, specVarDb)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
 		if *save {
 			err := w.Write(arr)
