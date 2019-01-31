@@ -58,7 +58,9 @@ var (
 func UpdateSnv(dataHash map[string]string) {
 
 	// pHGVS= pHGVS1+"|"+pHGVS3
-	dataHash["pHGVS"] = dataHash["pHGVS1"] + " | " + dataHash["pHGVS3"]
+	if dataHash["pHGVS1"] != "" && dataHash["pHGVS3"] != "" {
+		dataHash["pHGVS"] = dataHash["pHGVS1"] + " | " + dataHash["pHGVS3"]
+	}
 
 	score, err := strconv.ParseFloat(dataHash["dbscSNV_ADA_SCORE"], 32)
 	if err != nil {
