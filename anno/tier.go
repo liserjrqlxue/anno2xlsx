@@ -40,6 +40,7 @@ var (
 	isChrAXY  = regexp.MustCompile(`[0-9XY]+$`)
 )
 
+// add Tier to item
 func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio bool) {
 	if isTrio {
 		if noProband.MatchString(item["Zygosity"]) {

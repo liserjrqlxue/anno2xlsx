@@ -7,7 +7,6 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
-	"log"
 	"os"
 	"path/filepath"
 	"time"

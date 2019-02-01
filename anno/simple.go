@@ -22,9 +22,29 @@ var long2short = map[string]string{
 // regexp
 var (
 	indexReg = regexp.MustCompile(`\d+\.\s+`)
+
+	isARorXR = regexp.MustCompile(`AR|XR`)
+	isAR     = regexp.MustCompile(`AR`)
+	isAD     = regexp.MustCompile(`AD`)
+	isXL     = regexp.MustCompile(`XL`)
+
+	isHet  = regexp.MustCompile(`^Het`)
+	isHom  = regexp.MustCompile(`^Hom`)
+	isHemi = regexp.MustCompile(`^Hemi`)
+	isNA   = regexp.MustCompile(`^NA`)
+
+	isHetHetHet = regexp.MustCompile(`^Het;Het;Het`)
+	isHetHetNA  = regexp.MustCompile(`^Het;Het;NA`)
+	isHetNAHet  = regexp.MustCompile(`^Het;NA;Het`)
+	isHetNANA   = regexp.MustCompile(`^Het;NA;NA`)
+
+	isHomInherit  = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
+	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA`)
 )
 
 func UpdateSnv(dataHash map[string]string) {
+	// Zygosity format
+	dataHash["Zygosity"] = zygosityFormat(dataHash["Zygosity"])
 
 	// pHGVS= pHGVS1+"|"+pHGVS3
 	if dataHash["pHGVS1"] != "" && dataHash["pHGVS3"] != "" {
@@ -127,4 +147,89 @@ func UpdateSnv(dataHash map[string]string) {
 
 	dataHash["自动化判断"] = long2short[dataHash["ACMG"]]
 	return
+}
+
+func InheritCheck(item map[string]string, inheritDb map[string]map[string]int) {
+	geneSymbol := item["Gene Symbol"]
+	inherit := item["ModeInheritance"]
+	zygosity := item["Zygosity"]
+	var db = make(map[string]int)
+	if inheritDb[geneSymbol] == nil {
+		inheritDb[geneSymbol] = db
+	}
+	if isARorXR.MatchString(inherit) {
+		if isHet.MatchString(zygosity) {
+			inheritDb[geneSymbol]["flag1"]++
+		}
+		if isHetHetNA.MatchString(zygosity) {
+			inheritDb[geneSymbol]["flag110"]++
+		}
+		if isHetNAHet.MatchString(zygosity) {
+			inheritDb[geneSymbol]["flag101"]++
+		}
+		if isHetNANA.MatchString(zygosity) {
+			inheritDb[geneSymbol]["flag100"]++
+		}
+	}
+}
+
+func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int, isTrio bool) string {
+	geneSymbol := item["Gene Symbol"]
+	inherit := item["ModeInheritance"]
+	zygosity := item["Zygosity"]
+	if isTrio {
+		if isNA.MatchString(zygosity) {
+			return "NA"
+		}
+		if isAD.MatchString(inherit) && isHetNANA.MatchString(zygosity) {
+			return "相符"
+		}
+		if isXL.MatchString(inherit) && isHemiInherit.MatchString(zygosity) {
+			return "相符"
+		}
+		if isAR.MatchString(inherit) {
+			if isHomInherit.MatchString(zygosity) {
+				return "相符"
+			}
+			if inheritDb[geneSymbol]["flag110"] > 0 &&
+				inheritDb[geneSymbol]["flag101"] > 0 &&
+				(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
+				return "相符"
+			}
+			if inheritDb[geneSymbol]["flag110"] > 0 &&
+				inheritDb[geneSymbol]["flag100"] > 0 &&
+				(isHetHetNA.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
+				return "相符"
+			}
+			if inheritDb[geneSymbol]["flag101"] > 0 &&
+				inheritDb[geneSymbol]["flag100"] > 0 &&
+				(isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
+				return "相符"
+			}
+			if isHetHetHet.MatchString(zygosity) ||
+				(inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity)) {
+				return "不确定"
+			}
+		}
+		return "不相符"
+	} else {
+		if (isHet.MatchString(zygosity) && isARorXR.MatchString(inherit)) ||
+			(isHom.MatchString(zygosity) && isAD.MatchString(inherit)) ||
+			(isHemi.MatchString(zygosity) && isXL.MatchString(inherit)) {
+			return "相符"
+		} else if isARorXR.MatchString(zygosity) && inheritDb[geneSymbol]["flag1"] >= 2 {
+			return "不确定"
+		} else {
+			return "不相符"
+		}
+	}
+}
+
+func zygosityFormat(zygosity string) string {
+	zygosity = strings.Replace(zygosity, "het-ref", "Het", -1)
+	zygosity = strings.Replace(zygosity, "het-alt", "Het", -1)
+	zygosity = strings.Replace(zygosity, "hom-alt", "Hom", -1)
+	zygosity = strings.Replace(zygosity, "hem-alt", "Hemi", -1)
+	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
+	return zygosity
 }

@@ -92,6 +92,9 @@ var geneDiseaseDbColumn = map[string]string{
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
+// 遗传相符
+var inheritDb = make(map[string]map[string]int)
+
 type xlsxTemplate struct {
 	flag      string
 	template  string
@@ -198,6 +201,15 @@ func main() {
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
+		// 遗传相符
+		// only for Tier1
+		if item["Tier"] == "Tier1" {
+			anno.InheritCheck(item, inheritDb)
+		}
+	}
+	for _, item := range data {
+		// 遗传相符
+		item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
 		// add to excel
 		for _, flg := range flags {
 			if tier2xlsx[flg][item["Tier"]] {
