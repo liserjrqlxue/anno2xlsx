@@ -233,3 +233,140 @@ func zygosityFormat(zygosity string) string {
 	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
 	return zygosity
 }
+
+var inheritFromMap = map[string]string{
+	"Het":    "（杂合）",
+	"Hom":    "（纯和）",
+	"Hemi":   "（半合）",
+	"UC":     "不确定",
+	"Denovo": "新发",
+	"NA":     "NA",
+}
+
+func InheritFrom(item map[string]string, sampleList []string) string {
+	if len(sampleList) < 3 {
+		return "NA1"
+	}
+	zygosity := item["Zygosity"]
+	zygos := strings.Split(zygosity, ";")
+	if len(zygos) < 3 {
+		return "NA2"
+	}
+	zygos3 := strings.Join(zygos[0:3], ";")
+	//fmt.Println(zygos3)
+	var from string
+	switch zygos3 {
+	case "Hom;Hom;Hom":
+		from = sampleList[1] + inheritFromMap["Hom"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+	case "Hom;Hom;Het":
+		from = sampleList[1] + inheritFromMap["Hom"] + "/" + sampleList[2] + inheritFromMap["Het"]
+	case "Hom;Hom;Hemi":
+		from = sampleList[1] + inheritFromMap["Hom"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
+	case "Hom;Hom;NA":
+		from = sampleList[1] + inheritFromMap["Hom"] + "/" + inheritFromMap["Denovo"]
+
+	case "Hom;Het;Hom":
+		from = sampleList[1] + inheritFromMap["Het"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+	case "Hom;Het;Het":
+		from = sampleList[1] + inheritFromMap["Het"] + "/" + sampleList[2] + inheritFromMap["Het"]
+	case "Hom;Het;Hemi":
+		from = sampleList[1] + inheritFromMap["Het"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
+	case "Hom;Het;NA":
+		from = sampleList[1] + inheritFromMap["Het"] + "/" + inheritFromMap["Denovo"]
+
+	case "Hom;Hemi;Hom":
+		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+	case "Hom;Hemi;Het":
+		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + sampleList[2] + inheritFromMap["Het"]
+	case "Hom;Hemi;Hemi":
+		from = inheritFromMap["NA"]
+	case "Hom;Hemi;NA":
+		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + inheritFromMap["Denovo"]
+
+	case "Hom;NA;Hom":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+	case "Hom;NA;Het":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Het"]
+	case "Hom;NA;Hemi":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
+	case "Hom;NA;NA":
+		from = inheritFromMap["Denovo"]
+
+	case "Het;Hom;Hom":
+		from = inheritFromMap["UC"]
+	case "Het;Hom;Het":
+		from = inheritFromMap["UC"]
+	case "Het;Hom;Hemi":
+		from = inheritFromMap["UC"]
+	case "Het;Hom;NA":
+		from = sampleList[1] + inheritFromMap["Hom"]
+
+	case "Het;Het;Hom":
+		from = inheritFromMap["UC"]
+	case "Het;Het;Het":
+		from = inheritFromMap["UC"]
+	case "Het;Het;Hemi":
+		from = inheritFromMap["UC"]
+	case "Het;Het;NA":
+		from = sampleList[1] + inheritFromMap["Het"]
+
+	case "Het;Hemi;Hom":
+		from = inheritFromMap["UC"]
+	case "Het;Hemi;Het":
+		from = inheritFromMap["UC"]
+	case "Het;Hemi;Hemi":
+		from = inheritFromMap["NA"]
+	case "Het;Hemi;NA":
+		from = sampleList[1] + inheritFromMap["Het"]
+
+	case "Het;NA;Hom":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+	case "Het;NA;Het":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Het"]
+	case "Het;NA;Hemi":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
+	case "Het;NA;NA":
+		from = inheritFromMap["Denovo"]
+
+	case "Hemi;Hom;Hom":
+		from = inheritFromMap["UC"]
+	case "Hemi;Hom;Het":
+		from = inheritFromMap["UC"]
+	case "Hemi;Hom;Hemi":
+		from = sampleList[1] + inheritFromMap["Hom"]
+	case "Hemi;Hom;NA":
+		from = sampleList[1] + inheritFromMap["Hom"]
+
+	case "Hemi;Het;Hom":
+		from = inheritFromMap["UC"]
+	case "Hemi;Het;Het":
+		from = inheritFromMap["UC"]
+	case "Hemi;Het;Hemi":
+		from = sampleList[1] + inheritFromMap["Het"]
+	case "Hemi;Het;NA":
+		from = sampleList[1] + inheritFromMap["Het"]
+
+	case "Hemi;Hemi;Hom":
+		from = sampleList[2] + inheritFromMap["Hom"]
+	case "Hemi;Hemi;Het":
+		from = sampleList[2] + inheritFromMap["Het"]
+	case "Hemi;Hemi;Hemi":
+		from = inheritFromMap["NA"]
+	case "Hemi;Hemi;NA":
+		from = inheritFromMap["Denovo"]
+
+	case "Hemi;NA;Hom":
+		from = sampleList[2] + inheritFromMap["Hom"]
+	case "Hemi;NA;Het":
+		from = sampleList[2] + inheritFromMap["Het"]
+	case "Hemi;NA;Hemi":
+		from = inheritFromMap["Denovo"]
+	case "Hemi;NA;NA":
+		from = inheritFromMap["Denovo"]
+
+	default:
+		from = "NA3"
+	}
+
+	return from
+}

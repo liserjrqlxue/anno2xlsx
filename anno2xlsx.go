@@ -9,6 +9,7 @@ import (
 	"github.com/tealeg/xlsx"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -67,7 +68,15 @@ var (
 		false,
 		"if trio mode",
 	)
+	list = flag.String(
+		"list",
+		"proband,father,mother",
+		"sample list for family mode, comma as sep",
+	)
 )
+
+// family list
+var sampleList []string
 
 // 突变频谱
 var geneDb = make(map[string]string)
@@ -135,6 +144,9 @@ func main() {
 	}
 	if *prefix == "" {
 		*prefix = *input
+	}
+	if *trio {
+		sampleList = strings.Split(*list, ",")
 	}
 
 	// load tier template
@@ -204,6 +216,11 @@ func main() {
 		}
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
+
+		// 变异来源
+		if *trio && (item["Tier"] == "Tier1" || item["Tier"] == "Tier2") {
+			item["变异来源"] = anno.InheritFrom(item, sampleList)
+		}
 
 		// 遗传相符
 		// only for Tier1
