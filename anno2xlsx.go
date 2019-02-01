@@ -135,17 +135,17 @@ func main() {
 
 	// load tier template
 	var tiers = make(map[string]xlsxTemplate)
-	var flags = []string{
-		"Tier1",
-		"Tier2",
-		"Tier3",
+	var tierSheet = map[string]string{
+		"Tier1": "filter_variants",
+		"Tier2": "附表",
+		"Tier3": "总表",
 	}
-	for _, flg := range flags {
+	for key, value := range tierSheet {
 		var tier = xlsxTemplate{
-			flag:      flg,
-			template:  templatePath + flg + ".xlsx",
-			sheetName: flg,
-			output:    *prefix + "." + flg + ".xlsx",
+			flag:      key,
+			template:  templatePath + key + ".xlsx",
+			sheetName: value,
+			output:    *prefix + "." + key + ".xlsx",
 		}
 		tier.xlsx, err = xlsx.OpenFile(tier.template)
 		simple_util.CheckErr(err)
@@ -153,7 +153,7 @@ func main() {
 		for _, cell := range tier.sheet.Row(0).Cells {
 			tier.title = append(tier.title, cell.String())
 		}
-		tiers[flg] = tier
+		tiers[key] = tier
 	}
 	ts = append(ts, time.Now())
 	step++
@@ -211,7 +211,7 @@ func main() {
 		// 遗传相符
 		item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
 		// add to excel
-		for _, flg := range flags {
+		for flg := range tierSheet {
 			if tier2xlsx[flg][item["Tier"]] {
 				tierRow := tiers[flg].sheet.AddRow()
 				for _, str := range tiers[flg].title {
@@ -227,7 +227,7 @@ func main() {
 	logTime(ts, step-1, step, "update info")
 
 	if *save {
-		for _, flg := range flags {
+		for flg := range tierSheet {
 			err = tiers[flg].xlsx.Save(tiers[flg].output)
 			simple_util.CheckErr(err)
 			ts = append(ts, time.Now())
