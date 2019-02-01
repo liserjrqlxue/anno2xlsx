@@ -31,7 +31,7 @@ var (
 	prefix = flag.String(
 		"prefix",
 		"",
-		"output xlsx prefix.tier{1,2,3}.xlsx",
+		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to -input",
 	)
 	geneDbExcel = flag.String(
 		"geneDb",
@@ -128,9 +128,13 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *input == "" || *prefix == "" {
+	if *input == "" {
+		fmt.Println("-input is required")
 		flag.Usage()
 		os.Exit(0)
+	}
+	if *prefix == "" {
+		*prefix = *input
 	}
 
 	// load tier template
