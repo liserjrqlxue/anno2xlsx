@@ -213,7 +213,13 @@ func main() {
 	}
 	for _, item := range data {
 		// 遗传相符
-		item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+		if item["Tier"] == "Tier1" {
+			item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+			if item["遗传相符"] == "相符" {
+				stats["遗传相符"]++
+			}
+		}
+
 		// add to excel
 		for flg := range tierSheet {
 			if tier2xlsx[flg][item["Tier"]] {
@@ -288,6 +294,7 @@ func logTierStats(stats map[string]int) {
 
 	fmt.Printf("Retain              Count : %7d\n", stats["Retain"])
 	fmt.Printf("  Tier1             Count : %7d\n", stats["Tier1"])
+	fmt.Printf("    遗传相符        Count : %7d\n", stats["遗传相符"])
 	fmt.Printf("  Tier2             Count : %7d\n", stats["Tier2"])
 	fmt.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
 }

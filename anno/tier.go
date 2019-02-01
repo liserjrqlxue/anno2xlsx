@@ -35,7 +35,7 @@ var (
 	isHgmd    = regexp.MustCompile("DM")
 	isClinvar = regexp.MustCompile("Pathogenic|Likely_pathogenic")
 	//newlineReg = regexp.MustCompile(`\n+`)
-	isDenovo  = regexp.MustCompile(`NA;NA$`)
+	isDenovo  = regexp.MustCompile(`^(Hom|Het|Hemi);NA;NA`)
 	noProband = regexp.MustCompile(`^NA`)
 	isChrAXY  = regexp.MustCompile(`[0-9XY]+$`)
 )
