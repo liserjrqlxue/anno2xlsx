@@ -73,6 +73,10 @@ var (
 		"proband,father,mother",
 		"sample list for family mode, comma as sep",
 	)
+	exon = flag.String(
+		"exon",
+		"",
+		"exonCnv file path, only write samples in -list")
 )
 
 // family list
@@ -84,6 +88,19 @@ var geneDb = make(map[string]string)
 // 基因-疾病
 var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
+var geneDiseaseDbKey = []string{
+	"Gene/Locus",
+	"Phenotype MIM number",
+	"Disease NameEN",
+	"Disease NameCH",
+	"Alternative Disease NameEN",
+	"Location",
+	"Gene/Locus MIM number",
+	"Inheritance",
+	"GeneralizationEN",
+	"GeneralizationCH",
+	"SystemSort",
+}
 var geneDiseaseDbColumn = map[string]string{
 	"Gene/Locus":                 "Gene",
 	"Phenotype MIM number":       "OMIM",
@@ -210,10 +227,7 @@ func main() {
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
 		// 基因-疾病
-		gDiseaseDb := geneDiseaseDb[gene]
-		for key, value := range geneDiseaseDbColumn {
-			item[value] = gDiseaseDb[key]
-		}
+		updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
@@ -252,6 +266,14 @@ func main() {
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "update info")
+
+	if *exon != "" {
+		addCnvSheet(tiers["Tier1"].xlsx, *exon, "exon_cnv", sampleList)
+		addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add cnv and fam_info")
+	}
 
 	if *save {
 		for flg := range tierSheet {
@@ -372,4 +394,69 @@ func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map
 		}
 	}
 	return
+}
+
+func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
+	sheet, err := excel.AddSheet(sheetName)
+	simple_util.CheckErr(err)
+
+	sheet.AddRow().AddCell().SetString("SampleID")
+
+	for _, sample := range sampleList {
+		sheet.AddRow().AddCell().SetString(sample)
+	}
+}
+
+func addCnvSheet(excel *xlsx.File, path, sheetName string, sampleList []string) {
+	sheet, err := excel.AddSheet(sheetName)
+	simple_util.CheckErr(err)
+
+	var sampleMap = make(map[string]bool)
+	for _, sample := range sampleList {
+		sampleMap[sample] = true
+	}
+	cnvDb, title := simple_util.File2MapArray(path, "\t")
+
+	// title
+	for _, value := range geneDiseaseDbKey {
+		title = append(title, "Omim Gene", geneDiseaseDbColumn[value])
+	}
+	var row = sheet.AddRow()
+	for _, key := range title {
+		row.AddCell().SetString(key)
+	}
+
+	for _, item := range cnvDb {
+		sample := item["Sample"]
+		if sampleMap[sample] {
+			gene := item["OMIM_Gene"]
+			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			item["Omim Gene"] = item["Gene"]
+			row = sheet.AddRow()
+			for _, key := range title {
+				row.AddCell().SetString(item[key])
+			}
+		}
+	}
+}
+
+func updateDisease(gene string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+	// 基因-疾病
+	gDiseaseDb := geneDiseaseDb[gene]
+	for key, value := range geneDiseaseDbColumn {
+		item[value] = gDiseaseDb[key]
+	}
+}
+
+func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+	genes := strings.Split(geneList, ";")
+	// 基因-疾病
+	for key, value := range geneDiseaseDbColumn {
+		var vals []string
+		for _, gene := range genes {
+			vals = append(vals, geneDiseaseDb[gene][key])
+			//fmt.Println(gene,":",key,":",vals)
+		}
+		item[value] = strings.Join(vals, "\n")
+	}
 }
