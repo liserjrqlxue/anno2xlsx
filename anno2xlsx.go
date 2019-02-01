@@ -75,13 +75,18 @@ var geneDb = make(map[string]string)
 // 基因-疾病
 var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = []string{
-	"Disease NameEN",
-	"Disease NameCH",
-	"Inheritance",
-	"GeneralizationEN",
-	"GeneralizationCH",
-	"SystemSort",
+var geneDiseaseDbColumn = map[string]string{
+	"Gene/Locus":                 "Gene",
+	"Phenotype MIM number":       "OMIM",
+	"Disease NameEN":             "DiseaseNameEN",
+	"Disease NameCH":             "DiseaseNameCH",
+	"Alternative Disease NameEN": "AliasEN",
+	"Location":                   "Location",
+	"Gene/Locus MIM number":      "Gene/Locus MIM number",
+	"Inheritance":                "ModeInheritance",
+	"GeneralizationEN":           "GeneralizationEN",
+	"GeneralizationCH":           "GeneralizationCH",
+	"SystemSort":                 "SystemSort",
 }
 
 // 特殊位点库
@@ -187,8 +192,8 @@ func main() {
 		item["突变频谱"] = geneDb[gene]
 		// 基因-疾病
 		gDiseaseDb := geneDiseaseDb[gene]
-		for _, key := range geneDiseaseDbColumn {
-			item[key] = gDiseaseDb[key]
+		for key, value := range geneDiseaseDbColumn {
+			item[value] = gDiseaseDb[key]
 		}
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)

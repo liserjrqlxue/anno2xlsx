@@ -75,19 +75,24 @@ var geneDb = make(map[string]string)
 // 基因-疾病
 var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = []string{
-	"Disease NameEN",
-	"Disease NameCH",
-	"Inheritance",
-	"GeneralizationEN",
-	"GeneralizationCH",
-	"SystemSort",
+var geneDiseaseDbColumn = map[string]string{
+	"Gene/Locus":                 "Gene",
+	"Phenotype MIM number":       "OMIM",
+	"Disease NameEN":             "DiseaseNameEN",
+	"Disease NameCH":             "DiseaseNameCH",
+	"Alternative Disease NameEN": "AliasEN",
+	"Location":                   "Location",
+	"Gene/Locus MIM number":      "Gene/Locus MIM number",
+	"Inheritance":                "ModeInheritance",
+	"GeneralizationEN":           "GeneralizationEN",
+	"GeneralizationCH":           "GeneralizationCH",
+	"SystemSort":                 "SystemSort",
 }
 
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
-var w *csv.Writer
+var w1, w2, w3 *csv.Writer
 
 func main() {
 	var ts []time.Time
@@ -102,12 +107,12 @@ func main() {
 
 	// open file to write
 	if *save {
-		f, err := os.Create(*prefix + ".tsv")
-		simple_util.CheckErr(err)
-		defer simple_util.DeferClose(f)
-		w = csv.NewWriter(f)
-		w.Comma = '\t'
-		w.UseCRLF = false
+		f1 := writeTsv(w1, *prefix+".解读表.tsv")
+		defer simple_util.DeferClose(f1)
+		f2 := writeTsv(w2, *prefix+".附表.tsv")
+		defer simple_util.DeferClose(f2)
+		f3 := writeTsv(w3, *prefix+".总表.tsv")
+		defer simple_util.DeferClose(f3)
 	}
 
 	// 突变频谱
@@ -142,14 +147,13 @@ func main() {
 	title = append(title, "突变频谱", "Tier",
 		"pHGVS", "dbscSNV_ADA_pred", "dbscSNV_RF_pred", "GERP++_RS_pred", "PhyloP Vertebrates Pred", "PhyloP Placental Mammals Pred",
 		"烈性突变", "HGMDorClinvar", "GnomAD homo", "GnomAD hemi", "纯合，半合", "MutationNameLite", "历史样本检出个数", "自动化判断")
-	for _, key := range geneDiseaseDbColumn {
-		title = append(title, key)
+	for _, value := range geneDiseaseDbColumn {
+		title = append(title, value)
 	}
 	if *save {
-		err := w.Write(title)
-		if err != nil {
-			log.Fatalln("error writing title to tsv:", err)
-		}
+		simple_util.CheckErr(w1.Write(title))
+		simple_util.CheckErr(w2.Write(title))
+		simple_util.CheckErr(w3.Write(title))
 	}
 	for _, item := range data {
 		anno.UpdateSnv(item)
@@ -158,8 +162,8 @@ func main() {
 		item["突变频谱"] = geneDb[gene]
 		// 基因-疾病
 		gDiseaseDb := geneDiseaseDb[gene]
-		for _, key := range geneDiseaseDbColumn {
-			item[key] = gDiseaseDb[key]
+		for key, value := range geneDiseaseDbColumn {
+			item[value] = gDiseaseDb[key]
 		}
 		var arr []string
 		for _, key := range title {
@@ -168,15 +172,18 @@ func main() {
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
 		if *save {
-			err := w.Write(arr)
-			if err != nil {
-				log.Fatalln("error writing record to tsv:", err)
-			}
+			simple_util.CheckErr(w1.Write(arr))
+			simple_util.CheckErr(w2.Write(arr))
+			simple_util.CheckErr(w3.Write(arr))
 		}
 
 	}
-	w.Flush()
-	simple_util.CheckErr(w.Error())
+	w1.Flush()
+	simple_util.CheckErr(w1.Error())
+	w2.Flush()
+	simple_util.CheckErr(w2.Error())
+	w3.Flush()
+	simple_util.CheckErr(w3.Error())
 
 	logTierStats(stats)
 	ts = append(ts, time.Now())
@@ -281,4 +288,13 @@ func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map
 		}
 	}
 	return
+}
+
+func writeTsv(w *csv.Writer, name string) *os.File {
+	f, err := os.Create(name)
+	simple_util.CheckErr(err)
+	w = csv.NewWriter(f)
+	w.Comma = '\t'
+	w.UseCRLF = false
+	return f
 }
