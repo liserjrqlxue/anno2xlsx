@@ -418,8 +418,9 @@ func addCnvSheet(excel *xlsx.File, path, sheetName string, sampleList []string) 
 	cnvDb, title := simple_util.File2MapArray(path, "\t")
 
 	// title
+	title = append(title, "Omim Gene")
 	for _, value := range geneDiseaseDbKey {
-		title = append(title, "Omim Gene", geneDiseaseDbColumn[value])
+		title = append(title, geneDiseaseDbColumn[value])
 	}
 	var row = sheet.AddRow()
 	for _, key := range title {
