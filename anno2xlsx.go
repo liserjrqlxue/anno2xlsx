@@ -173,9 +173,7 @@ func main() {
 		}
 		*prefix = *input
 	}
-	if *trio {
-		sampleList = strings.Split(*list, ",")
-	}
+	sampleList = strings.Split(*list, ",")
 
 	// load tier template
 	var tiers = make(map[string]xlsxTemplate)
