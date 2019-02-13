@@ -154,12 +154,17 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *input == "" {
-		fmt.Println("-input is required")
+	if *input == "" && *exon == "" {
 		flag.Usage()
+		fmt.Println("\nshold have at least one input:-input,-exon")
 		os.Exit(0)
 	}
 	if *prefix == "" {
+		if *input == "" {
+			flag.Usage()
+			fmt.Println("\nshold have -prefix for output")
+			os.Exit(0)
+		}
 		*prefix = *input
 	}
 	if *trio {
@@ -213,10 +218,13 @@ func main() {
 	logTime(ts, step-1, step, "load 特殊位点库")
 
 	// anno
-	data, _ := simple_util.File2MapArray(*input, "\t")
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load anno file")
+	var data []map[string]string
+	if *input != "" {
+		data, _ = simple_util.File2MapArray(*input, "\t")
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "load anno file")
+	}
 
 	var stats = make(map[string]int)
 
@@ -289,6 +297,9 @@ func main() {
 
 func logTierStats(stats map[string]int) {
 	fmt.Printf("Total               Count : %7d\n", stats["Total"])
+	if stats["Total"] == 0 {
+		return
+	}
 	if *trio {
 		fmt.Printf("  noProband         Count : %7d\n", stats["noProband"])
 
