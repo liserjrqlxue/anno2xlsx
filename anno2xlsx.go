@@ -76,7 +76,13 @@ var (
 	exon = flag.String(
 		"exon",
 		"",
-		"exonCnv file path, only write samples in -list")
+		"exonCnv file path, only write samples in -list",
+	)
+	large = flag.String(
+		"large",
+		"",
+		"largeCnv file path, only write sample in -list",
+	)
 )
 
 // family list
@@ -154,7 +160,7 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *input == "" && *exon == "" {
+	if *input == "" && *exon == "" && *large == "" {
 		flag.Usage()
 		fmt.Println("\nshold have at least one input:-input,-exon")
 		os.Exit(0)
@@ -277,11 +283,19 @@ func main() {
 
 	if *exon != "" {
 		addCnvSheet(tiers["Tier1"].xlsx, *exon, "exon_cnv", sampleList)
-		addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
 		ts = append(ts, time.Now())
 		step++
-		logTime(ts, step-1, step, "add cnv and fam_info")
+		logTime(ts, step-1, step, "add exon cnv")
 	}
+
+	if *large != "" {
+		addCnvSheet(tiers["Tier1"].xlsx, *large, "large_cnv", sampleList)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add large cnv")
+	}
+
+	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
 
 	if *save {
 		for flg := range tierSheet {
