@@ -1,6 +1,8 @@
 package anno
 
 import (
+	"fmt"
+	"github.com/liserjrqlxue/simple-util"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,9 +21,16 @@ var long2short = map[string]string{
 	"B":                      "B",
 }
 
+// to-do add exon count info of transcript
+var exonCount = map[string]int{}
+
 // regexp
 var (
 	indexReg = regexp.MustCompile(`\d+\.\s+`)
+
+	rmChr = regexp.MustCompile(`^chr`)
+	cds   = regexp.MustCompile(`^C`)
+	ratio = regexp.MustCompile(`^[01](.\d+)?$`)
 
 	isARorXR = regexp.MustCompile(`AR|XR`)
 	isAR     = regexp.MustCompile(`AR`)
@@ -42,108 +51,125 @@ var (
 	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA`)
 )
 
-func UpdateSnv(dataHash map[string]string) {
-	// Zygosity format
-	dataHash["Zygosity"] = zygosityFormat(dataHash["Zygosity"])
+func UpdateSnvTier1(item map[string]string) {
+	// #Chr+Stop
+	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
+	if item["VarType"] == "snv" {
+		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Stop"]
+	} else {
+		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Start"] + ".." + item["Stop"]
+	}
 
 	// pHGVS= pHGVS1+"|"+pHGVS3
-	if dataHash["pHGVS1"] != "" && dataHash["pHGVS3"] != "" {
-		dataHash["pHGVS"] = dataHash["pHGVS1"] + " | " + dataHash["pHGVS3"]
+	if item["pHGVS1"] != "" && item["pHGVS3"] != "" {
+		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
 	}
 
-	score, err := strconv.ParseFloat(dataHash["dbscSNV_ADA_SCORE"], 32)
-	if err != nil {
-		dataHash["dbscSNV_ADA_pred"] = dataHash["dbscSNV_ADA_SCORE"]
+	item["引物设计"] = PrimerDesign(item, exonCount)
+
+	// score to pred
+	score2pred(item)
+
+	// addition
+	item["烈性突变"] = "否"
+	if FuncInfo[item["Function"]] == 3 {
+		item["烈性突变"] = "是"
+	}
+
+	item["HGMDorClinvar"] = "否"
+	if isHgmd.MatchString(item["HGMD Pred"]) {
+		item["HGMDorClinvar"] = "是"
+	}
+	if isClinvar.MatchString(item["ClinVar Significance"]) {
+		item["HGMDorClinvar"] = "是"
+	}
+
+	item["GnomAD homo"] = item["GnomAD HomoAlt Count"]
+	item["GnomAD hemi"] = item["GnomAD HemiAlt Count"]
+	item["纯合，半合"] = item["GnomAD HomoAlt Count"] // + "|" + dataHash["GnomAD HemiAlt Count"]
+	if len(strings.Split(item["MutationName"], ":")) > 1 {
+		item["MutationNameLite"] = item["Transcript"] + ":" + strings.Split(item["MutationName"], ":")[1]
 	} else {
-		if score >= 0.6 {
-			dataHash["dbscSNV_ADA_pred"] = "D"
-		} else {
-			dataHash["dbscSNV_ADA_pred"] = "P"
-		}
-	}
-	score, err = strconv.ParseFloat(dataHash["dbscSNV_RF_SCORE"], 32)
-	if err != nil {
-		dataHash["dbscSNV_RF_pred"] = dataHash["dbscSNV_RF_SCORE"]
-	} else {
-		if score >= 0.6 {
-			dataHash["dbscSNV_RF_pred"] = "D"
-		} else {
-			dataHash["dbscSNV_RF_pred"] = "P"
-		}
+		item["MutationNameLite"] = item["MutationName"]
 	}
 
-	score, err = strconv.ParseFloat(dataHash["GERP++_RS"], 32)
-	if err != nil {
-		dataHash["GERP++_RS_pred"] = dataHash["GERP++_RS"]
-	} else {
-		if score >= 2 {
-			dataHash["GERP++_RS_pred"] = "D"
-		} else {
-			dataHash["GERP++_RS_pred"] = "P"
-		}
-	}
-
-	// 0-0.6 不保守  0.6-2.5 保守 ＞2.5 高度保守
-	score, err = strconv.ParseFloat(dataHash["PhyloP Vertebrates"], 32)
-	if err != nil {
-		dataHash["PhyloP Vertebrates Pred"] = dataHash["PhyloP Vertebrates"]
-	} else {
-		if score >= 2.5 {
-			dataHash["PhyloP Vertebrates Pred"] = "高度保守"
-		} else if score > 0.6 {
-			dataHash["PhyloP Vertebrates Pred"] = "保守"
-		} else {
-			dataHash["PhyloP Vertebrates Pred"] = "不保守"
-		}
-	}
-	score, err = strconv.ParseFloat(dataHash["PhyloP Placental Mammals"], 32)
-	if err != nil {
-		dataHash["PhyloP Placental Mammals Pred"] = dataHash["PhyloP Placental Mammals"]
-	} else {
-		if score >= 2.5 {
-			dataHash["PhyloP Placental Mammals Pred"] = "高度保守"
-		} else if score > 0.6 {
-			dataHash["PhyloP Placental Mammals Pred"] = "保守"
-		} else {
-			dataHash["PhyloP Placental Mammals Pred"] = "不保守"
-		}
-	}
-
-	dataHash["烈性突变"] = "否"
-	if FuncInfo[dataHash["Function"]] == 3 {
-		dataHash["烈性突变"] = "是"
-	}
-
-	dataHash["HGMDorClinvar"] = "否"
-	if isHgmd.MatchString(dataHash["HGMD Pred"]) {
-		dataHash["HGMDorClinvar"] = "是"
-	}
-	if isClinvar.MatchString(dataHash["ClinVar Significance"]) {
-		dataHash["HGMDorClinvar"] = "是"
-	}
-
-	dataHash["GnomAD homo"] = dataHash["GnomAD HomoAlt Count"]
-	dataHash["GnomAD hemi"] = dataHash["GnomAD HemiAlt Count"]
-	dataHash["纯合，半合"] = dataHash["GnomAD HomoAlt Count"] // + "|" + dataHash["GnomAD HemiAlt Count"]
-	if len(strings.Split(dataHash["MutationName"], ":")) > 1 {
-		dataHash["MutationNameLite"] = dataHash["Transcript"] + ":" + strings.Split(dataHash["MutationName"], ":")[1]
-	} else {
-		dataHash["MutationNameLite"] = dataHash["MutationName"]
-	}
-
-	//dataHash["突变频谱"] = geneDb[geneSymbol]
-
-	dataHash["历史样本检出个数"] = dataHash["sampleMut"] + "/" + dataHash["sampleAll"]
+	item["历史样本检出个数"] = item["sampleMut"] + "/" + item["sampleAll"]
 
 	// remove index
 	for _, k := range [2]string{"GeneralizationEN", "GeneralizationCH"} {
 		sep := "\n\n"
-		keys := strings.Split(dataHash[k], sep)
+		keys := strings.Split(item[k], sep)
 		for i := range keys {
 			keys[i] = indexReg.ReplaceAllLiteralString(keys[i], "")
 		}
-		dataHash[k] = strings.Join(keys, sep)
+		item[k] = strings.Join(keys, sep)
 	}
+
+}
+
+func score2pred(item map[string]string) {
+	score, err := strconv.ParseFloat(item["dbscSNV_ADA_SCORE"], 32)
+	if err != nil {
+		item["dbscSNV_ADA_pred"] = item["dbscSNV_ADA_SCORE"]
+	} else {
+		if score >= 0.6 {
+			item["dbscSNV_ADA_pred"] = "D"
+		} else {
+			item["dbscSNV_ADA_pred"] = "P"
+		}
+	}
+	score, err = strconv.ParseFloat(item["dbscSNV_RF_SCORE"], 32)
+	if err != nil {
+		item["dbscSNV_RF_pred"] = item["dbscSNV_RF_SCORE"]
+	} else {
+		if score >= 0.6 {
+			item["dbscSNV_RF_pred"] = "D"
+		} else {
+			item["dbscSNV_RF_pred"] = "P"
+		}
+	}
+
+	score, err = strconv.ParseFloat(item["GERP++_RS"], 32)
+	if err != nil {
+		item["GERP++_RS_pred"] = item["GERP++_RS"]
+	} else {
+		if score >= 2 {
+			item["GERP++_RS_pred"] = "D"
+		} else {
+			item["GERP++_RS_pred"] = "P"
+		}
+	}
+
+	// 0-0.6 不保守  0.6-2.5 保守 ＞2.5 高度保守
+	score, err = strconv.ParseFloat(item["PhyloP Vertebrates"], 32)
+	if err != nil {
+		item["PhyloP Vertebrates Pred"] = item["PhyloP Vertebrates"]
+	} else {
+		if score >= 2.5 {
+			item["PhyloP Vertebrates Pred"] = "高度保守"
+		} else if score > 0.6 {
+			item["PhyloP Vertebrates Pred"] = "保守"
+		} else {
+			item["PhyloP Vertebrates Pred"] = "不保守"
+		}
+	}
+	score, err = strconv.ParseFloat(item["PhyloP Placental Mammals"], 32)
+	if err != nil {
+		item["PhyloP Placental Mammals Pred"] = item["PhyloP Placental Mammals"]
+	} else {
+		if score >= 2.5 {
+			item["PhyloP Placental Mammals Pred"] = "高度保守"
+		} else if score > 0.6 {
+			item["PhyloP Placental Mammals Pred"] = "保守"
+		} else {
+			item["PhyloP Placental Mammals Pred"] = "不保守"
+		}
+	}
+}
+
+func UpdateSnv(dataHash map[string]string) {
+	// Zygosity format
+	dataHash["Zygosity"] = zygosityFormat(dataHash["Zygosity"])
 
 	dataHash["自动化判断"] = long2short[dataHash["ACMG"]]
 	return
@@ -369,4 +395,73 @@ func InheritFrom(item map[string]string, sampleList []string) string {
 	}
 
 	return from
+}
+
+var tr = map[rune]rune{
+	'A': 'T',
+	'C': 'G',
+	'G': 'C',
+	'T': 'A',
+	'a': 't',
+	'c': 'g',
+	'g': 'c',
+	't': 'a',
+}
+
+func ReverseComplement(s string) string {
+	runes := []rune(s)
+	for i := range runes {
+		if tr[runes[i]] != '\x00' {
+			runes[i] = tr[runes[i]]
+		}
+	}
+	for from, to := 0, len(runes)-1; from < to; from, to = from+1, to-1 {
+		runes[from], runes[to] = runes[to], runes[from]
+	}
+	return string(runes)
+}
+
+func PrimerDesign(item map[string]string, exonCount map[string]int) string {
+	var transcript = item["Transcript"]
+	if exonCount[transcript] > 0 {
+		item["exonCount"] = strconv.Itoa(exonCount[transcript])
+	}
+	var info = strings.Split(item["#Chr+Stop"], ":")
+	var flank = item["Flank"]
+	if item["Strand"] == "-" {
+		flank = ReverseComplement(flank)
+	}
+	funcRegion := cds.ReplaceAllString(item["FuncRegion"], "CDS")
+
+	adepth := strings.Split(item["A.Depth"], ";")[0]
+	Adepth, err := strconv.Atoi(adepth)
+	simple_util.CheckErr(err)
+
+	aratio := strings.Split(item["A.Ratio"], ";")[0]
+	if ratio.MatchString(aratio) && aratio != "0" {
+		Aratio, err := strconv.ParseFloat(aratio, 32)
+		simple_util.CheckErr(err)
+		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
+		if item["Depth"] == "" {
+			item["Depth"] = fmt.Sprintf("%.0f", float64(Adepth)/Aratio)
+		}
+	}
+
+	primer := strings.Join(
+		[]string{
+			item["Gene Symbol"],
+			transcript,
+			item["cHGVS"],
+			item["pHGVS3"],
+			item["ExIn_ID"],
+			funcRegion,
+			item["Zygosity"],
+			flank,
+			item["exonCount"],
+			item["Depth"],
+			aratio,
+			info[0], info[1],
+		}, "; ",
+	)
+	return primer
 }
