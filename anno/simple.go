@@ -532,8 +532,8 @@ var (
 	pHGVS3   = regexp.MustCompile(`p.(\S+) \| p.(\S+)`)
 	ivs1     = regexp.MustCompile(`c\.\d+([+-]\d+)(.*)$`)
 	ivs2     = regexp.MustCompile(`c\.[-*]\d+([+-]\d+)(.*)$`)
-	ivs3     = regexp.MustCompile(`c\.(\d+)([+-]\d+)\_(\d+)([+-]\d+)(.*)$`)
-	ivs4     = regexp.MustCompile(`c\.([-*]\d+)([+-]\d+)\_([-*]\d+)([+-]\d+)(.*)$`)
+	ivs3     = regexp.MustCompile(`c\.(\d+)([+-]\d+)_(\d+)([+-]\d+)(.*)$`)
+	ivs4     = regexp.MustCompile(`c\.([-*]\d+)([+-]\d+)_([-*]\d+)([+-]\d+)(.*)$`)
 )
 
 func GoogleKey(item map[string]string) string {

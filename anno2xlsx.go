@@ -9,6 +9,7 @@ import (
 	"github.com/tealeg/xlsx"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -88,6 +89,11 @@ var (
 		"NA",
 		"gender of proband, if M then change Hom to Hemi in XY not PAR region",
 	)
+	qc = flag.String(
+		"qc",
+		"",
+		"coverage.report file to fill quality sheet",
+	)
 )
 
 // family list
@@ -160,6 +166,19 @@ var tier2xlsx = map[string]map[string]bool{
 var err error
 var googleUrl = "https://www.google.com.hk/#q="
 
+var quality = make(map[string]string)
+
+var qualityKeyMap = map[string]string{
+	"原始数据产出（Mb）":        "[Total] Raw Data(Mb)",
+	"目标区长度（bp）":         "[Target] Len of region",
+	"目标区覆盖度":            "[Target] Coverage (>0x)",
+	"目标区平均深度（X）":        "[Target] Average depth(rmdup)",
+	"目标区平均深度>4X位点所占比例":  "[Target] Coverage (>=4x)",
+	"目标区平均深度>10X位点所占比例": "[Target] Coverage (>=10x)",
+	"目标区平均深度>30X位点所占比例": "[Target] Coverage (>=30x)",
+	"bam文件路径":           "bamPath",
+}
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -180,6 +199,18 @@ func main() {
 		*prefix = *input
 	}
 	sampleList = strings.Split(*list, ",")
+	quality["样本编号"] = sampleList[0]
+
+	// load coverage.report
+	if *qc != "" {
+		loadQC(*qc, quality)
+		for k, v := range qualityKeyMap {
+			quality[k] = quality[v]
+		}
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "load coverage.report")
+	}
 
 	// load tier template
 	var tiers = make(map[string]xlsxTemplate)
@@ -298,6 +329,16 @@ func main() {
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "update info")
+
+	// QC Sheet
+	qcSheet := tiers["Tier1"].xlsx.Sheet["quality"]
+	if qcSheet != nil {
+		for _, row := range qcSheet.Rows {
+			key := row.Cells[0].Value
+			row.AddCell().SetString(quality[key])
+		}
+	}
+	qcSheet.Cols[1].Width = 12
 
 	if *exon != "" {
 		addCnvSheet(tiers["Tier1"].xlsx, *exon, "exon_cnv", sampleList)
@@ -502,5 +543,22 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 			//fmt.Println(gene,":",key,":",vals)
 		}
 		item[value] = strings.Join(vals, "\n")
+	}
+}
+
+var isSharp = regexp.MustCompile(`^#`)
+var isBamPath = regexp.MustCompile(`^## Files : (\S+)`)
+
+func loadQC(file string, quality map[string]string) {
+	report := simple_util.File2Array(file)
+	for _, line := range report {
+		if isSharp.MatchString(line) {
+			if m := isBamPath.FindStringSubmatch(line); m != nil {
+				quality["bamPath"] = m[1]
+			}
+		} else {
+			m := strings.Split(line, "\t")
+			quality[strings.TrimSpace(m[0])] = strings.TrimSpace(m[1])
+		}
 	}
 }
