@@ -83,6 +83,11 @@ var (
 		"",
 		"largeCnv file path, only write sample in -list",
 	)
+	gender = flag.String(
+		"gender",
+		"NA",
+		"gender of proband, if M then change Hom to Hemi in XY not PAR region",
+	)
 )
 
 // family list
@@ -235,7 +240,7 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
-		anno.UpdateSnv(item)
+		anno.UpdateSnv(item, *gender)
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]

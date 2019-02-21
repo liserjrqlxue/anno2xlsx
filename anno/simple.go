@@ -170,11 +170,54 @@ func score2pred(item map[string]string) {
 	}
 }
 
-func UpdateSnv(dataHash map[string]string) {
-	// Zygosity format
-	dataHash["Zygosity"] = zygosityFormat(dataHash["Zygosity"])
+var xparReg = [][]int{
+	{60000, 2699520},
+	{154931043, 155260560},
+}
+var yparReg = [][]int{
+	{10000, 2649520},
+	{59034049, 59363566},
+}
+var (
+	isChrX  = regexp.MustCompile(`X`)
+	isChrY  = regexp.MustCompile(`Y`)
+	isChrXY = regexp.MustCompile(`[XY]`)
+)
 
-	dataHash["自动化判断"] = long2short[dataHash["ACMG"]]
+func inPAR(chr string, start, end int) bool {
+	if isChrX.MatchString(chr) {
+		for _, par := range xparReg {
+			if start < par[1] && end > par[0] {
+				return true
+			}
+		}
+	} else if isChrY.MatchString(chr) {
+		for _, par := range yparReg {
+			if start < par[1] && end > par[0] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func UpdateSnv(item map[string]string, gender string) {
+
+	// Zygosity format
+	item["Zygosity"] = zygosityFormat(item["Zygosity"])
+
+	chr := item["#Chr"]
+	if isChrXY.MatchString(chr) && gender == "M" {
+		start, err := strconv.Atoi(item["Start"])
+		simple_util.CheckErr(err)
+		stop, err := strconv.Atoi(item["Stop"])
+		simple_util.CheckErr(err)
+		if !inPAR(chr, start, stop) && isHom.MatchString(item["Zygosity"]) {
+			item["Zygosity"] = strings.Replace(item["Zygosity"], "Hom", "Hemi", 1)
+		}
+	}
+
+	item["自动化判断"] = long2short[item["ACMG"]]
 	return
 }
 
@@ -475,7 +518,7 @@ func PrimerDesign(item map[string]string, exonCount map[string]int) string {
 	return primer
 }
 
-//
+// regexp
 var (
 	rsID     = regexp.MustCompile(`[rsRS]?\d+`)
 	cHGVSalt = regexp.MustCompile(`alt: (\S+) \)`)
