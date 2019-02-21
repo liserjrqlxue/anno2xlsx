@@ -245,7 +245,10 @@ func main() {
 	logTime(ts, step-1, step, "load 突变频谱")
 
 	// 基因-疾病
-	loadGeneDiseaseDb(*geneDiseaseDbExcel, *geneDiseaseSheet, geneDiseaseDb, geneList)
+	_, geneDiseaseDb = simple_util.Sheet2MapMapMerge(*geneDiseaseDbExcel, *geneDiseaseSheet, "Gene/Locus", "\n")
+	for key := range geneDiseaseDb {
+		geneList[key] = true
+	}
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load 基因-疾病")
@@ -446,34 +449,6 @@ func loadGeneDb(excelFile, sheetName string, geneDb map[string]string) {
 				geneDb[dataHash["基因名"]] = dataHash["突变/致病多样性-补充/更正"]
 			} else {
 				geneDb[dataHash["基因名"]] = geneDb[dataHash["基因名"]] + ";" + dataHash["突变/致病多样性-补充/更正"]
-			}
-		}
-	}
-	return
-}
-
-func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map[string]string, geneList map[string]bool) {
-	xlsxFh, err := excelize.OpenFile(excelFile)
-	simple_util.CheckErr(err)
-	rows := xlsxFh.GetRows(sheetName)
-	var title []string
-
-	for i, row := range rows {
-		if i == 0 {
-			title = row
-		} else {
-			var dataHash = make(map[string]string)
-			for j, cell := range row {
-				dataHash[title[j]] = cell
-			}
-			gene := dataHash["Gene/Locus"]
-			geneList[gene] = true
-			if geneDiseaseDb[gene] == nil {
-				geneDiseaseDb[gene] = dataHash
-			} else {
-				for _, key := range title {
-					geneDiseaseDb[gene][key] = geneDiseaseDb[gene][key] + "\n" + dataHash[key]
-				}
 			}
 		}
 	}
