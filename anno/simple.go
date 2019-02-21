@@ -31,6 +31,7 @@ var (
 	rmChr = regexp.MustCompile(`^chr`)
 	cds   = regexp.MustCompile(`^C`)
 	ratio = regexp.MustCompile(`^[01](.\d+)?$`)
+	reInt = regexp.MustCompile(`^\d+$`)
 
 	isARorXR = regexp.MustCompile(`AR|XR`)
 	isAR     = regexp.MustCompile(`AR`)
@@ -66,6 +67,8 @@ func UpdateSnvTier1(item map[string]string) {
 	}
 
 	item["引物设计"] = PrimerDesign(item, exonCount)
+
+	item["一键搜索链接"] = GoogleKey(item)
 
 	// score to pred
 	score2pred(item)
@@ -421,6 +424,8 @@ func ReverseComplement(s string) string {
 	return string(runes)
 }
 
+var err error
+
 func PrimerDesign(item map[string]string, exonCount map[string]int) string {
 	var transcript = item["Transcript"]
 	if exonCount[transcript] > 0 {
@@ -433,16 +438,20 @@ func PrimerDesign(item map[string]string, exonCount map[string]int) string {
 	}
 	funcRegion := cds.ReplaceAllString(item["FuncRegion"], "CDS")
 
+	var Adepth int
 	adepth := strings.Split(item["A.Depth"], ";")[0]
-	Adepth, err := strconv.Atoi(adepth)
-	simple_util.CheckErr(err)
+	if reInt.MatchString(adepth) {
+		Adepth, err = strconv.Atoi(adepth)
+		simple_util.CheckErr(err)
+	}
 
 	aratio := strings.Split(item["A.Ratio"], ";")[0]
 	if ratio.MatchString(aratio) && aratio != "0" {
 		Aratio, err := strconv.ParseFloat(aratio, 32)
 		simple_util.CheckErr(err)
+
 		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
-		if item["Depth"] == "" {
+		if item["Depth"] == "" && Adepth > 0 {
 			item["Depth"] = fmt.Sprintf("%.0f", float64(Adepth)/Aratio)
 		}
 	}
@@ -464,4 +473,151 @@ func PrimerDesign(item map[string]string, exonCount map[string]int) string {
 		}, "; ",
 	)
 	return primer
+}
+
+//
+var (
+	rsID     = regexp.MustCompile(`[rsRS]?\d+`)
+	cHGVSalt = regexp.MustCompile(`alt: (\S+) \)`)
+	cHGVS1   = regexp.MustCompile(`[cn]\.(\S+)(\S)>(\S)`)
+	cHGVS2   = regexp.MustCompile(`[cn]\.(\S+)_(\S+)(del|ins)(\S+)`)
+	cHGVS3   = regexp.MustCompile(`[cn]\.(\d+)(del|ins)(\S+)`)
+	cHGVS4   = regexp.MustCompile(`[cn]\.(\d+[+-]\d+)(del|ins)(\S+)`)
+	cHGVS5   = regexp.MustCompile(`[cn]\.(\S+)`)
+	pHGVS1   = regexp.MustCompile(`p.\(=\) \(alt: p.(\S+) \)`)
+	pHGVS2   = regexp.MustCompile(`p.\S+ \(std: p.\S+ alt: p.(\S+) \) \| p.\S+ \(std: p.\S+ alt: p.(\S+) \)`)
+	pHGVS3   = regexp.MustCompile(`p.(\S+) \| p.(\S+)`)
+	ivs1     = regexp.MustCompile(`c\.\d+([+-]\d+)(.*)$`)
+	ivs2     = regexp.MustCompile(`c\.[-*]\d+([+-]\d+)(.*)$`)
+	ivs3     = regexp.MustCompile(`c\.(\d+)([+-]\d+)\_(\d+)([+-]\d+)(.*)$`)
+	ivs4     = regexp.MustCompile(`c\.([-*]\d+)([+-]\d+)\_([-*]\d+)([+-]\d+)(.*)$`)
+)
+
+func GoogleKey(item map[string]string) string {
+	gene, chgvs, phgvs := item["Gene Symbol"], item["cHGVS"], item["pHGVS"]
+	var searchKey []string
+
+	// cHGVS
+	m := cHGVSalt.FindStringSubmatch(chgvs)
+	if m != nil {
+		chgvs = m[1]
+	}
+	if m = cHGVS1.FindStringSubmatch(chgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s%s>%s", m[1], m[2], m[3]),
+				fmt.Sprintf("%s%s->%s", m[1], m[2], m[3]),
+				fmt.Sprintf("%s%s-->%s", m[1], m[2], m[3]),
+				fmt.Sprintf("%s%s/%s", m[1], m[2], m[3]),
+			)
+	} else if m = cHGVS2.FindStringSubmatch(chgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s_%s%s%s", m[1], m[2], m[3], m[4]),
+				fmt.Sprintf("%s_%s%s", m[1], m[2], m[3]),
+				fmt.Sprintf("%s-%s%s%s", m[1], m[2], m[3], m[4]),
+				fmt.Sprintf("%s-%s%s", m[1], m[2], m[3]),
+			)
+	} else if m = cHGVS3.FindStringSubmatch(chgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s%s%s", m[1], m[2], m[3]),
+				fmt.Sprintf("%s%s", m[1], m[2]),
+			)
+	} else if m = cHGVS4.FindStringSubmatch(chgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s%s%s", m[1], m[2], m[3]),
+				fmt.Sprintf("%s%s", m[1], m[2]),
+			)
+	} else if m = cHGVS5.FindStringSubmatch(chgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s", m[1]),
+			)
+	}
+
+	// pHGVS
+	if m = pHGVS1.FindStringSubmatch(phgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s", m[1]),
+			)
+	} else if m = pHGVS2.FindStringSubmatch(phgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s", m[1]),
+				fmt.Sprintf("%s", m[2]),
+			)
+		if strings.Contains(m[2], "*") {
+			searchKey =
+				append(
+					searchKey,
+					strings.Replace(m[1], "*", "X", 1),
+					strings.Replace(m[2], "*", "X", 1),
+					strings.Replace(m[2], "*", "Ter", 1),
+				)
+		}
+	} else if m = pHGVS3.FindStringSubmatch(phgvs); m != nil {
+		searchKey =
+			append(
+				searchKey,
+				fmt.Sprintf("%s", m[1]),
+				fmt.Sprintf("%s", m[2]),
+			)
+		if strings.Contains(m[2], "*") {
+			searchKey =
+				append(
+					searchKey,
+					strings.Replace(m[1], "*", "X", 1),
+					strings.Replace(m[2], "*", "X", 1),
+					strings.Replace(m[2], "*", "Ter", 1),
+				)
+		}
+	} else if strings.Contains(item["ExIn_ID"], "IVS") {
+		intr := strings.Replace(item["ExIn_ID"], "IVS", "", 1)
+		if m = ivs3.FindStringSubmatch(chgvs); m != nil {
+			searchKey =
+				append(
+					searchKey,
+					fmt.Sprintf("IVS %s%s_%s", intr, m[2], m[4]),
+					fmt.Sprintf("IVS%s%s_%s", intr, m[2], m[4]),
+				)
+		} else if m = ivs4.FindStringSubmatch(chgvs); m != nil {
+			searchKey =
+				append(
+					searchKey,
+					fmt.Sprintf("IVS %s%s_%s", intr, m[2], m[4]),
+					fmt.Sprintf("IVS%s%s_%s", intr, m[2], m[4]),
+				)
+		} else if m = ivs1.FindStringSubmatch(chgvs); m != nil {
+			searchKey =
+				append(
+					searchKey,
+					fmt.Sprintf("IVS %s%s", intr, m[1]),
+					fmt.Sprintf("IVS%s%s", intr, m[1]),
+				)
+		} else if m = ivs2.FindStringSubmatch(chgvs); m != nil {
+			searchKey =
+				append(
+					searchKey,
+					fmt.Sprintf("IVS %s%s", intr, m[1]),
+					fmt.Sprintf("IVS%s%s", intr, m[1]),
+				)
+		}
+
+	}
+
+	if rsID.MatchString(item["rsID"]) {
+		searchKey = append(searchKey, item["rsID"])
+	}
+	altKey := strings.Join(searchKey, "\" | \"")
+	return gene + " (\"" + altKey + "\")"
 }

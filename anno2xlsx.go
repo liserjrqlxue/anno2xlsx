@@ -153,6 +153,7 @@ var tier2xlsx = map[string]map[string]bool{
 }
 
 var err error
+var googleUrl = "https://www.google.com.hk/#q="
 
 func main() {
 	var ts []time.Time
@@ -243,9 +244,13 @@ func main() {
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
-		// 变异来源
-		if *trio && (item["Tier"] == "Tier1" || item["Tier"] == "Tier2") {
-			item["变异来源"] = anno.InheritFrom(item, sampleList)
+		if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
+			if *trio {
+				// 变异来源
+				item["变异来源"] = anno.InheritFrom(item, sampleList)
+			}
+
+			anno.UpdateSnvTier1(item)
 		}
 
 		// 遗传相符
@@ -268,7 +273,17 @@ func main() {
 			if tier2xlsx[flg][item["Tier"]] {
 				tierRow := tiers[flg].sheet.AddRow()
 				for _, str := range tiers[flg].title {
-					tierRow.AddCell().SetString(item[str])
+					if str == "一键搜索链接" {
+						cell := tierRow.AddCell()
+						hyperlink := googleUrl + strings.Replace(item[str], "\"", "%22", -1) //  escape "
+						if len(hyperlink) > 255 {
+							cell.SetString(item[str])
+						} else {
+							cell.SetFormula("HYPERLINK(\"" + hyperlink + "\",\"" + strings.Replace(item[str], "\"", "\"\"", -1) + "\")")
+						}
+					} else {
+						tierRow.AddCell().SetString(item[str])
+					}
 				}
 			}
 		}
