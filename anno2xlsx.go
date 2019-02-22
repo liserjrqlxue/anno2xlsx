@@ -179,6 +179,8 @@ var qualityKeyMap = map[string]string{
 	"bam文件路径":           "bamPath",
 }
 
+var codeKey []byte
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -245,7 +247,10 @@ func main() {
 	logTime(ts, step-1, step, "load 突变频谱")
 
 	// 基因-疾病
-	_, geneDiseaseDb = simple_util.Sheet2MapMapMerge(*geneDiseaseDbExcel, *geneDiseaseSheet, "Gene/Locus", "\n")
+	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
+	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbExcel+"."+*geneDiseaseSheet+".json.aes", codeKey))
+	//_, geneDiseaseDb = simple_util.Sheet2MapMapMerge(*geneDiseaseDbExcel, *geneDiseaseSheet, "Gene/Locus", "\n")
+	//geneDiseaseDb=simple_util.JsonFile2MapMap(*geneDiseaseDbExcel+"."+*geneDiseaseSheet+".json")
 	for key := range geneDiseaseDb {
 		geneList[key] = true
 	}
