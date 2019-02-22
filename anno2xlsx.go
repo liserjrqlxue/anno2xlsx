@@ -178,7 +178,7 @@ func main() {
 	flag.Parse()
 	if *input == "" && *exon == "" && *large == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-input,-exon")
+		fmt.Println("\nshold have at least one input:-input,-exon,-large")
 		os.Exit(0)
 	}
 	if *prefix == "" {
