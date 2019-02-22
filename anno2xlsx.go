@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
@@ -35,15 +34,10 @@ var (
 		"",
 		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to -input",
 	)
-	geneDbExcel = flag.String(
+	geneDbFile = flag.String(
 		"geneDb",
-		dbPath+"基因库-更新版基因特征谱-加动态突变-20190110.xlsx",
+		dbPath+"基因库-更新版基因特征谱-加动态突变-20190110.xlsx.Sheet1.json.aes",
 		"database of 突变频谱",
-	)
-	geneDbSheet = flag.String(
-		"geneDbSheet",
-		"Sheet1",
-		"sheet name of 突变频谱 database in excel",
 	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
@@ -236,7 +230,11 @@ func main() {
 	logTime(ts, step-1, step, "load template")
 
 	// 突变频谱
-	loadGeneDb(*geneDbExcel, *geneDbSheet, geneDb)
+	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
+	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	for k := range geneDbExt {
+		geneDb[k] = geneDbExt[k]["突变/致病多样性-补充/更正"]
+	}
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load 突变频谱")
@@ -244,8 +242,6 @@ func main() {
 	// 基因-疾病
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
 	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
-	//_, geneDiseaseDb = simple_util.Sheet2MapMapMerge(*geneDiseaseDbExcel, *geneDiseaseSheet, "Gene/Locus", "\n")
-	//geneDiseaseDb=simple_util.JsonFile2MapMap(*geneDiseaseDbExcel+"."+*geneDiseaseSheet+".json")
 	for key := range geneDiseaseDb {
 		geneList[key] = true
 	}
@@ -429,30 +425,6 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 	trim := 3*8 - 1
 	str := simple_util.FormatWidth(trim, message, ' ')
 	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
-}
-
-func loadGeneDb(excelFile, sheetName string, geneDb map[string]string) {
-	xlsxFh, err := excelize.OpenFile(excelFile)
-	simple_util.CheckErr(err)
-	rows := xlsxFh.GetRows(sheetName)
-	var title []string
-
-	for i, row := range rows {
-		if i == 0 {
-			title = row
-		} else {
-			var dataHash = make(map[string]string)
-			for j, cell := range row {
-				dataHash[title[j]] = cell
-			}
-			if geneDb[dataHash["基因名"]] == "" {
-				geneDb[dataHash["基因名"]] = dataHash["突变/致病多样性-补充/更正"]
-			} else {
-				geneDb[dataHash["基因名"]] = geneDb[dataHash["基因名"]] + ";" + dataHash["突变/致病多样性-补充/更正"]
-			}
-		}
-	}
-	return
 }
 
 func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {

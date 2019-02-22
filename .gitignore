@@ -13,3 +13,11 @@ anno2xlsx
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Out of repo
+全外基因基因集整理OMIM-20190122.xlsx
+全外基因基因集整理OMIM-20190122.xlsx.Database.json
+全外基因基因集整理OMIM-20190122.xlsx.Database.json.aes
+基因库-更新版基因特征谱-加动态突变-20190110.xlsx
+基因库-更新版基因特征谱-加动态突变-20190110.xlsx.Sheet1.json
+基因库-更新版基因特征谱-加动态突变-20190110.xlsx.Sheet1.json.aes
