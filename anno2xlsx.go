@@ -45,15 +45,10 @@ var (
 		"Sheet1",
 		"sheet name of 突变频谱 database in excel",
 	)
-	geneDiseaseDbExcel = flag.String(
+	geneDiseaseDbFile = flag.String(
 		"geneDisease",
-		dbPath+"全外基因基因集整理OMIM-20190122.xlsx",
+		dbPath+"全外基因基因集整理OMIM-20190122.xlsx.Database.json.aes",
 		"database of 基因-疾病数据库",
-	)
-	geneDiseaseSheet = flag.String(
-		"geneDiseaseSheet",
-		"Database",
-		"sheet name of geneDiseaseDbExcel",
 	)
 	specVarList = flag.String(
 		"specVarList",
@@ -248,7 +243,7 @@ func main() {
 
 	// 基因-疾病
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbExcel+"."+*geneDiseaseSheet+".json.aes", codeKey))
+	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
 	//_, geneDiseaseDb = simple_util.Sheet2MapMapMerge(*geneDiseaseDbExcel, *geneDiseaseSheet, "Gene/Locus", "\n")
 	//geneDiseaseDb=simple_util.JsonFile2MapMap(*geneDiseaseDbExcel+"."+*geneDiseaseSheet+".json")
 	for key := range geneDiseaseDb {
