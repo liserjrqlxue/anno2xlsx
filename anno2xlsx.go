@@ -172,7 +172,8 @@ var codeKey []byte
 
 // regexp
 var (
-	isGz = regexp.MustCompile(`\.gz$`)
+	isGz      = regexp.MustCompile(`\.gz$`)
+	isComment = regexp.MustCompile(`^##`)
 )
 
 func main() {
@@ -266,9 +267,9 @@ func main() {
 	var data []map[string]string
 	if *input != "" {
 		if isGz.MatchString(*input) {
-			data, _ = simple_util.Gz2MapArray(*input, "\t")
+			data, _ = simple_util.Gz2MapArray(*input, "\t", isComment)
 		} else {
-			data, _ = simple_util.File2MapArray(*input, "\t")
+			data, _ = simple_util.File2MapArray(*input, "\t", isComment)
 		}
 
 		ts = append(ts, time.Now())
@@ -456,7 +457,7 @@ func addCnvSheet(excel *xlsx.File, path, sheetName string, sampleList []string) 
 	for _, sample := range sampleList {
 		sampleMap[sample] = true
 	}
-	cnvDb, title := simple_util.File2MapArray(path, "\t")
+	cnvDb, title := simple_util.File2MapArray(path, "\t", nil)
 
 	// title
 	title = append(title, "Omim Gene")
