@@ -170,6 +170,11 @@ var qualityKeyMap = map[string]string{
 
 var codeKey []byte
 
+// regexp
+var (
+	isGz = regexp.MustCompile(`\.gz$`)
+)
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -260,7 +265,12 @@ func main() {
 	// anno
 	var data []map[string]string
 	if *input != "" {
-		data, _ = simple_util.File2MapArray(*input, "\t")
+		if isGz.MatchString(*input) {
+			data, _ = simple_util.Gz2MapArray(*input, "\t")
+		} else {
+			data, _ = simple_util.File2MapArray(*input, "\t")
+		}
+
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load anno file")
