@@ -25,7 +25,7 @@ var (
 // flag
 var (
 	input = flag.String(
-		"input",
+		"snv",
 		"",
 		"input anno txt",
 	)

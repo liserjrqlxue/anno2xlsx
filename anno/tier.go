@@ -13,7 +13,7 @@ import (
 var FuncInfo = map[string]int{
 	"splice-3":     3,
 	"splice-5":     3,
-	"inti-loss":    3,
+	"init-loss":    3,
 	"alt-start":    3,
 	"frameshift":   3,
 	"nonsense":     3,
