@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
@@ -82,6 +83,16 @@ var (
 		"qc",
 		"",
 		"coverage.report file to fill quality sheet",
+	)
+	ifRedis = flag.Bool(
+		"redis",
+		false,
+		"if use redis server",
+	)
+	redisAddr = flag.String(
+		"redisAddr",
+		"192.168.136.114:6380",
+		"redis Addr Option",
 	)
 )
 
@@ -176,6 +187,8 @@ var (
 	isComment = regexp.MustCompile(`^##`)
 )
 
+var redisDb *redis.Client
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -207,6 +220,15 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load coverage.report")
+	}
+
+	// redis
+	if *ifRedis {
+		redisDb = redis.NewClient(&redis.Options{
+			Addr: *redisAddr,
+		})
+		pong, err := redisDb.Ping().Result()
+		fmt.Println(pong, err)
 	}
 
 	// load tier template
@@ -297,6 +319,7 @@ func main() {
 			}
 
 			anno.UpdateSnvTier1(item)
+			anno.UpdateRedis(item, redisDb)
 		}
 
 		// 遗传相符
