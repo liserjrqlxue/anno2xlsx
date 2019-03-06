@@ -319,7 +319,10 @@ func main() {
 			}
 
 			anno.UpdateSnvTier1(item)
-			anno.UpdateRedis(item, redisDb)
+			if *ifRedis {
+				anno.UpdateRedis(item, redisDb)
+			}
+
 			anno.UpdateAutoRule(item)
 			anno.UpdateManualRule(item)
 		}
