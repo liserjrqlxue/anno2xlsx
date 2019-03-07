@@ -100,6 +100,9 @@ var (
 // family list
 var sampleList []string
 
+// to-do add exon count info of transcript
+var exonCount = make(map[string]string)
+
 // 突变频谱
 var geneDb = make(map[string]string)
 
@@ -304,14 +307,19 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
+		// ues acmg of go
+		item["ACMG"] = acmg2015.PredACMG2015(item)
+
 		anno.UpdateSnv(item, *gender)
+
+		item["exonCount"] = exonCount[item["Transcript"]]
+		item["引物设计"] = anno.PrimerDesign(item)
+
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
 		// 基因-疾病
 		updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
-		// ues acmg of go
-		item["AutoInterpStatus"] = acmg2015.PredACMG2015(item)
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 

@@ -66,8 +66,6 @@ func UpdateSnvTier1(item map[string]string) {
 		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
 	}
 
-	item["引物设计"] = PrimerDesign(item, exonCount)
-
 	item["一键搜索链接"] = GoogleKey(item)
 
 	// score to pred
@@ -469,11 +467,9 @@ func ReverseComplement(s string) string {
 
 var err error
 
-func PrimerDesign(item map[string]string, exonCount map[string]int) string {
+func PrimerDesign(item map[string]string) string {
 	var transcript = item["Transcript"]
-	if exonCount[transcript] > 0 {
-		item["exonCount"] = strconv.Itoa(exonCount[transcript])
-	}
+
 	var info = strings.Split(item["#Chr+Stop"], ":")
 	var flank = item["Flank"]
 	if item["Strand"] == "-" {
