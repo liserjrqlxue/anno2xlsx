@@ -49,7 +49,13 @@ var (
 	specVarList = flag.String(
 		"specVarList",
 		dbPath+"spec.var.list",
-		"特殊位点库")
+		"特殊位点库",
+	)
+	transInfo = flag.String(
+		"transInfo",
+		dbPath+"trans.exonCount.json.new.json",
+		"info of transcript",
+	)
 	save = flag.Bool(
 		"save",
 		true,
@@ -261,6 +267,9 @@ func main() {
 	step++
 	logTime(ts, step-1, step, "load template")
 
+	// exonCount
+	exonCount = simple_util.JsonFile2Map(*transInfo)
+
 	// 突变频谱
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
 	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
@@ -312,9 +321,6 @@ func main() {
 
 		anno.UpdateSnv(item, *gender)
 
-		item["exonCount"] = exonCount[item["Transcript"]]
-		item["引物设计"] = anno.PrimerDesign(item)
-
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
@@ -328,6 +334,9 @@ func main() {
 				// 变异来源
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
+
+			item["exonCount"] = exonCount[item["Transcript"]]
+			item["引物设计"] = anno.PrimerDesign(item)
 
 			anno.UpdateSnvTier1(item)
 			if *ifRedis {
