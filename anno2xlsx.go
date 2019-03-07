@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
@@ -309,6 +310,8 @@ func main() {
 		item["突变频谱"] = geneDb[gene]
 		// 基因-疾病
 		updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+		// ues acmg of go
+		item["AutoInterpStatus"] = acmg2015.PredACMG2015(item)
 
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
