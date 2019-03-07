@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
@@ -317,6 +318,14 @@ func main() {
 	stats["Total"] = len(data)
 	for _, item := range data {
 		// ues acmg of go
+		ps4 := evidence.CheckPS4(item)
+		if ps4 != item["PS4"] {
+			if item["PS4"] == "0" && ps4 == "" {
+
+			} else {
+				fmt.Fprintf(os.Stderr, "PS4 conflict:%s vs %s\t%s\n", ps4, item["PS4"], item["MutationName"])
+			}
+		}
 		item["自动化判断"] = acmg2015.PredACMG2015(item)
 
 		anno.UpdateSnv(item, *gender)
