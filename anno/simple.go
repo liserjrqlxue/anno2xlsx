@@ -53,18 +53,6 @@ var (
 )
 
 func UpdateSnvTier1(item map[string]string) {
-	// #Chr+Stop
-	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
-	if item["VarType"] == "snv" {
-		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Stop"]
-	} else {
-		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Start"] + ".." + item["Stop"]
-	}
-
-	// pHGVS= pHGVS1+"|"+pHGVS3
-	if item["pHGVS1"] != "" && item["pHGVS3"] != "" {
-		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
-	}
 
 	item["一键搜索链接"] = GoogleKey(item)
 
@@ -200,6 +188,19 @@ func inPAR(chr string, start, end int) bool {
 }
 
 func UpdateSnv(item map[string]string, gender string) {
+
+	// #Chr+Stop
+	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
+	if item["VarType"] == "snv" {
+		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Stop"]
+	} else {
+		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Start"] + ".." + item["Stop"]
+	}
+
+	// pHGVS= pHGVS1+"|"+pHGVS3
+	if item["pHGVS1"] != "" && item["pHGVS3"] != "" {
+		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
+	}
 
 	// Zygosity format
 	item["Zygosity"] = zygosityFormat(item["Zygosity"])
