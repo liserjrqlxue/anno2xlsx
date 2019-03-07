@@ -76,11 +76,6 @@ func UpdateSnvTier1(item map[string]string) {
 	item["GnomAD homo"] = item["GnomAD HomoAlt Count"]
 	item["GnomAD hemi"] = item["GnomAD HemiAlt Count"]
 	item["纯合，半合"] = item["GnomAD HomoAlt Count"] // + "|" + dataHash["GnomAD HemiAlt Count"]
-	if len(strings.Split(item["MutationName"], ":")) > 1 {
-		item["MutationNameLite"] = item["Transcript"] + ":" + strings.Split(item["MutationName"], ":")[1]
-	} else {
-		item["MutationNameLite"] = item["MutationName"]
-	}
 
 	item["历史样本检出个数"] = item["sampleMut"] + "/" + item["sampleAll"]
 
@@ -200,6 +195,12 @@ func UpdateSnv(item map[string]string, gender string) {
 	// pHGVS= pHGVS1+"|"+pHGVS3
 	if item["pHGVS1"] != "" && item["pHGVS3"] != "" {
 		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
+	}
+
+	if len(strings.Split(item["MutationName"], ":")) > 1 {
+		item["MutationNameLite"] = item["Transcript"] + ":" + strings.Split(item["MutationName"], ":")[1]
+	} else {
+		item["MutationNameLite"] = item["MutationName"]
 	}
 
 	// Zygosity format
