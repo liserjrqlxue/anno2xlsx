@@ -18,6 +18,7 @@ var FuncInfo = map[string]int{
 	"frameshift":   3,
 	"nonsense":     3,
 	"stop-gain":    3,
+	"stop-loss":    3,
 	"span":         3,
 	"missense":     2,
 	"cds-del":      2,
