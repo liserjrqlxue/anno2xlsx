@@ -317,7 +317,7 @@ func main() {
 	stats["Total"] = len(data)
 	for _, item := range data {
 		// ues acmg of go
-		item["ACMG"] = acmg2015.PredACMG2015(item)
+		item["自动化判断"] = acmg2015.PredACMG2015(item)
 
 		anno.UpdateSnv(item, *gender)
 

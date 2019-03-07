@@ -3,6 +3,7 @@ package anno
 import (
 	"fmt"
 	"github.com/liserjrqlxue/simple-util"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -27,6 +28,8 @@ var exonCount = map[string]int{}
 // regexp
 var (
 	indexReg = regexp.MustCompile(`\d+\.\s+`)
+
+	inBrackets = regexp.MustCompile(`\(\S+\)`)
 
 	rmChr = regexp.MustCompile(`^chr`)
 	cds   = regexp.MustCompile(`^C`)
@@ -193,12 +196,14 @@ func UpdateSnv(item map[string]string, gender string) {
 	}
 
 	// pHGVS= pHGVS1+"|"+pHGVS3
-	if item["pHGVS1"] != "" && item["pHGVS3"] != "" {
+	if item["pHGVS1"] != "" && item["pHGVS3"] != "" && item["pHGVS1"] != "." && item["pHGVS3"] != "." {
 		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
 	}
 
-	if len(strings.Split(item["MutationName"], ":")) > 1 {
-		item["MutationNameLite"] = item["Transcript"] + ":" + strings.Split(item["MutationName"], ":")[1]
+	MutationNameArray := strings.Split(item["MutationName"], ":")
+	if len(MutationNameArray) > 1 {
+		item["MutationNameLite"] = inBrackets.ReplaceAllString(MutationNameArray[0], "") + ":" + MutationNameArray[1]
+		//item["MutationNameLite"] = item["Transcript"] + ":" + strings.Split(item["MutationName"], ":")[1]
 	} else {
 		item["MutationNameLite"] = item["MutationName"]
 	}
@@ -217,7 +222,13 @@ func UpdateSnv(item map[string]string, gender string) {
 		}
 	}
 
-	item["自动化判断"] = long2short[item["ACMG"]]
+	if item["自动化判断"] != long2short[item["ACMG"]] {
+		fmt.Fprintf(
+			os.Stderr,
+			"acmg conflict:%s vs %s\n%s",
+			item["ACMG"], item["自动化判断"], item["MutationName"],
+		)
+	}
 	return
 }
 
