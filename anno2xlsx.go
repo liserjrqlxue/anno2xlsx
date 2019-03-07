@@ -317,6 +317,10 @@ func main() {
 
 	stats["Total"] = len(data)
 	for _, item := range data {
+
+		// score to prediction
+		anno.Score2Pred(item)
+
 		// ues acmg of go
 		ps4 := evidence.CheckPS4(item)
 		if ps4 != item["PS4"] {
@@ -324,6 +328,22 @@ func main() {
 
 			} else {
 				fmt.Fprintf(os.Stderr, "PS4 conflict:%s vs %s\t%s\n", ps4, item["PS4"], item["MutationName"])
+			}
+		}
+		pm4 := evidence.CheckPM4(item)
+		if pm4 != item["PM4"] {
+			if item["PM4"] == "0" && ps4 == "" {
+
+			} else {
+				fmt.Fprintf(os.Stderr, "PM4 conflict:%s vs %s\t%s\n", pm4, item["PM4"], item["MutationName"])
+			}
+		}
+		pp3 := evidence.CheckPP3(item)
+		if pm4 != item["PP3"] {
+			if item["PP3"] == "0" && ps4 == "" {
+
+			} else {
+				fmt.Fprintf(os.Stderr, "PP3 conflict:%s vs %s\t%s\n", pp3, item["PP3"], item["MutationName"])
 			}
 		}
 		item["自动化判断"] = acmg2015.PredACMG2015(item)

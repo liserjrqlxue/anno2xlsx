@@ -59,9 +59,6 @@ func UpdateSnvTier1(item map[string]string) {
 
 	item["一键搜索链接"] = GoogleKey(item)
 
-	// score to pred
-	score2pred(item)
-
 	// addition
 	item["烈性突变"] = "否"
 	if FuncInfo[item["Function"]] == 3 {
@@ -94,7 +91,7 @@ func UpdateSnvTier1(item map[string]string) {
 
 }
 
-func score2pred(item map[string]string) {
+func Score2Pred(item map[string]string) {
 	score, err := strconv.ParseFloat(item["dbscSNV_ADA_SCORE"], 32)
 	if err != nil {
 		item["dbscSNV_ADA_pred"] = item["dbscSNV_ADA_SCORE"]
@@ -127,12 +124,12 @@ func score2pred(item map[string]string) {
 		}
 	}
 
-	// 0-0.6 不保守  0.6-2.5 保守 ＞2.5 高度保守
+	// 0-0.6 不保守  0.6-2.5 保守 ＞2.0 高度保守
 	score, err = strconv.ParseFloat(item["PhyloP Vertebrates"], 32)
 	if err != nil {
 		item["PhyloP Vertebrates Pred"] = item["PhyloP Vertebrates"]
 	} else {
-		if score >= 2.5 {
+		if score >= 2.0 {
 			item["PhyloP Vertebrates Pred"] = "高度保守"
 		} else if score > 0.6 {
 			item["PhyloP Vertebrates Pred"] = "保守"
@@ -144,7 +141,7 @@ func score2pred(item map[string]string) {
 	if err != nil {
 		item["PhyloP Placental Mammals Pred"] = item["PhyloP Placental Mammals"]
 	} else {
-		if score >= 2.5 {
+		if score >= 2.0 {
 			item["PhyloP Placental Mammals Pred"] = "高度保守"
 		} else if score > 0.6 {
 			item["PhyloP Placental Mammals Pred"] = "保守"
