@@ -327,17 +327,18 @@ func main() {
 		// 基因-疾病
 		updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 
+		// 引物设计
+		item["exonCount"] = exonCount[item["Transcript"]]
+		item["引物设计"] = anno.PrimerDesign(item)
+
+		// 变异来源
+		if *trio {
+			item["变异来源"] = anno.InheritFrom(item, sampleList)
+		}
+
 		anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
 		if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
-			if *trio {
-				// 变异来源
-				item["变异来源"] = anno.InheritFrom(item, sampleList)
-			}
-
-			item["exonCount"] = exonCount[item["Transcript"]]
-			item["引物设计"] = anno.PrimerDesign(item)
-
 			anno.UpdateSnvTier1(item)
 			if *ifRedis {
 				anno.UpdateRedis(item, redisDb)
