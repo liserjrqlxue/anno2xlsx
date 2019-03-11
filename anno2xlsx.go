@@ -249,11 +249,11 @@ func main() {
 		"Tier2": "附表",
 		"Tier3": "总表",
 	}
-	for key, value := range tierSheet {
+	for _, key := range []string{"Tier1", "Tier3"} {
 		var tier = xlsxTemplate{
 			flag:      key,
 			template:  templatePath + key + ".xlsx",
-			sheetName: value,
+			sheetName: tierSheet[key],
 			output:    *prefix + "." + key + ".xlsx",
 		}
 		tier.xlsx, err = xlsx.OpenFile(tier.template)
@@ -264,6 +264,17 @@ func main() {
 		}
 		tiers[key] = tier
 	}
+	var tier2 = xlsxTemplate{
+		flag:      "Tier2",
+		sheetName: tierSheet["Tier2"],
+		xlsx:      tiers["Tier1"].xlsx,
+		sheet:     tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]],
+	}
+	for _, cell := range tier2.sheet.Row(0).Cells {
+		tier2.title = append(tier2.title, cell.String())
+	}
+	tiers["Tier2"] = tier2
+
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load template")
@@ -431,7 +442,7 @@ func main() {
 	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
 
 	if *save {
-		for flg := range tierSheet {
+		for _, flg := range []string{"Tier1", "Tier3"} {
 			err = tiers[flg].xlsx.Save(tiers[flg].output)
 			simple_util.CheckErr(err)
 			ts = append(ts, time.Now())
