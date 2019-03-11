@@ -300,8 +300,8 @@ func main() {
 	logTime(ts, step-1, step, "load 特殊位点库")
 
 	// anno
-	var data []map[string]string
 	if *input != "" {
+		var data []map[string]string
 		if isGz.MatchString(*input) {
 			data, _ = simple_util.Gz2MapArray(*input, "\t", isComment)
 		} else {
@@ -311,96 +311,98 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load anno file")
-	}
 
-	var stats = make(map[string]int)
+		var stats = make(map[string]int)
 
-	stats["Total"] = len(data)
-	for _, item := range data {
+		stats["Total"] = len(data)
+		for _, item := range data {
 
-		// score to prediction
-		anno.Score2Pred(item)
+			// score to prediction
+			anno.Score2Pred(item)
 
-		// ues acmg of go
-		evidence.ComparePS4(item)
-		evidence.ComparePM4(item)
-		evidence.ComparePP3(item, true) // PP3 更改条件，更严格了，非splice未考虑保守性
-		//evidence.CompareBA1(item,true) // BA1 更改条件，去除PVFD，新增ESP6500
-		//evidence.CompareBS1(item,true) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-		evidence.CompareBP3(item)
-		evidence.CompareBP4(item, true) // BP4 更改条件，更严格了，非splice未考虑保守性
-		evidence.CompareBP7(item, true) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
-		item["自动化判断"] = acmg2015.PredACMG2015(item)
+			// ues acmg of go
+			evidence.ComparePS4(item)
+			evidence.ComparePM4(item)
+			evidence.ComparePP3(item, true) // PP3 更改条件，更严格了，非splice未考虑保守性
+			//evidence.CompareBA1(item,true) // BA1 更改条件，去除PVFD，新增ESP6500
+			//evidence.CompareBS1(item,true) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
+			evidence.CompareBP3(item)
+			evidence.CompareBP4(item, true) // BP4 更改条件，更严格了，非splice未考虑保守性
+			evidence.CompareBP7(item, true) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
+			item["自动化判断"] = acmg2015.PredACMG2015(item)
 
-		anno.UpdateSnv(item, *gender)
+			anno.UpdateSnv(item, *gender)
 
-		gene := item["Gene Symbol"]
-		// 突变频谱
-		item["突变频谱"] = geneDb[gene]
-		// 基因-疾病
-		updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			gene := item["Gene Symbol"]
+			// 突变频谱
+			item["突变频谱"] = geneDb[gene]
+			// 基因-疾病
+			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 
-		// 引物设计
-		item["exonCount"] = exonCount[item["Transcript"]]
-		item["引物设计"] = anno.PrimerDesign(item)
+			// 引物设计
+			item["exonCount"] = exonCount[item["Transcript"]]
+			item["引物设计"] = anno.PrimerDesign(item)
 
-		// 变异来源
-		if *trio {
-			item["变异来源"] = anno.InheritFrom(item, sampleList)
-		}
-
-		anno.AddTier(item, stats, geneList, specVarDb, *trio)
-
-		if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
-			anno.UpdateSnvTier1(item)
-			if *ifRedis {
-				anno.UpdateRedis(item, redisDb)
+			// 变异来源
+			if *trio {
+				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
 
-			anno.UpdateAutoRule(item)
-			anno.UpdateManualRule(item)
-		}
+			anno.AddTier(item, stats, geneList, specVarDb, *trio)
 
-		// 遗传相符
-		// only for Tier1
-		if item["Tier"] == "Tier1" {
-			anno.InheritCheck(item, inheritDb)
-		}
-	}
-	for _, item := range data {
-		// 遗传相符
-		if item["Tier"] == "Tier1" {
-			item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
-			if item["遗传相符"] == "相符" {
-				stats["遗传相符"]++
+			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
+				anno.UpdateSnvTier1(item)
+				if *ifRedis {
+					anno.UpdateRedis(item, redisDb)
+				}
+
+				anno.UpdateAutoRule(item)
+				anno.UpdateManualRule(item)
+			}
+
+			// 遗传相符
+			// only for Tier1
+			if item["Tier"] == "Tier1" {
+				anno.InheritCheck(item, inheritDb)
 			}
 		}
+		for _, item := range data {
+			// 遗传相符
+			if item["Tier"] == "Tier1" {
+				item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+				if item["遗传相符"] == "相符" {
+					stats["遗传相符"]++
+				}
+			}
 
-		// add to excel
-		for flg := range tierSheet {
-			if tier2xlsx[flg][item["Tier"]] {
-				tierRow := tiers[flg].sheet.AddRow()
-				for _, str := range tiers[flg].title {
-					if str == "一键搜索链接" {
-						cell := tierRow.AddCell()
-						hyperlink := googleUrl + strings.Replace(item[str], "\"", "%22", -1) //  escape "
-						if len(hyperlink) > 255 {
-							cell.SetString(item[str])
+			// add to excel
+			for flg := range tierSheet {
+				if tier2xlsx[flg][item["Tier"]] {
+					tierRow := tiers[flg].sheet.AddRow()
+					for _, str := range tiers[flg].title {
+						if str == "一键搜索链接" {
+							cell := tierRow.AddCell()
+							hyperlink := googleUrl + strings.Replace(item[str], "\"", "%22", -1) //  escape "
+							if len(hyperlink) > 255 {
+								cell.SetString(item[str])
+							} else {
+								cell.SetFormula("HYPERLINK(\"" + hyperlink + "\",\"" + strings.Replace(item[str], "\"", "\"\"", -1) + "\")")
+							}
 						} else {
-							cell.SetFormula("HYPERLINK(\"" + hyperlink + "\",\"" + strings.Replace(item[str], "\"", "\"\"", -1) + "\")")
+							tierRow.AddCell().SetString(item[str])
 						}
-					} else {
-						tierRow.AddCell().SetString(item[str])
 					}
 				}
 			}
 		}
-	}
 
-	logTierStats(stats)
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "update info")
+		logTierStats(stats)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "update info")
+	} else {
+		tiers["Tier1"].xlsx.Sheet["filter_variants"].Hidden = true
+	}
 
 	// QC Sheet
 	qcSheet := tiers["Tier1"].xlsx.Sheet["quality"]
