@@ -27,15 +27,15 @@ var (
 
 // flag
 var (
-	input = flag.String(
+	snv = flag.String(
 		"snv",
 		"",
-		"input anno txt",
+		"input snv anno txt",
 	)
 	prefix = flag.String(
 		"prefix",
 		"",
-		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to -input",
+		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to -snv",
 	)
 	geneDbFile = flag.String(
 		"geneDb",
@@ -206,18 +206,18 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *input == "" && *exon == "" && *large == "" {
+	if *snv == "" && *exon == "" && *large == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-input,-exon,-large")
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large")
 		os.Exit(0)
 	}
 	if *prefix == "" {
-		if *input == "" {
+		if *snv == "" {
 			flag.Usage()
 			fmt.Println("\nshold have -prefix for output")
 			os.Exit(0)
 		}
-		*prefix = *input
+		*prefix = *snv
 	}
 	sampleList = strings.Split(*list, ",")
 	quality["样本编号"] = sampleList[0]
@@ -300,12 +300,12 @@ func main() {
 	logTime(ts, step-1, step, "load 特殊位点库")
 
 	// anno
-	if *input != "" {
+	if *snv != "" {
 		var data []map[string]string
-		if isGz.MatchString(*input) {
-			data, _ = simple_util.Gz2MapArray(*input, "\t", isComment)
+		if isGz.MatchString(*snv) {
+			data, _ = simple_util.Gz2MapArray(*snv, "\t", isComment)
 		} else {
-			data, _ = simple_util.File2MapArray(*input, "\t", isComment)
+			data, _ = simple_util.File2MapArray(*snv, "\t", isComment)
 		}
 
 		ts = append(ts, time.Now())
