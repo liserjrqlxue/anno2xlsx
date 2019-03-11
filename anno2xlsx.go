@@ -322,30 +322,14 @@ func main() {
 		anno.Score2Pred(item)
 
 		// ues acmg of go
-		ps4 := evidence.CheckPS4(item)
-		if ps4 != item["PS4"] {
-			if item["PS4"] == "0" && ps4 == "" {
-
-			} else {
-				fmt.Fprintf(os.Stderr, "PS4 conflict:%s vs %s\t%s\n", ps4, item["PS4"], item["MutationName"])
-			}
-		}
-		pm4 := evidence.CheckPM4(item)
-		if pm4 != item["PM4"] {
-			if item["PM4"] == "0" && ps4 == "" {
-
-			} else {
-				fmt.Fprintf(os.Stderr, "PM4 conflict:%s vs %s\t%s\n", pm4, item["PM4"], item["MutationName"])
-			}
-		}
-		pp3 := evidence.CheckPP3(item)
-		if pm4 != item["PP3"] {
-			if item["PP3"] == "0" && ps4 == "" {
-
-			} else {
-				fmt.Fprintf(os.Stderr, "PP3 conflict:%s vs %s\t%s\n", pp3, item["PP3"], item["MutationName"])
-			}
-		}
+		evidence.ComparePS4(item)
+		evidence.ComparePM4(item)
+		evidence.ComparePP3(item, true) // PP3 更改条件，更严格了，非splice未考虑保守性
+		//evidence.CompareBA1(item,true) // BA1 更改条件，去除PVFD，新增ESP6500
+		//evidence.CompareBS1(item,true) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
+		evidence.CompareBP3(item)
+		evidence.CompareBP4(item, true) // BP4 更改条件，更严格了，非splice未考虑保守性
+		evidence.CompareBP7(item, true) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
 		item["自动化判断"] = acmg2015.PredACMG2015(item)
 
 		anno.UpdateSnv(item, *gender)
