@@ -412,7 +412,8 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "update info")
 	} else {
-		tiers["Tier1"].xlsx.Sheet["filter_variants"].Hidden = true
+		tiers["Tier1"].xlsx.Sheet[tierSheet["Tier1"]].Hidden = true
+		tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]].Hidden = true
 	}
 
 	// QC Sheet
