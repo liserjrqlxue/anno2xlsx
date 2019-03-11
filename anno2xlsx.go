@@ -443,13 +443,19 @@ func main() {
 	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
 
 	if *save {
-		for _, flg := range []string{"Tier1", "Tier3"} {
-			err = tiers[flg].xlsx.Save(tiers[flg].output)
-			simple_util.CheckErr(err)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "save "+flg)
-		}
+		err = tiers["Tier1"].xlsx.Save(tiers["Tier1"].output)
+		simple_util.CheckErr(err)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "save Tier1")
+	}
+
+	if *save && *snv != "" {
+		err = tiers["Tier3"].xlsx.Save(tiers["Tier3"].output)
+		simple_util.CheckErr(err)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "save Tier3")
 	}
 	logTime(ts, 0, step, "total work")
 }
