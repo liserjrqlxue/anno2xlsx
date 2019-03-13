@@ -4,8 +4,13 @@ import (
 	"encoding/json"
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/simple-util"
+	"regexp"
 	"strconv"
 	"strings"
+)
+
+var (
+	isIndel = regexp.MustCompile(`ins|del`)
 )
 
 func Nm2Ensp(item map[string]string, db *redis.Client) error {
@@ -73,6 +78,12 @@ func GetNativeIndelField(item map[string]string) string {
 			)
 		}
 	}
+	/*
+		fmt.Printf("[%s] can not get native indel field\n",item["MutationName"])
+		for _,key:=range []string{"VarType"}{
+			fmt.Printf("\t%s[%s]\n",key,item[key])
+		}
+	*/
 	return ""
 }
 
@@ -110,15 +121,15 @@ func RedisNativeIndelAF(item map[string]string, db *redis.Client, key, field str
 	return err
 }
 
-func UpdateRedis(item map[string]string, db *redis.Client) {
+func UpdateRedis(item map[string]string, db *redis.Client, keyPrefix string) {
 	Nm2Ensp(item, db)
 
 	if item["VarType"] == "snv" {
-		key := "SEQ500_all_native_snp"
+		key := keyPrefix + "_all_native_snp"
 		field := GetNativeSnpField(item)
 		RedisNativeSnpAF(item, db, key, field)
-	} else if item["VarType"] == "indel" {
-		key := "SEQ500_all_native_indel"
+	} else if isIndel.MatchString(item["VarType"]) {
+		key := keyPrefix + "_all_native_indel"
 		field := GetNativeIndelField(item)
 		RedisNativeIndelAF(item, db, key, field)
 	}

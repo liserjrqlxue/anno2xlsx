@@ -102,6 +102,11 @@ var (
 		"192.168.136.114:6380",
 		"redis Addr Option",
 	)
+	seqType = flag.String(
+		"seqType",
+		"SEQ2000",
+		"redis key:[SEQ2000|SEQ500|Hiseq]",
+	)
 )
 
 // family list
@@ -239,7 +244,7 @@ func main() {
 			Addr: *redisAddr,
 		})
 		pong, err := redisDb.Ping().Result()
-		fmt.Println(pong, err)
+		fmt.Println("connect redis:", pong, err)
 	}
 
 	// load tier template
@@ -364,7 +369,7 @@ func main() {
 			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 				anno.UpdateSnvTier1(item)
 				if *ifRedis {
-					anno.UpdateRedis(item, redisDb)
+					anno.UpdateRedis(item, redisDb, *seqType)
 				}
 
 				anno.UpdateAutoRule(item)
