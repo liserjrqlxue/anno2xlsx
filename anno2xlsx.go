@@ -196,6 +196,7 @@ var qualityKeyMap = map[string]string{
 	"目标区平均深度（X）":        "[Target] Average depth(rmdup)",
 	"目标区平均深度>4X位点所占比例":  "[Target] Coverage (>=4x)",
 	"目标区平均深度>10X位点所占比例": "[Target] Coverage (>=10x)",
+	"目标区平均深度>20X位点所占比例": "[Target] Coverage (>=20x)",
 	"目标区平均深度>30X位点所占比例": "[Target] Coverage (>=30x)",
 	"bam文件路径":           "bamPath",
 }
@@ -592,7 +593,17 @@ func addSmnResult(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 		sample := item["SampleID"]
 		if sampleMap[sample] {
 			item["Sample"] = item["SampleID"]
+			item["Copy_Num"] = item["SMN1_ex7_cn"]
+			item["Detect"] = item["SMN1_ex7_cn"]
+			item["Chr"] = "5"
+			item["Start"] = "70241892"
+			item["Stop"] = "70242003"
+			item["Gene"] = "SMN1"
+			item["OMIM_Gene"] = "SMN1"
 			item["SMN1_result"] = item["SMN1_ex7_cn"]
+			if item["SMN1_ex7_cn"] == "0" {
+				item["SMN1_result"] = "Y"
+			}
 			row := sheet.AddRow()
 			for _, key := range title {
 				row.AddCell().SetString(item[key])
