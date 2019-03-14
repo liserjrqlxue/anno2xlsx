@@ -572,6 +572,7 @@ func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Omim Gene"] = item["Gene"]
+			item["OMIM_Phenotype_ID"] = item["OMIM"]
 			row := sheet.AddRow()
 			for _, key := range title {
 				row.AddCell().SetString(item[key])
@@ -626,10 +627,15 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 	for key, value := range geneDiseaseDbColumn {
 		var vals []string
 		for _, gene := range genes {
-			vals = append(vals, geneDiseaseDb[gene][key])
+			geneDb, ok := geneDiseaseDb[gene]
+			if ok {
+				vals = append(vals, geneDb[key])
+			}
 			//fmt.Println(gene,":",key,":",vals)
 		}
-		item[value] = strings.Join(vals, "\n")
+		if len(vals) > 0 {
+			item[value] = strings.Join(vals, "\n")
+		}
 	}
 }
 
