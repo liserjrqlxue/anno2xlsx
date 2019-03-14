@@ -82,6 +82,11 @@ var (
 		"",
 		"largeCnv file path, only write sample in -list",
 	)
+	smn = flag.String(
+		"smn",
+		"",
+		"smn result file path, require -large and only write sample in -list",
+	)
 	gender = flag.String(
 		"gender",
 		"NA",
@@ -225,6 +230,10 @@ func main() {
 		*prefix = *snv
 	}
 	sampleList = strings.Split(*list, ",")
+	var sampleMap = make(map[string]bool)
+	for _, sample := range sampleList {
+		sampleMap[sample] = true
+	}
 	quality["样本编号"] = sampleList[0]
 
 	// load coverage.report
@@ -432,17 +441,28 @@ func main() {
 	qcSheet.Cols[1].Width = 12
 
 	if *exon != "" {
-		addCnvSheet(tiers["Tier1"].xlsx, *exon, "exon_cnv", sampleList)
+		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
+	} else {
+		tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
 	}
 
 	if *large != "" {
-		addCnvSheet(tiers["Tier1"].xlsx, *large, "large_cnv", sampleList)
+		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], *large, sampleMap)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add large cnv")
+	}
+	if *smn != "" {
+		addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], *smn, sampleMap)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add SMN1 result")
+	}
+	if *large == "" && *smn == "" {
+		tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
 	}
 
 	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
@@ -536,24 +556,13 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	}
 }
 
-func addCnvSheet(excel *xlsx.File, path, sheetName string, sampleList []string) {
-	sheet, err := excel.AddSheet(sheetName)
-	simple_util.CheckErr(err)
-
-	var sampleMap = make(map[string]bool)
-	for _, sample := range sampleList {
-		sampleMap[sample] = true
-	}
-	cnvDb, title := simple_util.File2MapArray(path, "\t", nil)
+func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
+	cnvDb, _ := simple_util.File2MapArray(path, "\t", nil)
 
 	// title
-	title = append(title, "Omim Gene")
-	for _, value := range geneDiseaseDbKey {
-		title = append(title, geneDiseaseDbColumn[value])
-	}
-	var row = sheet.AddRow()
-	for _, key := range title {
-		row.AddCell().SetString(key)
+	var title []string
+	for _, cell := range sheet.Row(0).Cells {
+		title = append(title, cell.Value)
 	}
 
 	for _, item := range cnvDb {
@@ -562,7 +571,29 @@ func addCnvSheet(excel *xlsx.File, path, sheetName string, sampleList []string) 
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Omim Gene"] = item["Gene"]
-			row = sheet.AddRow()
+			row := sheet.AddRow()
+			for _, key := range title {
+				row.AddCell().SetString(item[key])
+			}
+		}
+	}
+}
+
+func addSmnResult(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
+	smnDb, _ := simple_util.File2MapArray(path, "\t", nil)
+
+	// title
+	var title []string
+	for _, cell := range sheet.Row(0).Cells {
+		title = append(title, cell.Value)
+	}
+
+	for _, item := range smnDb {
+		sample := item["SampleID"]
+		if sampleMap[sample] {
+			item["Sample"] = item["SampleID"]
+			item["SMN1_result"] = item["SMN1_ex7_cn"]
+			row := sheet.AddRow()
 			for _, key := range title {
 				row.AddCell().SetString(item[key])
 			}
