@@ -216,9 +216,9 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *snv == "" && *exon == "" && *large == "" {
+	if *snv == "" && *exon == "" && *large == "" && *smn == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-snv,-exon,-large")
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn")
 		os.Exit(0)
 	}
 	if *prefix == "" {
