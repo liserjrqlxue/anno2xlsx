@@ -46,6 +46,9 @@ var (
 	isHemi = regexp.MustCompile(`^Hemi`)
 	isNA   = regexp.MustCompile(`^NA`)
 
+	isHetNA = regexp.MustCompile(`^Het:NA`)
+	isNAHet = regexp.MustCompile(`^NA:Het`)
+
 	isHetHetHet = regexp.MustCompile(`^Het;Het;Het`)
 	isHetHetNA  = regexp.MustCompile(`^Het;Het;NA`)
 	isHetNAHet  = regexp.MustCompile(`^Het;NA;Het`)
@@ -241,6 +244,12 @@ func InheritCheck(item map[string]string, inheritDb map[string]map[string]int) {
 		if isHet.MatchString(zygosity) {
 			inheritDb[geneSymbol]["flag1"]++
 		}
+		if isHetNA.MatchString(zygosity) {
+			inheritDb[geneSymbol]["flag10"]++
+		}
+		if isNAHet.MatchString(zygosity) {
+			inheritDb[geneSymbol]["flag01"]++
+		}
 		if isHetHetNA.MatchString(zygosity) {
 			inheritDb[geneSymbol]["flag110"]++
 		}
@@ -303,6 +312,33 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			return "不相符"
 		}
 	}
+}
+
+func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag string) string {
+	geneSymbol := item["Gene Symbol"]
+	inherit := item["ModeInheritance"]
+	zygosity := item["Zygosity"]
+	if tag == "couple" {
+		if isARorXR.MatchString(inherit) {
+			if inheritDb[geneSymbol]["flag10"] > 0 &&
+				inheritDb[geneSymbol]["flag01"] > 0 &&
+				(isHetNA.MatchString(zygosity) || isNAHet.MatchString(zygosity)) {
+				return "couple-CP"
+			}
+		}
+	} else if tag == "trio" {
+		if isAD.MatchString(inherit) && isHetNANA.MatchString(zygosity) {
+			return "trio-AD"
+		}
+		if isARorXR.MatchString(inherit) {
+			if inheritDb[geneSymbol]["flag110"] > 0 &&
+				inheritDb[geneSymbol]["flag101"] > 0 &&
+				(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
+				return "trio-CP"
+			}
+		}
+	}
+	return ""
 }
 
 func zygosityFormat(zygosity string) string {

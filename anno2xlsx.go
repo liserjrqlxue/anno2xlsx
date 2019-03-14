@@ -396,6 +396,9 @@ func main() {
 			// 遗传相符
 			if item["Tier"] == "Tier1" {
 				item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+				if *trio {
+					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+				}
 				if item["遗传相符"] == "相符" {
 					stats["遗传相符"]++
 				}
