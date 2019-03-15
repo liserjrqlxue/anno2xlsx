@@ -22,9 +22,6 @@ var long2short = map[string]string{
 	"B":                      "B",
 }
 
-// to-do add exon count info of transcript
-var exonCount = map[string]int{}
-
 // regexp
 var (
 	indexReg = regexp.MustCompile(`\d+\.\s+`)
@@ -116,25 +113,22 @@ func Score2Pred(item map[string]string) {
 		}
 	}
 
+	// ＞=2.0 保守
 	score, err = strconv.ParseFloat(item["GERP++_RS"], 32)
 	if err != nil {
 		item["GERP++_RS_pred"] = item["GERP++_RS"]
 	} else {
-		if score >= 2 {
-			item["GERP++_RS_pred"] = "D"
+		if score >= 2.0 {
+			item["GERP++_RS_pred"] = "保守"
 		} else {
-			item["GERP++_RS_pred"] = "P"
+			item["GERP++_RS_pred"] = "不保守"
 		}
 	}
-
-	// 0-0.6 不保守  0.6-2.5 保守 ＞2.0 高度保守
 	score, err = strconv.ParseFloat(item["PhyloP Vertebrates"], 32)
 	if err != nil {
 		item["PhyloP Vertebrates Pred"] = item["PhyloP Vertebrates"]
 	} else {
 		if score >= 2.0 {
-			item["PhyloP Vertebrates Pred"] = "高度保守"
-		} else if score > 0.6 {
 			item["PhyloP Vertebrates Pred"] = "保守"
 		} else {
 			item["PhyloP Vertebrates Pred"] = "不保守"
@@ -145,8 +139,6 @@ func Score2Pred(item map[string]string) {
 		item["PhyloP Placental Mammals Pred"] = item["PhyloP Placental Mammals"]
 	} else {
 		if score >= 2.0 {
-			item["PhyloP Placental Mammals Pred"] = "高度保守"
-		} else if score > 0.6 {
 			item["PhyloP Placental Mammals Pred"] = "保守"
 		} else {
 			item["PhyloP Placental Mammals Pred"] = "不保守"
