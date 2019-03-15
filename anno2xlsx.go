@@ -126,21 +126,8 @@ var geneDb = make(map[string]string)
 // 基因-疾病
 var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbKey = []string{
-	"Gene/Locus",
-	"Phenotype MIM number",
-	"Disease NameEN",
-	"Disease NameCH",
-	"Alternative Disease NameEN",
-	"Location",
-	"Gene/Locus MIM number",
-	"Inheritance",
-	"GeneralizationEN",
-	"GeneralizationCH",
-	"SystemSort",
-}
 var geneDiseaseDbColumn = map[string]string{
-	"Gene/Locus":                 "Gene",
+	"Gene/Locus":                 "Omim Gene",
 	"Phenotype MIM number":       "OMIM",
 	"Disease NameEN":             "DiseaseNameEN",
 	"Disease NameCH":             "DiseaseNameCH",
@@ -371,6 +358,7 @@ func main() {
 			item["突变频谱"] = geneDb[gene]
 			// 基因-疾病
 			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			item["Gene"] = item["Omim Gene"]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
@@ -437,8 +425,8 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "update info")
 	} else {
-		tiers["Tier1"].xlsx.Sheet[tierSheet["Tier1"]].Hidden = true
-		tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]].Hidden = true
+		//tiers["Tier1"].xlsx.Sheet[tierSheet["Tier1"]].Hidden = true
+		//tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]].Hidden = true
 	}
 
 	// QC Sheet
@@ -460,7 +448,7 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
 	} else {
-		tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
+		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
 	}
 
 	if *large != "" {
@@ -476,7 +464,7 @@ func main() {
 		logTime(ts, step-1, step, "add SMN1 result")
 	}
 	if *large == "" && *smn == "" {
-		tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
+		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
 	}
 
 	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
@@ -592,7 +580,6 @@ func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
-			item["Omim Gene"] = item["Gene"]
 			item["OMIM_Phenotype_ID"] = item["OMIM"]
 			row := sheet.AddRow()
 			for _, key := range title {
