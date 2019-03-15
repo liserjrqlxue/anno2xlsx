@@ -46,6 +46,8 @@ var (
 	isHetNA = regexp.MustCompile(`^Het:NA`)
 	isNAHet = regexp.MustCompile(`^NA:Het`)
 
+	isHomNANA = regexp.MustCompile(`^Hom;NA;NA`)
+
 	isHetHetHet = regexp.MustCompile(`^Het;Het;Het`)
 	isHetHetNA  = regexp.MustCompile(`^Het;Het;NA`)
 	isHetNAHet  = regexp.MustCompile(`^Het;NA;Het`)
@@ -262,7 +264,8 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 		if isNA.MatchString(zygosity) {
 			return "NA"
 		}
-		if isAD.MatchString(inherit) && isHetNANA.MatchString(zygosity) {
+		if isAD.MatchString(inherit) &&
+			(isHetNANA.MatchString(zygosity) || isHomNANA.MatchString(zygosity)) {
 			return "相符"
 		}
 		if isXL.MatchString(inherit) && isHemiInherit.MatchString(zygosity) {
@@ -280,12 +283,12 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			if inheritDb[geneSymbol]["flag110"] > 0 &&
 				inheritDb[geneSymbol]["flag100"] > 0 &&
 				(isHetHetNA.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
-				return "相符"
+				return "不确定"
 			}
 			if inheritDb[geneSymbol]["flag101"] > 0 &&
 				inheritDb[geneSymbol]["flag100"] > 0 &&
 				(isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
-				return "相符"
+				return "不确定"
 			}
 			if isHetHetHet.MatchString(zygosity) ||
 				(inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity)) {

@@ -448,8 +448,11 @@ func main() {
 			key := row.Cells[0].Value
 			row.AddCell().SetString(quality[key])
 		}
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add qc")
 	}
-	qcSheet.Cols[1].Width = 12
+	//qcSheet.Cols[1].Width = 12
 
 	if *exon != "" {
 		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
