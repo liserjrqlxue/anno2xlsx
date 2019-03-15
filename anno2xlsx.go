@@ -128,7 +128,7 @@ var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
 var geneDiseaseDbColumn = map[string]string{
 	"Gene/Locus":                 "Omim Gene",
-	"Phenotype MIM number":       "OMIM",
+	"Phenotype MIM number":       "OMIM_Phenotype_ID",
 	"Disease NameEN":             "DiseaseNameEN",
 	"Disease NameCH":             "DiseaseNameCH",
 	"Alternative Disease NameEN": "AliasEN",
@@ -359,6 +359,7 @@ func main() {
 			// 基因-疾病
 			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
+			item["OMIM"] = item["OMIM_Phenotype_ID"]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
@@ -580,7 +581,6 @@ func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
-			item["OMIM_Phenotype_ID"] = item["OMIM"]
 			row := sheet.AddRow()
 			for _, key := range title {
 				row.AddCell().SetString(item[key])
