@@ -44,8 +44,13 @@ var (
 	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
-		dbPath+"全外基因基因集整理OMIM-20190122.xlsx.Database.json.aes",
+		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景_实验室指征。发病。死亡年龄-V2.xlsx.Database.json.aes",
 		"database of 基因-疾病数据库",
+	)
+	geneDiseaseDbTitle = flag.String(
+		"geneDiseaseTitle",
+		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景_实验室指征。发病。死亡年龄-V2.xlsx.Title.json",
+		"Title map of 基因-疾病数据库",
 	)
 	specVarList = flag.String(
 		"specVarList",
@@ -126,19 +131,7 @@ var geneDb = make(map[string]string)
 // 基因-疾病
 var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = map[string]string{
-	"Gene/Locus":                 "Omim Gene",
-	"Phenotype MIM number":       "OMIM_Phenotype_ID",
-	"Disease NameEN":             "DiseaseNameEN",
-	"Disease NameCH":             "DiseaseNameCH",
-	"Alternative Disease NameEN": "AliasEN",
-	"Location":                   "Location",
-	"Gene/Locus MIM number":      "Gene/Locus MIM number",
-	"Inheritance":                "ModeInheritance",
-	"GeneralizationEN":           "GeneralizationEN",
-	"GeneralizationCH":           "GeneralizationCH",
-	"SystemSort":                 "SystemSort",
-}
+var geneDiseaseDbColumn = make(map[string]string)
 
 // 特殊位点库
 var specVarDb = make(map[string]bool)
@@ -302,6 +295,10 @@ func main() {
 	logTime(ts, step-1, step, "load 突变频谱")
 
 	// 基因-疾病
+	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
+	for key, item := range geneDiseaseDbTitleInfo {
+		geneDiseaseDbColumn[key] = item["Key"]
+	}
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
 	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
 	for key := range geneDiseaseDb {
