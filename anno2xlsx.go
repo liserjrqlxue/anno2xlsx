@@ -191,6 +191,8 @@ var (
 
 var redisDb *redis.Client
 
+var isSMN1 bool
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -468,6 +470,11 @@ func main() {
 	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
 
 	if *save {
+		if isSMN1 {
+			err = tiers["Tier1"].xlsx.Save(*prefix + ".Tier1.SMN1.xlsx")
+		} else {
+			err = tiers["Tier1"].xlsx.Save(tiers["Tier1"].output)
+		}
 		err = tiers["Tier1"].xlsx.Save(tiers["Tier1"].output)
 		simple_util.CheckErr(err)
 		ts = append(ts, time.Now())
@@ -609,6 +616,7 @@ func addSmnResult(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 			item["SMN1_result"] = item["SMN1_ex7_cn"]
 			if item["SMN1_ex7_cn"] == "0" {
 				item["SMN1_result"] = "Y"
+				isSMN1 = true
 			}
 			row := sheet.AddRow()
 			for _, key := range title {
