@@ -585,6 +585,7 @@ func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			row := sheet.AddRow()
 			for _, key := range title {
 				row.AddCell().SetString(item[key])
