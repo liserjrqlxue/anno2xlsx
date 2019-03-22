@@ -100,7 +100,7 @@ var (
 	qc = flag.String(
 		"qc",
 		"",
-		"coverage.report file to fill quality sheet",
+		"coverage.report file to fill quality sheet, comma as sep, same order with -list",
 	)
 	ifRedis = flag.Bool(
 		"redis",
@@ -167,7 +167,7 @@ var tier2xlsx = map[string]map[string]bool{
 var err error
 var googleUrl = "https://www.google.com.hk/#q="
 
-var quality = make(map[string]string)
+var qualitys []map[string]string
 
 var qualityKeyMap = map[string]string{
 	"原始数据产出（Mb）":        "[Total] Raw Data(Mb)",
@@ -216,15 +216,20 @@ func main() {
 	var sampleMap = make(map[string]bool)
 	for _, sample := range sampleList {
 		sampleMap[sample] = true
+		quality := make(map[string]string)
+		quality["样本编号"] = sample
+		qualitys = append(qualitys, quality)
 	}
-	quality["样本编号"] = sampleList[0]
 
 	// load coverage.report
 	if *qc != "" {
-		loadQC(*qc, quality)
-		for k, v := range qualityKeyMap {
-			quality[k] = quality[v]
+		loadQC(*qc, qualitys)
+		for _, quality := range qualitys {
+			for k, v := range qualityKeyMap {
+				quality[k] = quality[v]
+			}
 		}
+
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load coverage.report")
@@ -434,7 +439,9 @@ func main() {
 	if qcSheet != nil {
 		for _, row := range qcSheet.Rows {
 			key := row.Cells[0].Value
-			row.AddCell().SetString(quality[key])
+			for _, quality := range qualitys {
+				row.AddCell().SetString(quality[key])
+			}
 		}
 		ts = append(ts, time.Now())
 		step++
@@ -656,16 +663,20 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 var isSharp = regexp.MustCompile(`^#`)
 var isBamPath = regexp.MustCompile(`^## Files : (\S+)`)
 
-func loadQC(file string, quality map[string]string) {
-	report := simple_util.File2Array(file)
-	for _, line := range report {
-		if isSharp.MatchString(line) {
-			if m := isBamPath.FindStringSubmatch(line); m != nil {
-				quality["bamPath"] = m[1]
+func loadQC(files string, quality []map[string]string) {
+	file := strings.Split(files, ",")
+	for i, in := range file {
+		report := simple_util.File2Array(in)
+		for _, line := range report {
+			if isSharp.MatchString(line) {
+				if m := isBamPath.FindStringSubmatch(line); m != nil {
+					quality[i]["bamPath"] = m[1]
+				}
+			} else {
+				m := strings.Split(line, "\t")
+				quality[i][strings.TrimSpace(m[0])] = strings.TrimSpace(m[1])
 			}
-		} else {
-			m := strings.Split(line, "\t")
-			quality[strings.TrimSpace(m[0])] = strings.TrimSpace(m[1])
 		}
 	}
+
 }
