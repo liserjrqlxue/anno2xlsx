@@ -544,7 +544,7 @@ func PrimerDesign(item map[string]string) string {
 			item["pHGVS3"],
 			item["ExIn_ID"],
 			funcRegion,
-			item["Zygosity"],
+			strings.Split(item["Zygosity"], ";")[0],
 			flank,
 			item["exonCount"],
 			item["Depth"],
