@@ -80,12 +80,12 @@ var (
 	exon = flag.String(
 		"exon",
 		"",
-		"exonCnv file path, only write samples in -list",
+		"exonCnv files path, comma as sep, only write samples in -list",
 	)
 	large = flag.String(
 		"large",
 		"",
-		"largeCnv file path, only write sample in -list",
+		"largeCnv file path, comma as sep, only write sample in -list",
 	)
 	smn = flag.String(
 		"smn",
@@ -579,7 +579,8 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 }
 
 func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
-	cnvDb, _ := simple_util.File2MapArray(path, "\t", nil)
+	paths := strings.Split(path, ",")
+	cnvDb, _ := simple_util.Files2MapArray(paths, "\t", nil)
 
 	// title
 	var title []string
