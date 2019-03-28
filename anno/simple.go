@@ -428,14 +428,14 @@ func InheritFrom(item map[string]string, sampleList []string) string {
 	case "Het;Hemi;Hemi":
 		from = inheritFromMap["NA"]
 	case "Het;Hemi;NA":
-		from = sampleList[1] + inheritFromMap["Het"]
+		from = sampleList[1] + inheritFromMap["Hemi"]
 
 	case "Het;NA;Hom":
-		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+		from = sampleList[2] + inheritFromMap["Hom"]
 	case "Het;NA;Het":
-		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Het"]
+		from = sampleList[2] + inheritFromMap["Het"]
 	case "Het;NA;Hemi":
-		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
+		from = sampleList[2] + inheritFromMap["Hemi"]
 	case "Het;NA;NA":
 		from = inheritFromMap["Denovo"]
 
