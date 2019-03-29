@@ -9,6 +9,7 @@ import (
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -36,6 +37,11 @@ var (
 		"prefix",
 		"",
 		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to -snv",
+	)
+	logfile = flag.String(
+		"log",
+		"",
+		"output log to log.log, default is prefix.log",
 	)
 	geneDbFile = flag.String(
 		"geneDb",
@@ -212,6 +218,16 @@ func main() {
 		}
 		*prefix = *snv
 	}
+	if *logfile == "" {
+		*logfile = *prefix + ".log"
+	}
+	logFile, err := os.Create(*logfile)
+	simple_util.CheckErr(err)
+	defer simple_util.DeferClose(logFile)
+	log.SetOutput(logFile)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.Printf("Log file:%v \n", *logfile)
+
 	sampleList = strings.Split(*list, ",")
 	var sampleMap = make(map[string]bool)
 	for _, sample := range sampleList {
@@ -450,25 +466,38 @@ func main() {
 	//qcSheet.Cols[1].Width = 12
 
 	if *exon != "" {
-		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add exon cnv")
+		if simple_util.FileExists(*exon) {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "add exon cnv")
+		} else {
+			log.Printf("ERROR:not exists or not a file:%v \n", *exon)
+		}
+
 	} else {
 		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
 	}
 
 	if *large != "" {
-		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], *large, sampleMap)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add large cnv")
+		if simple_util.FileExists(*large) {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], *large, sampleMap)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "add large cnv")
+		} else {
+			log.Printf("ERROR:not exists or not a file:%v \n", *large)
+		}
 	}
 	if *smn != "" {
-		addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], *smn, sampleMap)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add SMN1 result")
+		if simple_util.FileExists(*smn) {
+			addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], *smn, sampleMap)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "add SMN1 result")
+		} else {
+			log.Printf("ERROR:not exists or not a file:%v \n", *smn)
+		}
 	}
 	if *large == "" && *smn == "" {
 		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
@@ -564,7 +593,7 @@ func logTierStats(stats map[string]int) {
 func logTime(timeList []time.Time, step1, step2 int, message string) {
 	trim := 3*8 - 1
 	str := simple_util.FormatWidth(trim, message, ' ')
-	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
+	log.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
 func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
@@ -679,5 +708,4 @@ func loadQC(files string, quality []map[string]string) {
 			}
 		}
 	}
-
 }
