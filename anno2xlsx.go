@@ -225,7 +225,7 @@ func main() {
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(logFile)
 	log.SetOutput(logFile)
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
 
 	sampleList = strings.Split(*list, ",")
