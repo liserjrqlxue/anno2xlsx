@@ -609,7 +609,7 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 
 func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 	paths := strings.Split(path, ",")
-	cnvDb, _ := simple_util.Files2MapArray(paths, "\t", nil)
+	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
 	var title []string
