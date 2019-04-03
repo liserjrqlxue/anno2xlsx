@@ -55,6 +55,14 @@
     "Key": "age_of_onset-加人工校对",
     "Title": "age_of_onset-加人工校对"
   },
+  "hpo": {
+    "Key": "hpo",
+    "Title": "hpo"
+  },
+  "hpo_cn": {
+    "Key": "hpo_cn",
+    "Title": "hpo_cn"
+  },
   "imprinted gene/Expressed Allele": {
     "Key": "imprinted gene",
     "Title": "imprinted gene/Expressed Allele"

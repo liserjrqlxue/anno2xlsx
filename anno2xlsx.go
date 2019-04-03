@@ -50,7 +50,7 @@ var (
 	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
-		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景_实验室指征。发病。死亡年龄-V2.xlsx.Database.json.aes",
+		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景&实验室指征。发病。死亡年龄。HPO-V3-20190328.xlsx.Database.json.aes",
 		"database of 基因-疾病数据库",
 	)
 	geneDiseaseDbTitle = flag.String(
