@@ -524,7 +524,7 @@ func main() {
 		simple_util.CheckErr(err)
 		ts = append(ts, time.Now())
 		step++
-		logTime(ts, step-1, step, "save Tier1")
+		logTime(ts, step-1, step, "save Tier2")
 	}
 
 	if *save && *snv != "" {
