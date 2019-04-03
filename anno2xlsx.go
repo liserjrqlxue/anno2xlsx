@@ -55,7 +55,7 @@ var (
 	)
 	geneDiseaseDbTitle = flag.String(
 		"geneDiseaseTitle",
-		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景_实验室指征。发病。死亡年龄-V2.xlsx.Title.json",
+		dbPath+"基因-疾病数据库.Title.json",
 		"Title map of 基因-疾病数据库",
 	)
 	specVarList = flag.String(
@@ -170,7 +170,7 @@ var tier2xlsx = map[string]map[string]bool{
 	},
 }
 
-var err error
+//var err error
 var googleUrl = "https://www.google.com.hk/#q="
 
 var qualitys []map[string]string
@@ -380,6 +380,7 @@ func main() {
 			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
+			item["death age"] = item["hpo_cn"]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
