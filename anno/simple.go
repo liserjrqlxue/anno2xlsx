@@ -54,7 +54,7 @@ var (
 	isHetNANA   = regexp.MustCompile(`^Het;NA;NA`)
 
 	isHomInherit  = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
-	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA`)
+	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA|Hom;Het;Hemi|Hom;Hemi;Hom`)
 )
 
 func UpdateSnvTier1(item map[string]string) {
@@ -331,6 +331,16 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 				(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
 				return "trio-CP"
 			}
+		}
+	} else {
+		if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
+			return "AR-Hom"
+		}
+		if isAR.MatchString(inherit) && inheritDb[geneSymbol]["flag1"] > 1 && isHet.MatchString(zygosity) {
+			return "AR-CP"
+		}
+		if isXL.MatchString(inherit) && (isHom.MatchString(zygosity) || isHemi.MatchString(zygosity)) {
+			return "XL-Hom/Hemi"
 		}
 	}
 	return ""
