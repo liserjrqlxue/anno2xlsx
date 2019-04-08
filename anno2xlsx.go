@@ -647,14 +647,14 @@ func addSmnResult(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 			item["Sample"] = item["SampleID"]
 			item["Copy_Num"] = item["SMN1_ex7_cn"]
 			item["Detect"] = item["SMN1_ex7_cn"]
-			item["Chr"] = "5"
+			item["Chr"] = "chr5"
 			item["Start"] = "70241892"
 			item["End"] = "70242003"
 			item["Gene"] = "SMN1"
 			item["OMIM_Gene"] = "SMN1"
 			item["SMN1_result"] = item["SMN1_ex7_cn"]
 			if item["SMN1_ex7_cn"] == "0" {
-				item["SMN1_result"] = "Y"
+				item["SMN1_result"] = "Hom"
 				isSMN1 = true
 			}
 			row := sheet.AddRow()
