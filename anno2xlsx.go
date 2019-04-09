@@ -287,13 +287,11 @@ func main() {
 		sheetName: tierSheet["Tier2"],
 		sheet:     tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]],
 	}
-	if *trio {
-		tier2.output = *prefix + ".Tier2.xlsx"
-		tier2.xlsx, err = xlsx.OpenFile(templatePath + "Tier2.xlsx")
-		simple_util.CheckErr(err)
-	} else {
-		tier2.xlsx = tiers["Tier1"].xlsx
-	}
+
+	tier2.output = *prefix + ".Tier2.xlsx"
+	tier2.xlsx, err = xlsx.OpenFile(templatePath + "Tier2.xlsx")
+	simple_util.CheckErr(err)
+
 	tier2.sheet = tier2.xlsx.Sheet[tierSheet["Tier2"]]
 	for _, cell := range tier2.sheet.Row(0).Cells {
 		tier2.title = append(tier2.title, cell.String())
@@ -519,7 +517,7 @@ func main() {
 		logTime(ts, step-1, step, "save Tier1")
 	}
 
-	if *save && *trio {
+	if *save {
 		err = tiers["Tier2"].xlsx.Save(tiers["Tier2"].output)
 		simple_util.CheckErr(err)
 		ts = append(ts, time.Now())
