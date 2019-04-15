@@ -54,7 +54,7 @@ var (
 	isHetNANA   = regexp.MustCompile(`^Het;NA;NA`)
 
 	isHomInherit  = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
-	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA|Hom;Het;Hemi|Hom;Hemi;Hom`)
+	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA`)
 )
 
 func UpdateSnvTier1(item map[string]string) {
