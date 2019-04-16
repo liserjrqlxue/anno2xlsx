@@ -591,6 +591,47 @@ func PrimerDesign(item map[string]string) string {
 	return primer
 }
 
+func ExomePrimer(item map[string]string) (primer string) {
+	annos := strings.Split(item["CNV_annot"], ";")
+	var t string
+	if item["type"] == "duplication" {
+		t = "DUP"
+	} else if item["type"] == "deletion" {
+		t = "DEL"
+	}
+	var primers []string
+	for _, key := range annos {
+		if key == "" {
+			continue
+		}
+		infos := strings.SplitN(key, ":", 2)
+		gt := strings.SplitN(infos[0], "-", 2)
+		ed := strings.SplitN(infos[1], " ", 2)
+		primers = append(
+			primers,
+			strings.Join([]string{gt[0], gt[1], ed[0] + " " + t, "-", ed[0], "-", "-", "-", "-", "-", "-", "-", "-"}, ";"),
+		)
+	}
+	primer = strings.Join(primers, "\n")
+	return
+}
+
+func LargePrimer(item map[string]string) (primer string) {
+	summary := item["Summary"]
+	infos := strings.SplitN(summary, "G", 2)
+	primer = strings.Join([]string{infos[0], "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"}, ";")
+	return
+}
+
+func CnvPrimer(item map[string]string, cnvType string) (primer string) {
+	if cnvType == "exon_cnv" {
+		primer = ExomePrimer(item)
+	} else if cnvType == "large_cnv" {
+		primer = LargePrimer(item)
+	}
+	return
+}
+
 // regexp
 var (
 	rsID     = regexp.MustCompile(`[rsRS]?\d+`)

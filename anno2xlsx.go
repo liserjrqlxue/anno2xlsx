@@ -620,6 +620,7 @@ func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 
 	for _, item := range cnvDb {
 		sample := item["Sample"]
+		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
