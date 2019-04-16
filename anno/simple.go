@@ -47,7 +47,8 @@ var (
 	isHetNA = regexp.MustCompile(`^Het:NA`)
 	isNAHet = regexp.MustCompile(`^NA:Het`)
 
-	isHomNANA = regexp.MustCompile(`^Hom;NA;NA`)
+	isHomHetHet = regexp.MustCompile(`^Hom;Het;Het`)
+	isHomNANA   = regexp.MustCompile(`^Hom;NA;NA`)
 
 	isHetHetHet = regexp.MustCompile(`^Het;Het;Het`)
 	isHetHetNA  = regexp.MustCompile(`^Het;Het;NA`)
@@ -348,6 +349,9 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 				(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
 				return "trio-CP"
 			}
+		}
+		if isAR.MatchString(inherit) && isHomHetHet.MatchString(zygosity) {
+			return "trio-hom"
 		}
 	} else {
 		if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
