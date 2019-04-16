@@ -743,39 +743,13 @@ var (
 	isZero = regexp.MustCompile(`^0$|^\.$|^$`)
 )
 
-func famTag1(item map[string]string) string {
-	var flag1, flag2 bool
-	frequency := item["frequency"]
-	if frequency == "" || frequency == "." {
-		frequency = "0"
-	}
-	freq, err := strconv.ParseFloat(frequency, 32)
-	if err != nil {
-		log.Printf("%s ParseFloat error:%v", frequency, err)
-		freq = 0
-	}
-	if freq <= 0.01 {
-		flag1 = true
-	}
-	if isBLB.MatchString(item["自动化判断"]) && item["HGMDorClinvar"] == "否" {
-		flag1 = true
-	}
-	if isHgmdDM.MatchString(item["HGMD Pred"]) {
-		flag1 = true
-	}
-	if isClinVarPLP.MatchString(item["ClinVar Significance"]) {
-		flag1 = true
-	}
-	if item["遗传相符"] == "相符" {
-		flag2 = true
-	}
-	if flag1 && flag2 {
-		return "1"
-	}
-	return ""
+var keys = []string{
+	"ExAC HomoAlt Count",
+	"PVFD Homo Count",
+	"GnomAD HomoAlt Count",
 }
 
-func sampleTag1(item map[string]string) string {
+func tag1(item map[string]string, isTrio bool) string {
 	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
@@ -798,24 +772,23 @@ func sampleTag1(item map[string]string) string {
 	if isClinVarPLP.MatchString(item["ClinVar Significance"]) {
 		flag1 = true
 	}
-	inherit := item["ModeInheritance"]
-	var keys = []string{
-		"ExAC HomoAlt Count",
-		"PVFD Homo Count",
-		"GnomAD HomoAlt Count",
-	}
 	if item["遗传相符"] == "相符" {
-		if isAR.MatchString(inherit) || isXL.MatchString(inherit) {
+		if isTrio {
 			flag2 = true
-		} else if isAD.MatchString(inherit) {
-			var flag = true
-			for _, key := range keys {
-				if !isZero.MatchString(item[key]) {
-					flag = false
-				}
-			}
-			if flag {
+		} else {
+			inherit := item["ModeInheritance"]
+			if isAR.MatchString(inherit) || isXL.MatchString(inherit) {
 				flag2 = true
+			} else if isAD.MatchString(inherit) {
+				var flag = true
+				for _, key := range keys {
+					if !isZero.MatchString(item[key]) {
+						flag = false
+					}
+				}
+				if flag {
+					flag2 = true
+				}
 			}
 		}
 	}
@@ -825,7 +798,7 @@ func sampleTag1(item map[string]string) string {
 	return ""
 }
 
-func famTag2(item map[string]string) string {
+func tag2(item map[string]string) string {
 	var flag1 bool
 	if isBLB.MatchString(item["自动化判断"]) && item["HGMDorClinvar"] == "否" {
 		flag1 = true
@@ -842,7 +815,7 @@ func famTag2(item map[string]string) string {
 	return ""
 }
 
-func famTag3(item map[string]string) string {
+func tag3(item map[string]string) string {
 	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
@@ -865,8 +838,8 @@ func famTag3(item map[string]string) string {
 	return ""
 }
 
-func famTag4(item map[string]string) string {
-	var flag1, flag2 bool
+func tag4(item map[string]string, isTrio bool) string {
+	var flag1, flag2, flag3 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
 		frequency = "0"
@@ -882,18 +855,29 @@ func famTag4(item map[string]string) string {
 	if isPP3.MatchString(item["autoRuleName"]) {
 		flag2 = true
 	}
-	if flag1 && flag2 {
+	if isTrio {
+		flag3 = true
+	} else {
+		var flag = true
+		for _, key := range keys {
+			if !isZero.MatchString(item[key]) {
+				flag = false
+			}
+		}
+		if flag {
+			flag3 = true
+		}
+	}
+	if flag1 && flag2 && flag3 {
 		return "4"
 	}
 	return ""
 }
 
-func updateTags(item map[string]string, isTrio bool) {
-	if isTrio {
-		tag1 := famTag1(item)
-		tag2 := famTag1(item)
-		tag3 := famTag1(item)
-		tag4 := famTag1(item)
-		item["筛选标签"] = strings.Join([]string{tag1, tag2, tag3, tag4}, "")
-	}
+func UpdateTags(item map[string]string, isTrio bool) string {
+	tag1 := tag1(item, isTrio)
+	tag2 := tag2(item)
+	tag3 := tag3(item)
+	tag4 := tag4(item, isTrio)
+	return strings.Join([]string{tag1, tag2, tag3, tag4}, "")
 }
