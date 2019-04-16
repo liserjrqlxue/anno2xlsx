@@ -747,6 +747,15 @@ var keys = []string{
 	"ExAC HomoAlt Count",
 	"PVFD Homo Count",
 	"GnomAD HomoAlt Count",
+	"1000G EAS AF",
+	"1000G AF",
+	"ESP6500 AF",
+	"ExAC EAS AF",
+	"ExAC AF",
+	"GnomAD EAS AF",
+	"GnomAD AF",
+	"PVFD AF",
+	"Panel AlleleFreq",
 }
 
 func tag1(item map[string]string, isTrio bool) string {
