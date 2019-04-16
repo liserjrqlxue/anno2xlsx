@@ -601,7 +601,7 @@ func ExomePrimer(item map[string]string) (primer string) {
 	}
 	var primers []string
 	for _, key := range annos {
-		if key == "" {
+		if key == "" || key == "-" {
 			continue
 		}
 		infos := strings.SplitN(key, ":", 2)
@@ -619,7 +619,9 @@ func ExomePrimer(item map[string]string) (primer string) {
 func LargePrimer(item map[string]string) (primer string) {
 	summary := item["Summary"]
 	infos := strings.SplitN(summary, "G", 2)
-	primer = strings.Join([]string{infos[0], "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"}, ";")
+	primer = strings.Replace(infos[0], ",", "", -1)
+	primer = strings.Replace(primer, "\"", "", -1)
+	primer = strings.Join([]string{primer, "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"}, ";")
 	return
 }
 
