@@ -297,15 +297,31 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 		}
 		return "不相符"
 	} else {
-		if (isHom.MatchString(zygosity) && isARorXR.MatchString(inherit)) ||
-			(isHet.MatchString(zygosity) && isAD.MatchString(inherit)) ||
-			(isHemi.MatchString(zygosity) && isXL.MatchString(inherit)) {
-			return "相符"
-		} else if isARorXR.MatchString(zygosity) && inheritDb[geneSymbol]["flag1"] >= 2 {
-			return "不确定"
-		} else {
-			return "不相符"
+		if isXL.MatchString(inherit) {
+			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
+				return "相符"
+			}
 		}
+		if isAR.MatchString(inherit) {
+			if isHom.MatchString(zygosity) {
+				return "相符"
+			}
+			if isHet.MatchString(zygosity) {
+				if inheritDb[geneSymbol]["flag1"] >= 2 {
+					return "相符"
+				} else {
+					return "不确定"
+				}
+			}
+		}
+		if isAD.MatchString(inherit) {
+			if !isAR.MatchString(inherit) && !isXL.MatchString(inherit) {
+				if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
+					return "相符"
+				}
+			}
+		}
+		return "不相符"
 	}
 }
 
