@@ -618,7 +618,7 @@ func ExomePrimer(item map[string]string) (primer string) {
 
 func LargePrimer(item map[string]string) (primer string) {
 	summary := item["Summary"]
-	infos := strings.SplitN(summary, "G", 2)
+	infos := strings.SplitN(summary, "[", 2)
 	primer = strings.Replace(infos[0], ",", "", -1)
 	primer = strings.Replace(primer, "\"", "", -1)
 	primer = strings.Join([]string{primer, "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"}, ";")
