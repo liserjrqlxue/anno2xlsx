@@ -337,6 +337,60 @@ func main() {
 	step++
 	logTime(ts, step-1, step, "load 特殊位点库")
 
+	// QC Sheet
+	qcSheet := tiers["Tier1"].xlsx.Sheet["quality"]
+	if qcSheet != nil {
+		for _, row := range qcSheet.Rows {
+			key := row.Cells[0].Value
+			for _, quality := range qualitys {
+				row.AddCell().SetString(quality[key])
+			}
+		}
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add qc")
+	}
+	//qcSheet.Cols[1].Width = 12
+
+	if *exon != "" {
+		if simple_util.FileExists(*exon) {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "add exon cnv")
+		} else {
+			log.Printf("ERROR:not exists or not a file:%v \n", *exon)
+		}
+
+	} else {
+		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
+	}
+
+	if *large != "" {
+		if simple_util.FileExists(*large) {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], *large, sampleMap)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "add large cnv")
+		} else {
+			log.Printf("ERROR:not exists or not a file:%v \n", *large)
+		}
+	}
+	if *smn != "" {
+		if simple_util.FileExists(*smn) {
+			addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], *smn, sampleMap)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "add SMN1 result")
+		} else {
+			log.Printf("ERROR:not exists or not a file:%v \n", *smn)
+		}
+	}
+	if *large == "" && *smn == "" {
+		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
+	}
+	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
+
 	// anno
 	if *snv != "" {
 		var data []map[string]string
@@ -450,61 +504,6 @@ func main() {
 		//tiers["Tier1"].xlsx.Sheet[tierSheet["Tier1"]].Hidden = true
 		//tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]].Hidden = true
 	}
-
-	// QC Sheet
-	qcSheet := tiers["Tier1"].xlsx.Sheet["quality"]
-	if qcSheet != nil {
-		for _, row := range qcSheet.Rows {
-			key := row.Cells[0].Value
-			for _, quality := range qualitys {
-				row.AddCell().SetString(quality[key])
-			}
-		}
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add qc")
-	}
-	//qcSheet.Cols[1].Width = 12
-
-	if *exon != "" {
-		if simple_util.FileExists(*exon) {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "add exon cnv")
-		} else {
-			log.Printf("ERROR:not exists or not a file:%v \n", *exon)
-		}
-
-	} else {
-		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
-	}
-
-	if *large != "" {
-		if simple_util.FileExists(*large) {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], *large, sampleMap)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "add large cnv")
-		} else {
-			log.Printf("ERROR:not exists or not a file:%v \n", *large)
-		}
-	}
-	if *smn != "" {
-		if simple_util.FileExists(*smn) {
-			addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], *smn, sampleMap)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "add SMN1 result")
-		} else {
-			log.Printf("ERROR:not exists or not a file:%v \n", *smn)
-		}
-	}
-	if *large == "" && *smn == "" {
-		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
-	}
-
-	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
 
 	if *save {
 		if isSMN1 {
