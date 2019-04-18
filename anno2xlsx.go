@@ -96,7 +96,7 @@ var (
 	smn = flag.String(
 		"smn",
 		"",
-		"smn result file path, require -large and only write sample in -list",
+		"smn result file path, comma as sep, require -large and only write sample in -list",
 	)
 	gender = flag.String(
 		"gender",
@@ -353,38 +353,49 @@ func main() {
 	//qcSheet.Cols[1].Width = 12
 
 	if *exon != "" {
-		if simple_util.FileExists(*exon) {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], *exon, sampleMap)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "add exon cnv")
-		} else {
-			log.Printf("ERROR:not exists or not a file:%v \n", *exon)
+		var paths []string
+		for _, path := range strings.Split(*exon, ",") {
+			if simple_util.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
 		}
-
+		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], paths, sampleMap)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add exon cnv")
 	} else {
 		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
 	}
 
 	if *large != "" {
-		if simple_util.FileExists(*large) {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], *large, sampleMap)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "add large cnv")
-		} else {
-			log.Printf("ERROR:not exists or not a file:%v \n", *large)
+		var paths []string
+		for _, path := range strings.Split(*large, ",") {
+			if simple_util.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
 		}
+		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add large cnv")
 	}
 	if *smn != "" {
-		if simple_util.FileExists(*smn) {
-			addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], *smn, sampleMap)
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "add SMN1 result")
-		} else {
-			log.Printf("ERROR:not exists or not a file:%v \n", *smn)
+		var paths []string
+		for _, path := range strings.Split(*smn, ",") {
+			if simple_util.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
 		}
+		addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add SMN1 result")
 	}
 	if *large == "" && *smn == "" {
 		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
@@ -607,8 +618,7 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	}
 }
 
-func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
-	paths := strings.Split(path, ",")
+func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
@@ -632,8 +642,8 @@ func addCnv2Sheet(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
 	}
 }
 
-func addSmnResult(sheet *xlsx.Sheet, path string, sampleMap map[string]bool) {
-	smnDb, _ := simple_util.File2MapArray(path, "\t", nil)
+func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) {
+	smnDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
 	var title []string
