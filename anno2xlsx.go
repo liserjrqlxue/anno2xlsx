@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -122,6 +123,11 @@ var (
 		"seqType",
 		"SEQ2000",
 		"redis key:[SEQ2000|SEQ500|Hiseq]",
+	)
+	cnvFilter = flag.Bool(
+		"cnvFilter",
+		false,
+		"if filter cnv result\n",
 	)
 )
 
@@ -361,7 +367,12 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], paths, sampleMap)
+		if *cnvFilter {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], paths, sampleMap, false, true)
+		} else {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], paths, sampleMap, false, false)
+
+		}
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
@@ -378,7 +389,11 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap)
+		if *cnvFilter {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap, true, false)
+		} else {
+			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap, false, false)
+		}
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add large cnv")
@@ -618,7 +633,7 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	}
 }
 
-func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) {
+func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
@@ -634,6 +649,20 @@ func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) 
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
+			if filterGene && item["OMIM"] == "" {
+				continue
+			}
+			if filterSize {
+				length, err := strconv.ParseFloat(item["Len(Kb)"], 16)
+				if err != nil {
+					log.Printf(
+						"can not ParseFloat of Len(Kb)[%s] for Summary[%s]\n",
+						item["Len(Kb)"], item["Summary"],
+					)
+				} else if length < 1000 {
+					continue
+				}
+			}
 			row := sheet.AddRow()
 			for _, key := range title {
 				row.AddCell().SetString(item[key])
