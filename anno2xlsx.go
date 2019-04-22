@@ -32,12 +32,12 @@ var (
 	snv = flag.String(
 		"snv",
 		"",
-		"input snv anno txt",
+		"input snv anno txt, comma as sep",
 	)
 	prefix = flag.String(
 		"prefix",
 		"",
-		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to -snv",
+		"output xlsx prefix.tier{1,2,3}.xlsx, default is same to first file of -snv",
 	)
 	logfile = flag.String(
 		"log",
@@ -205,6 +205,8 @@ var redisDb *redis.Client
 
 var isSMN1 bool
 
+var snvs []string
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -221,9 +223,24 @@ func main() {
 			flag.Usage()
 			fmt.Println("\nshold have -prefix for output")
 			os.Exit(0)
+		} else {
+			snvs = strings.Split(*snv, ",")
+			*prefix = snvs[0]
 		}
-		*prefix = *snv
 	}
+	if *snv == "" {
+		if *prefix == "" {
+			flag.Usage()
+			fmt.Println("\nshold have -prefix for output")
+			os.Exit(0)
+		}
+	} else {
+		snvs = strings.Split(*snv, ",")
+		if *prefix == "" {
+			*prefix = snvs[0]
+		}
+	}
+
 	if *logfile == "" {
 		*logfile = *prefix + ".log"
 	}
@@ -420,10 +437,14 @@ func main() {
 	// anno
 	if *snv != "" {
 		var data []map[string]string
-		if isGz.MatchString(*snv) {
-			data, _ = simple_util.Gz2MapArray(*snv, "\t", isComment)
-		} else {
-			data, _ = simple_util.File2MapArray(*snv, "\t", isComment)
+		for _, snv := range snvs {
+			if isGz.MatchString(snv) {
+				d, _ := simple_util.Gz2MapArray(snv, "\t", isComment)
+				data = append(data, d...)
+			} else {
+				d, _ := simple_util.File2MapArray(snv, "\t", isComment)
+				data = append(data, d...)
+			}
 		}
 
 		ts = append(ts, time.Now())
