@@ -937,3 +937,10 @@ func UpdateTags(item map[string]string, isTrio bool) string {
 	tag4 := tag4(item, isTrio)
 	return strings.Join([]string{tag1, tag2, tag3, tag4}, "")
 }
+
+func UpdateFunction(item map[string]string) {
+	function := item["Function"]
+	if function != "intron" {
+		return
+	}
+}
