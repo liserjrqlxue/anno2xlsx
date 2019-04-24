@@ -51,7 +51,7 @@ var (
 	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
-		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景&实验室指征。发病。死亡年龄-V3-20190419.xlsx.Database.json.aes",
+		dbPath+"全外基因基因集整理OMIM-201903015-整合疾病背景_实验室指征。发病。死亡年龄-V3-20190424.xlsx.default.json.aes",
 		"database of 基因-疾病数据库",
 	)
 	geneDiseaseDbTitle = flag.String(
@@ -458,6 +458,9 @@ func main() {
 
 			// score to prediction
 			anno.Score2Pred(item)
+
+			// update Function
+			anno.UpdateFunction(item)
 
 			// ues acmg of go
 			evidence.ComparePS4(item)
