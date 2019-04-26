@@ -3,7 +3,7 @@ package anno
 import "strings"
 
 var AutoRuleKey = []string{
-	"PS4", "PM1", "PM2", "PM4", "PP2", "PP3", "PP5", "BA1",
+	"PVS1", "PS1", "PS4", "PM1", "PM2", "PM4", "PM5", "PP2", "PP3", "PP5", "BA1",
 	"BS1", "BS2", "BP1", "BP3", "BP4", "BP6", "BP7",
 }
 
