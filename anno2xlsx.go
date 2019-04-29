@@ -29,6 +29,11 @@ var (
 
 // flag
 var (
+	productID = flag.String(
+		"product",
+		"",
+		"product ID",
+	)
 	snv = flag.String(
 		"snv",
 		"",
@@ -522,7 +527,6 @@ func main() {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
 				}
 				item["筛选标签"] = anno.UpdateTags(item, *trio)
-
 			}
 
 			// add to excel
