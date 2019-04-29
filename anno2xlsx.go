@@ -534,17 +534,7 @@ func main() {
 				if tier2xlsx[flg][item["Tier"]] {
 					tierRow := tiers[flg].sheet.AddRow()
 					for _, str := range tiers[flg].title {
-						if str == "一键搜索链接" {
-							cell := tierRow.AddCell()
-							hyperlink := googleUrl + strings.Replace(item[str], "\"", "%22", -1) //  escape "
-							if len(hyperlink) > 255 {
-								cell.SetString(item[str])
-							} else {
-								cell.SetFormula("HYPERLINK(\"" + hyperlink + "\",\"" + strings.Replace(item[str], "\"", "\"\"", -1) + "\")")
-							}
-						} else {
-							tierRow.AddCell().SetString(item[str])
-						}
+						tierRow.AddCell().SetString(item[str])
 					}
 				}
 			}
