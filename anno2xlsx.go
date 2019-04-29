@@ -181,9 +181,6 @@ var tier2xlsx = map[string]map[string]bool{
 	},
 }
 
-//var err error
-var googleUrl = "https://www.google.com.hk/#q="
-
 var qualitys []map[string]string
 
 var qualityKeyMap = map[string]string{
