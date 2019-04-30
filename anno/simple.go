@@ -782,7 +782,7 @@ func GoogleKey(item map[string]string) string {
 }
 
 var (
-	isBLB        = regexp.MustCompile(`B|LB`)
+	//isBLB        = regexp.MustCompile(`B|LB`)
 	isClinVarPLP = regexp.MustCompile(`Pathogenic|Likely_pathogenic`)
 	isHgmdDM     = regexp.MustCompile(`DM$|DM\|`)
 	//isHgmdDMQ= regexp.MustCompile(`DM\?`)
@@ -805,7 +805,7 @@ var keys = []string{
 	"Panel AlleleFreq",
 }
 
-func tag1(item map[string]string, isTrio bool) string {
+func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string {
 	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
@@ -819,7 +819,7 @@ func tag1(item map[string]string, isTrio bool) string {
 	if freq <= 0.01 {
 		flag1 = true
 	}
-	if isBLB.MatchString(item["自动化判断"]) && item["HGMDorClinvar"] == "否" {
+	if specVarDb[item["MutationName"]] {
 		flag1 = true
 	}
 	if isHgmdDM.MatchString(item["HGMD Pred"]) {
@@ -854,9 +854,9 @@ func tag1(item map[string]string, isTrio bool) string {
 	return ""
 }
 
-func tag2(item map[string]string) string {
+func tag2(item map[string]string, specVarDb map[string]bool) string {
 	var flag1 bool
-	if isBLB.MatchString(item["自动化判断"]) && item["HGMDorClinvar"] == "否" {
+	if specVarDb[item["MutationName"]] {
 		flag1 = true
 	}
 	if isHgmdDM.MatchString(item["HGMD Pred"]) {
@@ -930,9 +930,9 @@ func tag4(item map[string]string, isTrio bool) string {
 	return ""
 }
 
-func UpdateTags(item map[string]string, isTrio bool) string {
-	tag1 := tag1(item, isTrio)
-	tag2 := tag2(item)
+func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) string {
+	tag1 := tag1(item, specVarDb, isTrio)
+	tag2 := tag2(item, specVarDb)
 	tag3 := tag3(item)
 	tag4 := tag4(item, isTrio)
 	return strings.Join([]string{tag1, tag2, tag3, tag4}, "")

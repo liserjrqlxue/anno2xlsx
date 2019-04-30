@@ -134,6 +134,11 @@ var (
 		false,
 		"if filter cnv result",
 	)
+	annoMT = flag.Bool(
+		"annoMT",
+		false,
+		"if anno MT",
+	)
 )
 
 // family list
@@ -579,7 +584,7 @@ func main() {
 				if *trio {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
 				}
-				item["筛选标签"] = anno.UpdateTags(item, *trio)
+				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 
 				tier1Row := tier1.sheet.AddRow()
 				for _, str := range tier1.title {
