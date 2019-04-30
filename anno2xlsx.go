@@ -166,19 +166,8 @@ type xlsxTemplate struct {
 	output    string
 }
 
-var tier2xlsx = map[string]map[string]bool{
-	"Tier1": {
-		"Tier1": true,
-	},
-	"Tier2": {
-		"Tier1": true,
-		"Tier2": true,
-	},
-	"Tier3": {
-		"Tier1": true,
-		"Tier2": true,
-		"Tier3": true,
-	},
+func (xt *xlsxTemplate) save() error {
+	return xt.xlsx.Save(xt.output)
 }
 
 var qualitys []map[string]string
@@ -193,6 +182,25 @@ var qualityKeyMap = map[string]string{
 	"目标区平均深度>20X位点所占比例": "[Target] Coverage (>=20x)",
 	"目标区平均深度>30X位点所占比例": "[Target] Coverage (>=30x)",
 	"bam文件路径":           "bamPath",
+}
+
+// tier2
+var isEnProduct = map[string]bool{
+	"DX1000": true,
+	"DX1001": false,
+}
+
+var transEN = map[string]string{
+	"是":    "Yes",
+	"否":    "No",
+	"备注说明": "Note",
+}
+
+type templateInfo struct {
+	cols      []string
+	titles    [2][]string
+	noteTitle [2]string
+	note      [2][]string
 }
 
 var codeKey []byte
@@ -289,7 +297,6 @@ func main() {
 	var tiers = make(map[string]xlsxTemplate)
 	var tierSheet = map[string]string{
 		"Tier1": "filter_variants",
-		"Tier2": "附表",
 		"Tier3": "总表",
 	}
 	for _, key := range []string{"Tier1", "Tier3"} {
@@ -307,21 +314,68 @@ func main() {
 		}
 		tiers[key] = tier
 	}
+
+	// tier2
 	var tier2 = xlsxTemplate{
 		flag:      "Tier2",
-		sheetName: tierSheet["Tier2"],
-		sheet:     tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]],
+		sheetName: *productID + "_" + sampleList[0],
 	}
-
 	tier2.output = *prefix + ".Tier2.xlsx"
-	tier2.xlsx, err = xlsx.OpenFile(templatePath + "Tier2.xlsx")
+	tier2.xlsx = xlsx.NewFile()
 	simple_util.CheckErr(err)
 
-	tier2.sheet = tier2.xlsx.Sheet[tierSheet["Tier2"]]
-	for _, cell := range tier2.sheet.Row(0).Cells {
-		tier2.title = append(tier2.title, cell.String())
+	var tier2TemplateInfo = templateInfo{
+		//cols:[]string{},
+		//titles:[2][]string{},
 	}
-	tiers["Tier2"] = tier2
+	tier2Template, err := xlsx.OpenFile(templatePath + "tier2.xlsx")
+	simple_util.CheckErr(err)
+	//tier2TitleSheet:=tier2Template.Sheet["Product ID_Sample ID(proband)"]
+	tier2Infos, err := tier2Template.ToSlice()
+	simple_util.CheckErr(err)
+	for i, item := range tier2Infos[0] {
+		if i > 0 {
+			tier2TemplateInfo.cols = append(tier2TemplateInfo.cols, item[0])
+			tier2TemplateInfo.titles[0] = append(tier2TemplateInfo.titles[0], item[1])
+			tier2TemplateInfo.titles[1] = append(tier2TemplateInfo.titles[0], item[2])
+		}
+	}
+	for _, item := range tier2Infos[1] {
+		tier2TemplateInfo.note[0] = append(tier2TemplateInfo.note[0], item[0])
+		tier2TemplateInfo.note[1] = append(tier2TemplateInfo.note[1], item[1])
+	}
+
+	fmt.Printf("%+v\n", tier2TemplateInfo)
+
+	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName)
+	simple_util.CheckErr(err)
+	tier2row := tier2.sheet.AddRow()
+	for i, col := range tier2TemplateInfo.cols {
+		tier2.title = append(tier2.title, col)
+		var title string
+		if isEnProduct[*productID] {
+			title = tier2TemplateInfo.titles[0][i]
+		} else {
+			title = tier2TemplateInfo.titles[1][i]
+		}
+		tier2row.AddCell().SetString(title)
+	}
+
+	var tier2NoteSheetName = "备注说明"
+	var tier2Note []string
+	if isEnProduct[*productID] {
+		tier2NoteSheetName = transEN[tier2NoteSheetName]
+		tier2Note = tier2TemplateInfo.note[1]
+	} else {
+		tier2Note = tier2TemplateInfo.note[0]
+	}
+	tier2NoteSheet, err := tier2.xlsx.AddSheet(tier2NoteSheetName)
+	simple_util.CheckErr(err)
+	for _, line := range tier2Note {
+		tier2NoteSheet.AddRow().AddCell().SetString(line)
+	}
+
+	fmt.Printf("%+v\n", tier2)
 
 	ts = append(ts, time.Now())
 	step++
@@ -524,16 +578,39 @@ func main() {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
 				}
 				item["筛选标签"] = anno.UpdateTags(item, *trio)
+
+				tier1Row := tiers["Tier1"].sheet.AddRow()
+				for _, str := range tiers["Tier1"].title {
+					tier1Row.AddCell().SetString(item[str])
+				}
+
+				tier2Row := tier2.sheet.AddRow()
+				for _, str := range tier2.title {
+
+					switch str {
+					case "HGMDorClinvar":
+						if isEnProduct[*productID] {
+							tier2Row.AddCell().SetString(transEN[item[str]])
+						} else {
+							tier2Row.AddCell().SetString(item[str])
+						}
+					case "DiseaseName/ModeInheritance":
+						if isEnProduct[*productID] {
+							tier2Row.AddCell().SetString(item["DiseaseNameEN"] + "/" + item["ModeInheritance"])
+						} else {
+							tier2Row.AddCell().SetString(item["DiseaseNameCH"] + "/" + item["ModeInheritance"])
+						}
+					default:
+						tier2Row.AddCell().SetString(item[str])
+					}
+
+				}
 			}
 
-			// add to excel
-			for flg := range tierSheet {
-				if tier2xlsx[flg][item["Tier"]] {
-					tierRow := tiers[flg].sheet.AddRow()
-					for _, str := range tiers[flg].title {
-						tierRow.AddCell().SetString(item[str])
-					}
-				}
+			// add to tier3
+			tier3Row := tiers["Tier3"].sheet.AddRow()
+			for _, str := range tiers["Tier3"].title {
+				tier3Row.AddCell().SetString(item[str])
 			}
 		}
 
@@ -560,8 +637,8 @@ func main() {
 	}
 
 	if *save {
-		err = tiers["Tier2"].xlsx.Save(tiers["Tier2"].output)
-		simple_util.CheckErr(err)
+		err = tier2.save()
+		simple_util.CheckErr(err, "Tier2 save fail")
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier2")
