@@ -209,8 +209,13 @@ var qualityKeyMap = map[string]string{
 
 // tier2
 var isEnProduct = map[string]bool{
-	"DX1000": true,
-	"DX1001": false,
+	"DX0700": true,
+	"DX1335": true,
+	"DX0458": false,
+	"DX1616": false,
+	"DX1515": false,
+	"DX1617": false,
+	"RC0029": false,
 }
 
 var transEN = map[string]string{
