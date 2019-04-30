@@ -170,6 +170,29 @@ func (xt *xlsxTemplate) save() error {
 	return xt.xlsx.Save(xt.output)
 }
 
+var tierSheet = map[string]string{
+	"Tier1": "filter_variants",
+	"Tier3": "总表",
+}
+
+var err error
+
+func newXlsxTemplate(flag string) xlsxTemplate {
+	var tier = xlsxTemplate{
+		flag:      flag,
+		template:  templatePath + flag + ".xlsx",
+		sheetName: tierSheet[flag],
+		output:    *prefix + "." + flag + ".xlsx",
+	}
+	tier.xlsx, err = xlsx.OpenFile(tier.template)
+	simple_util.CheckErr(err)
+	tier.sheet = tier.xlsx.Sheet[tier.sheetName]
+	for _, cell := range tier.sheet.Row(0).Cells {
+		tier.title = append(tier.title, cell.String())
+	}
+	return tier
+}
+
 var qualitys []map[string]string
 
 var qualityKeyMap = map[string]string{
@@ -294,43 +317,21 @@ func main() {
 	}
 
 	// load tier template
-	var tiers = make(map[string]xlsxTemplate)
-	var tierSheet = map[string]string{
-		"Tier1": "filter_variants",
-		"Tier3": "总表",
-	}
-	for _, key := range []string{"Tier1", "Tier3"} {
-		var tier = xlsxTemplate{
-			flag:      key,
-			template:  templatePath + key + ".xlsx",
-			sheetName: tierSheet[key],
-			output:    *prefix + "." + key + ".xlsx",
-		}
-		tier.xlsx, err = xlsx.OpenFile(tier.template)
-		simple_util.CheckErr(err)
-		tier.sheet = tier.xlsx.Sheet[tier.sheetName]
-		for _, cell := range tier.sheet.Row(0).Cells {
-			tier.title = append(tier.title, cell.String())
-		}
-		tiers[key] = tier
-	}
+	tier1 := newXlsxTemplate("Tier1")
+	tier3 := newXlsxTemplate("Tier3")
 
 	// tier2
 	var tier2 = xlsxTemplate{
 		flag:      "Tier2",
 		sheetName: *productID + "_" + sampleList[0],
 	}
-	tier2.output = *prefix + ".Tier2.xlsx"
+	tier2.output = *prefix + tier2.flag + ".xlsx"
 	tier2.xlsx = xlsx.NewFile()
 	simple_util.CheckErr(err)
 
-	var tier2TemplateInfo = templateInfo{
-		//cols:[]string{},
-		//titles:[2][]string{},
-	}
+	var tier2TemplateInfo templateInfo
 	tier2Template, err := xlsx.OpenFile(templatePath + "tier2.xlsx")
 	simple_util.CheckErr(err)
-	//tier2TitleSheet:=tier2Template.Sheet["Product ID_Sample ID(proband)"]
 	tier2Infos, err := tier2Template.ToSlice()
 	simple_util.CheckErr(err)
 	for i, item := range tier2Infos[0] {
@@ -417,7 +418,7 @@ func main() {
 	logTime(ts, step-1, step, "load 特殊位点库")
 
 	// QC Sheet
-	qcSheet := tiers["Tier1"].xlsx.Sheet["quality"]
+	qcSheet := tier1.xlsx.Sheet["quality"]
 	if qcSheet != nil {
 		for _, row := range qcSheet.Rows {
 			key := row.Cells[0].Value
@@ -441,9 +442,9 @@ func main() {
 			}
 		}
 		if *cnvFilter {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], paths, sampleMap, false, true)
+			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, true)
 		} else {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["exon_cnv"], paths, sampleMap, false, false)
+			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, false)
 
 		}
 		ts = append(ts, time.Now())
@@ -463,9 +464,9 @@ func main() {
 			}
 		}
 		if *cnvFilter {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap, true, false)
+			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, true, false)
 		} else {
-			addCnv2Sheet(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap, false, false)
+			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, false, false)
 		}
 		ts = append(ts, time.Now())
 		step++
@@ -480,7 +481,7 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		addSmnResult(tiers["Tier1"].xlsx.Sheet["large_cnv"], paths, sampleMap)
+		addSmnResult(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add SMN1 result")
@@ -488,7 +489,7 @@ func main() {
 	if *large == "" && *smn == "" {
 		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
 	}
-	addFamInfoSheet(tiers["Tier1"].xlsx, "fam_info", sampleList)
+	addFamInfoSheet(tier1.xlsx, "fam_info", sampleList)
 
 	// anno
 	if *snv != "" {
@@ -579,8 +580,8 @@ func main() {
 				}
 				item["筛选标签"] = anno.UpdateTags(item, *trio)
 
-				tier1Row := tiers["Tier1"].sheet.AddRow()
-				for _, str := range tiers["Tier1"].title {
+				tier1Row := tier1.sheet.AddRow()
+				for _, str := range tier1.title {
 					tier1Row.AddCell().SetString(item[str])
 				}
 
@@ -608,8 +609,8 @@ func main() {
 			}
 
 			// add to tier3
-			tier3Row := tiers["Tier3"].sheet.AddRow()
-			for _, str := range tiers["Tier3"].title {
+			tier3Row := tier3.sheet.AddRow()
+			for _, str := range tier3.title {
 				tier3Row.AddCell().SetString(item[str])
 			}
 		}
@@ -625,11 +626,9 @@ func main() {
 
 	if *save {
 		if isSMN1 {
-			err = tiers["Tier1"].xlsx.Save(*prefix + ".Tier1.SMN1.xlsx")
-		} else {
-			err = tiers["Tier1"].xlsx.Save(tiers["Tier1"].output)
+			tier1.output = *prefix + ".Tier1.SMN1.xlsx"
 		}
-		err = tiers["Tier1"].xlsx.Save(tiers["Tier1"].output)
+		err = tier1.save()
 		simple_util.CheckErr(err)
 		ts = append(ts, time.Now())
 		step++
@@ -645,7 +644,7 @@ func main() {
 	}
 
 	if *save && *snv != "" {
-		err = tiers["Tier3"].xlsx.Save(tiers["Tier3"].output)
+		err = tier3.save()
 		simple_util.CheckErr(err)
 		ts = append(ts, time.Now())
 		step++
