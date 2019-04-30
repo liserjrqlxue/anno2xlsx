@@ -330,12 +330,12 @@ func main() {
 		flag:      "Tier2",
 		sheetName: *productID + "_" + sampleList[0],
 	}
-	tier2.output = *prefix + tier2.flag + ".xlsx"
+	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
 	tier2.xlsx = xlsx.NewFile()
 	simple_util.CheckErr(err)
 
 	var tier2TemplateInfo templateInfo
-	tier2Template, err := xlsx.OpenFile(templatePath + "tier2.xlsx")
+	tier2Template, err := xlsx.OpenFile(templatePath + "Tier2.xlsx")
 	simple_util.CheckErr(err)
 	tier2Infos, err := tier2Template.ToSlice()
 	simple_util.CheckErr(err)
