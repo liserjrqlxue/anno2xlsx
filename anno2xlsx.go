@@ -351,8 +351,6 @@ func main() {
 		tier2TemplateInfo.note[1] = append(tier2TemplateInfo.note[1], item[1])
 	}
 
-	fmt.Printf("%+v\n", tier2TemplateInfo)
-
 	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName)
 	simple_util.CheckErr(err)
 	tier2row := tier2.sheet.AddRow()
@@ -380,8 +378,6 @@ func main() {
 	for _, line := range tier2Note {
 		tier2NoteSheet.AddRow().AddCell().SetString(line)
 	}
-
-	fmt.Printf("%+v\n", tier2)
 
 	ts = append(ts, time.Now())
 	step++
