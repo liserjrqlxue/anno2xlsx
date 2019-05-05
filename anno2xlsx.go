@@ -107,7 +107,7 @@ var (
 	gender = flag.String(
 		"gender",
 		"NA",
-		"gender of proband, if M then change Hom to Hemi in XY not PAR region",
+		"gender of sample list, comma as sep, if M then change Hom to Hemi in XY not PAR region",
 	)
 	qc = flag.String(
 		"qc",

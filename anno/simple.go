@@ -162,6 +162,7 @@ var (
 	isChrX  = regexp.MustCompile(`X`)
 	isChrY  = regexp.MustCompile(`Y`)
 	isChrXY = regexp.MustCompile(`[XY]`)
+	isMale  = regexp.MustCompile(`M`)
 )
 
 func inPAR(chr string, start, end int) bool {
@@ -208,13 +209,24 @@ func UpdateSnv(item map[string]string, gender string) {
 	item["Zygosity"] = zygosityFormat(item["Zygosity"])
 
 	chr := item["#Chr"]
-	if isChrXY.MatchString(chr) && gender == "M" {
+	if isChrXY.MatchString(chr) && isMale.MatchString(gender) {
 		start, err := strconv.Atoi(item["Start"])
 		simple_util.CheckErr(err)
 		stop, err := strconv.Atoi(item["Stop"])
 		simple_util.CheckErr(err)
 		if !inPAR(chr, start, stop) && isHom.MatchString(item["Zygosity"]) {
-			item["Zygosity"] = strings.Replace(item["Zygosity"], "Hom", "Hemi", 1)
+			zygosity := strings.Split(item["Zygosity"], ";")
+			genders := strings.Split(gender, ",")
+			if len(genders) <= len(zygosity) {
+				for i := range genders {
+					if isMale.MatchString(genders[i]) && isHom.MatchString(zygosity[i]) {
+						zygosity[i] = strings.Replace(zygosity[i], "Hom", "Hemi", 1)
+					}
+				}
+				item["Zygosity"] = strings.Join(zygosity, ";")
+			} else {
+				log.Fatalf("conflict gender[%s]and Zygosity[%s]\n", gender, item["Zygosity"])
+			}
 		}
 	}
 
