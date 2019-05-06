@@ -216,12 +216,12 @@ func UpdateSnv(item map[string]string, gender string) {
 		simple_util.CheckErr(err)
 		stop, err := strconv.Atoi(item["Stop"])
 		simple_util.CheckErr(err)
-		if !inPAR(chr, start, stop) && isHom.MatchString(item["Zygosity"]) {
+		if !inPAR(chr, start, stop) && withHom.MatchString(item["Zygosity"]) {
 			zygosity := strings.Split(item["Zygosity"], ";")
 			genders := strings.Split(gender, ",")
 			if len(genders) <= len(zygosity) {
 				for i := range genders {
-					if isMale.MatchString(genders[i]) && withHom.MatchString(zygosity[i]) {
+					if isMale.MatchString(genders[i]) && isHom.MatchString(zygosity[i]) {
 						zygosity[i] = strings.Replace(zygosity[i], "Hom", "Hemi", 1)
 					}
 				}
