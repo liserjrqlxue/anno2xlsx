@@ -39,6 +39,8 @@ var (
 	isAD     = regexp.MustCompile(`AD`)
 	isXL     = regexp.MustCompile(`XL`)
 
+	withHom = regexp.MustCompile(`Hom`)
+
 	isHet  = regexp.MustCompile(`^Het`)
 	isHom  = regexp.MustCompile(`^Hom`)
 	isHemi = regexp.MustCompile(`^Hemi`)
@@ -219,7 +221,7 @@ func UpdateSnv(item map[string]string, gender string) {
 			genders := strings.Split(gender, ",")
 			if len(genders) <= len(zygosity) {
 				for i := range genders {
-					if isMale.MatchString(genders[i]) && isHom.MatchString(zygosity[i]) {
+					if isMale.MatchString(genders[i]) && withHom.MatchString(zygosity[i]) {
 						zygosity[i] = strings.Replace(zygosity[i], "Hom", "Hemi", 1)
 					}
 				}
