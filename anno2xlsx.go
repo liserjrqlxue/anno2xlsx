@@ -336,7 +336,6 @@ func main() {
 	}
 	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
 	tier2.xlsx = xlsx.NewFile()
-	simple_util.CheckErr(err)
 
 	var tier2TemplateInfo templateInfo
 	tier2Template, err := xlsx.OpenFile(templatePath + "Tier2.xlsx")
@@ -573,6 +572,12 @@ func main() {
 				anno.InheritCheck(item, inheritDb)
 			}
 		}
+		var sheetMT *xlsx.Sheet
+		if *annoMT {
+			sheetMT, err = tier1.xlsx.AddSheet("MT")
+			simple_util.CheckErr(err)
+		}
+		var isMT = regexp.MustCompile(`MT|chrM`)
 		for _, item := range data {
 			// 遗传相符
 			if item["Tier"] == "Tier1" {
@@ -613,6 +618,12 @@ func main() {
 				}
 			}
 
+			if *annoMT && isMT.MatchString(item["#Chr"]) {
+				rowMT := sheetMT.AddRow()
+				for _, str := range tier3.title {
+					rowMT.AddCell().SetString(item[str])
+				}
+			}
 			// add to tier3
 			tier3Row := tier3.sheet.AddRow()
 			for _, str := range tier3.title {
