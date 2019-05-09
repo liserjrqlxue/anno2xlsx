@@ -908,8 +908,8 @@ func tag3(item map[string]string) string {
 	return ""
 }
 
-func tag4(item map[string]string, isTrio bool) string {
-	var flag1, flag2, flag3 bool
+func tag4(item map[string]string) string {
+	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
 		frequency = "0"
@@ -925,20 +925,8 @@ func tag4(item map[string]string, isTrio bool) string {
 	if isPP3.MatchString(item["autoRuleName"]) {
 		flag2 = true
 	}
-	if isTrio {
-		flag3 = true
-	} else {
-		var flag = true
-		for _, key := range keys {
-			if !isZero.MatchString(item[key]) {
-				flag = false
-			}
-		}
-		if flag {
-			flag3 = true
-		}
-	}
-	if flag1 && flag2 && flag3 {
+
+	if flag1 && flag2 {
 		return "4"
 	}
 	return ""
@@ -948,7 +936,7 @@ func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) 
 	tag1 := tag1(item, specVarDb, isTrio)
 	tag2 := tag2(item, specVarDb)
 	tag3 := tag3(item)
-	tag4 := tag4(item, isTrio)
+	tag4 := tag4(item)
 	return strings.Join([]string{tag1, tag2, tag3, tag4}, "")
 }
 
