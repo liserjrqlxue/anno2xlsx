@@ -28,26 +28,68 @@ var (
 	)
 )
 
+type Variant struct {
+	Chr   string                 `json:"Chromosome"`
+	Ref   string                 `json:"Ref"`
+	Alt   string                 `json:"Alt"`
+	Start int                    `json:"Start"`
+	End   int                    `json:"End"`
+	Info  map[string]interface{} `json:"Info"`
+}
+
 func main() {
 	flag.Parse()
 	if *db == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	logFile, err := os.Create(*db + ".db.log")
+	simple_util.CheckErr(err)
+	defer simple_util.DeferClose(logFile)
+	log.SetOutput(logFile)
+	log.SetFlags(log.Ldate | log.Ltime)
+	log.Printf("Log file:%v \n", *db+".db.log")
+
 	//var database []map[string]string
 	database := simple_util.JsonFile2Interface(*db)
+	var outputDb = make(map[string]Variant)
 	for _, item := range database.([]interface{}) {
-		MTAllele2Variant(item.(map[string]interface{})["Allele"].(string))
+		var mut = Variant{
+			Chr: "MT",
+		}
+		mut.Info = item.(map[string]interface{})
+		allele := mut.Info["Allele"].(string)
+		mut.Ref, mut.Alt, mut.Start, mut.End = MTAllele2Variant(allele)
+		key := strings.Join(
+			[]string{
+				mut.Chr,
+				strconv.Itoa(mut.Start),
+				strconv.Itoa(mut.End),
+				mut.Ref,
+				mut.Alt,
+			},
+			"\t",
+		)
+		if key != "MT\t0\t0\t\t" {
+			dup, ok := outputDb[key]
+			if ok {
+				log.Printf("Duplicate key[%s]:\n\t%+v\n\t%+v\n", key, dup, mut)
+			}
+			outputDb[key] = mut
+		} else {
+			log.Printf("Skip allele:[%s]\n", allele)
+		}
 	}
+	simple_util.CheckErr(simple_util.Json2rawFile(*db+".db", outputDb))
 }
 
-func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
+func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 	var err error
 	switch {
 	case isSNP.MatchString(allele):
 		matchs := isSNP.FindStringSubmatch(allele)
 		if matchs != nil && len(matchs) == 4 {
-			chr = "MT"
 			ref = matchs[1]
 			alt = matchs[3]
 			start, err = strconv.Atoi(matchs[2])
@@ -60,7 +102,6 @@ func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
 	case isDUP.MatchString(allele):
 		matchs := isDUP.FindStringSubmatch(allele)
 		if matchs != nil && len(matchs) == 4 {
-			chr = "MT"
 			ref = matchs[1]
 			alt = matchs[3]
 			start, err = strconv.Atoi(matchs[2])
@@ -83,7 +124,6 @@ func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
 	case isDEL.MatchString(allele):
 		matchs := isDEL.FindStringSubmatch(allele)
 		if matchs != nil && len(matchs) == 3 {
-			chr = "MT"
 			ref = matchs[1]
 			alt = ""
 			start, err = strconv.Atoi(matchs[2])
@@ -96,7 +136,6 @@ func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
 	case isLDEL.MatchString(allele):
 		matchs := isLDEL.FindStringSubmatch(allele)
 		if matchs != nil && len(matchs) == 4 {
-			chr = "MT"
 			alt = ""
 			ref = matchs[3]
 			start, err = strconv.Atoi(matchs[1])
@@ -112,7 +151,6 @@ func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
 	case isINS.MatchString(allele):
 		matchs := isINS.FindStringSubmatch(allele)
 		if matchs != nil && len(matchs) == 4 {
-			chr = "MT"
 			ref = ""
 			alt = matchs[3]
 			start, err = strconv.Atoi(matchs[2])
@@ -124,7 +162,6 @@ func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
 	case isLINS.MatchString(allele):
 		matchs := isLINS.FindStringSubmatch(allele)
 		if matchs != nil && len(matchs) == 5 {
-			chr = "MT"
 			ref = ""
 			alt = matchs[4]
 			start, err = strconv.Atoi(matchs[2])
@@ -133,7 +170,6 @@ func MTAllele2Variant(allele string) (chr, ref, alt string, start, end int) {
 			simple_util.CheckErr(err, matchs...)
 			if end-start+1 == len(alt) {
 				end = start
-				log.Printf("%s %d %d %s %s %v\n", chr, start, end, ref, alt, matchs)
 				return
 			}
 		}
