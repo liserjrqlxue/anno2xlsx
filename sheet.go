@@ -166,7 +166,15 @@ type Variant struct {
 
 func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
 	rowMT := sheet.AddRow()
-	key := strings.Join([]string{"MT", item["Start"], item["Stop"], item["Ref"], item["Call"]}, "\t")
+	ref := item["Ref"]
+	alt := item["Call"]
+	if ref == "." {
+		ref = ""
+	}
+	if alt == "." {
+		alt = ""
+	}
+	key := strings.Join([]string{"MT", item["Start"], item["Stop"], ref, alt}, "\t")
 	mut, ok := TIPdb[key]
 	if ok {
 		for _, key := range []string{"Mito TIP"} {

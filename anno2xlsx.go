@@ -651,9 +651,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "update info")
-	} else {
-		//tiers["Tier1"].xlsx.Sheet[tierSheet["Tier1"]].Hidden = true
-		//tiers["Tier1"].xlsx.Sheet[tierSheet["Tier2"]].Hidden = true
 	}
 
 	if *save {
@@ -668,16 +665,14 @@ func main() {
 	}
 
 	if *save {
-		err = tier2.save()
-		simple_util.CheckErr(err, "Tier2 save fail")
+		simple_util.CheckErr(tier2.save(), "Tier2 save fail")
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier2")
 	}
 
 	if *save && *snv != "" {
-		err = tier3.save()
-		simple_util.CheckErr(err)
+		simple_util.CheckErr(tier3.save())
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier3")
