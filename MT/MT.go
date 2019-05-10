@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"github.com/liserjrqlxue/simple-util"
 	"log"
@@ -12,12 +13,15 @@ import (
 
 // regexp
 var (
-	isSNP  = regexp.MustCompile(`^([ACGT])(\d+)([ACGT])$`)
-	isDUP  = regexp.MustCompile(`^([ACGT])(\d+)([ACGT]+)$`)
-	isDEL  = regexp.MustCompile(`^([ACGT])(\d+)del$`)
-	isLDEL = regexp.MustCompile(`^(\d+)_(\d+)del([ACGT]+)$`)
-	isINS  = regexp.MustCompile(`^([ACGT])(\d+)ins([ACGT])$`)
-	isLINS = regexp.MustCompile(`^([ACGT])(\d+)_(\d+)ins([ACGT]+)$`)
+	isSNP   = regexp.MustCompile(`^([ACGT])(\d+)([ACGT])$`)
+	isDUP   = regexp.MustCompile(`^([ACGT])(\d+)([ACGT]+)$`)
+	isDEL   = regexp.MustCompile(`^([ACGT])(\d+)del$`)
+	isLDEL  = regexp.MustCompile(`^(\d+)_(\d+)del([ACGT]+)$`)
+	isINS   = regexp.MustCompile(`^([ACGT])(\d+)ins([ACGT])$`)
+	isLINS  = regexp.MustCompile(`^([ACGT])(\d+)_(\d+)ins([ACGT]+)$`)
+	isAfSNP = regexp.MustCompile(`^([ACGT])-([ACGT])$`)
+	isAfINS = regexp.MustCompile(`^([ACGT])-([ACGT]+)$`)
+	isAfDel = regexp.MustCompile(`^del$`)
 )
 
 var (
@@ -25,6 +29,11 @@ var (
 		"db",
 		"",
 		"db to be check\n",
+	)
+	isAF = flag.Bool(
+		"af",
+		false,
+		"if is af db",
 	)
 )
 
@@ -59,8 +68,15 @@ func main() {
 			Chr: "MT",
 		}
 		mut.Info = item.(map[string]interface{})
-		allele := mut.Info["Allele"].(string)
-		mut.Ref, mut.Alt, mut.Start, mut.End = MTAllele2Variant(allele)
+		if *isAF {
+			pos := mut.Info["Pos"].(string)
+			nc := mut.Info["Nucleotide Change"].(string)
+			mut.Ref, mut.Alt, mut.Start, mut.End = MTPosNC2Variant(pos, nc)
+		} else {
+			allele := mut.Info["Allele"].(string)
+			mut.Ref, mut.Alt, mut.Start, mut.End = MTAllele2Variant(allele)
+		}
+
 		key := strings.Join(
 			[]string{
 				mut.Chr,
@@ -73,12 +89,41 @@ func main() {
 		)
 		if key != "MT\t0\t0\t\t" {
 			dup, ok := outputDb[key]
-			if ok {
-				log.Printf("Duplicate key[%s]:\n\t%+v\n\t%+v\n", key, dup, mut)
+			if *isAF {
+				var info = make(map[string]interface{})
+				for _, key := range []string{"# in HG branch with variant", "Total # HG branch seqs"} {
+					info[key], err = strconv.Atoi(mut.Info[key].(string))
+					simple_util.CheckErr(err)
+				}
+				if ok {
+					for _, key := range []string{"# in HG branch with variant", "Total # HG branch seqs"} {
+						count, err := strconv.Atoi(mut.Info[key].(string))
+						simple_util.CheckErr(err)
+						dup.Info[key] = dup.Info[key].(int) + count
+					}
+					dup.Info["Fequency in HG branch(%)"] =
+						float64(dup.Info["# in HG branch with variant"].(int)) / float64(dup.Info["Total # HG branch seqs"].(int)) * 100
+				} else {
+					info["Fequency in HG branch(%)"] =
+						float64(info["# in HG branch with variant"].(int)) / float64(info["Total # HG branch seqs"].(int)) * 100
+					mut.Info = info
+					outputDb[key] = mut
+				}
+			} else {
+				if ok {
+					jsonByte1, err1 := json.MarshalIndent(dup, "", "\t")
+					jsonByte2, err2 := json.MarshalIndent(mut, "", "\t")
+					log.Printf(
+						"Duplicate key[%s]:\n\t%s,%v\n\t%s,%v\n",
+						key, jsonByte1, err1, jsonByte2, err2,
+					)
+				} else {
+					outputDb[key] = mut
+				}
 			}
-			outputDb[key] = mut
 		} else {
-			log.Printf("Skip allele:[%s]\n", allele)
+			jsonByte, err := json.MarshalIndent(item, "", "\t")
+			log.Printf("Skip item:%s,%v\n", jsonByte, err)
 		}
 	}
 	simple_util.CheckErr(simple_util.Json2rawFile(*db+".db", outputDb))
@@ -92,10 +137,9 @@ func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 		if matchs != nil && len(matchs) == 4 {
 			ref = matchs[1]
 			alt = matchs[3]
-			start, err = strconv.Atoi(matchs[2])
+			end, err = strconv.Atoi(matchs[2])
 			simple_util.CheckErr(err, matchs...)
-			end = start
-			start--
+			start = end - 1
 			return
 		}
 		log.Fatalf("can not parser SNP:[%s]->[%v]\n", allele, matchs)
@@ -176,6 +220,42 @@ func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 		log.Fatalf("can not parser LINS:[%s]->[%v]\n", allele, matchs)
 	default:
 		log.Printf("can not parser:[%s]\n", allele)
+	}
+	return
+}
+
+func MTPosNC2Variant(pos, nc string) (ref, alt string, start, end int) {
+	var err error
+	switch {
+	case isAfSNP.MatchString(nc):
+		matchs := isAfSNP.FindStringSubmatch(nc)
+		if matchs != nil && len(matchs) == 3 {
+			ref = matchs[1]
+			alt = matchs[2]
+			end, err = strconv.Atoi(pos)
+			simple_util.CheckErr(err, pos, nc)
+			start = end - 1
+			return
+		}
+		log.Fatalf("can not parser SNP:%s\t[%s]->[%v]\n", pos, nc, matchs)
+	case isAfINS.MatchString(nc):
+		matchs := isAfINS.FindStringSubmatch(nc)
+		if matchs != nil && len(matchs) == 3 {
+			ref = matchs[1]
+			alt = matchs[2]
+			altChr := strings.Split(alt, "")
+			if altChr[0] == ref {
+				ref = ""
+				alt = strings.Join(altChr[1:], "")
+				start, err = strconv.Atoi(pos)
+				simple_util.CheckErr(err, pos, nc)
+				end = start + len(alt)
+				return
+			}
+		}
+		log.Fatalf("can not parser SNP:%s\t[%s]->[%v]\n", pos, nc, matchs)
+	default:
+		log.Printf("can not parser:%s\t[%s]\n", pos, nc)
 	}
 	return
 }
