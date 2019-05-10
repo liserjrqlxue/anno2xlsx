@@ -150,6 +150,9 @@ var MTTitle = []string{
 	"title",
 	"Status",
 	"Mito TIP",
+	"# in HG branch with variant",
+	"Total # HG branch seqs",
+	"Fequency in HG branch(%)",
 }
 
 type Variant struct {
@@ -175,6 +178,16 @@ func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
 		for _, key := range []string{"Disease", "pmid", "title", "Status"} {
 			item[key] = mut.Info[key].(string)
 		}
+	}
+	mut, ok = MTAFdb[key]
+	if ok {
+		//for _, key := range []string{	"# in HG branch with variant", "Total # HG branch seqs"} {
+		//item[key] =strconv.Itoa(mut.Info[key].(int))
+		//}
+		for _, key := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
+			item[key] = strconv.FormatFloat(mut.Info[key].(float64), 'f', 5, 64)
+		}
+
 	}
 	for _, str := range MTTitle {
 		rowMT.AddCell().SetString(item[str])

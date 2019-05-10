@@ -252,6 +252,7 @@ var snvs []string
 // MT
 var TIPdb = make(map[string]Variant)
 var MTdisease = make(map[string]Variant)
+var MTAFdb = make(map[string]Variant)
 
 func main() {
 	var ts []time.Time
@@ -584,8 +585,10 @@ func main() {
 			for _, key := range MTTitle {
 				rowMT.AddCell().SetString(key)
 			}
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", TIPdb)
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", MTdisease)
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", &TIPdb)
+			//fmt.Printf("%+v\n",TIPdb)
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", &MTdisease)
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.频率库.json.db", &MTAFdb)
 		}
 		var isMT = regexp.MustCompile(`MT|chrM`)
 		for _, item := range data {
