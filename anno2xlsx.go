@@ -250,6 +250,8 @@ var isSMN1 bool
 var snvs []string
 
 // MT
+var MTxlsx *xlsx.File
+var MTsheet *xlsx.Sheet
 var TIPdb = make(map[string]Variant)
 var MTdisease = make(map[string]Variant)
 var MTAFdb = make(map[string]Variant)
@@ -577,11 +579,11 @@ func main() {
 				anno.InheritCheck(item, inheritDb)
 			}
 		}
-		var sheetMT *xlsx.Sheet
 		if *annoMT {
-			sheetMT, err = tier1.xlsx.AddSheet("MT")
+			MTxlsx = xlsx.NewFile()
+			MTsheet, err = MTxlsx.AddSheet("MT")
 			simple_util.CheckErr(err)
-			rowMT := sheetMT.AddRow()
+			rowMT := MTsheet.AddRow()
 			for _, key := range MTTitle {
 				rowMT.AddCell().SetString(key)
 			}
@@ -638,7 +640,7 @@ func main() {
 			}
 
 			if *annoMT && isMT.MatchString(item["#Chr"]) {
-				addMTRow(sheetMT, item)
+				addMTRow(MTsheet, item)
 			}
 			// add to tier3
 			tier3Row := tier3.sheet.AddRow()
@@ -651,6 +653,17 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "update info")
+	}
+
+	if *save {
+		if *annoMT {
+			simple_util.CheckErr(MTxlsx.Save(*prefix + ".MT.xlsx"))
+			err = tier1.save()
+			simple_util.CheckErr(err)
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "save MT")
+		}
 	}
 
 	if *save {
