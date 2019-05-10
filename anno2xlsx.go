@@ -138,6 +138,11 @@ var (
 		false,
 		"if anno MT",
 	)
+	wgs = flag.Bool(
+		"wgs",
+		false,
+		"if anno wgs (include -annoMT)",
+	)
 )
 
 // family list
@@ -178,6 +183,8 @@ var tierSheet = map[string]string{
 	"Tier1": "filter_variants",
 	"Tier3": "总表",
 }
+
+var tier1GeneList = make(map[string]bool)
 
 var err error
 
@@ -256,6 +263,9 @@ var TIPdb = make(map[string]Variant)
 var MTdisease = make(map[string]Variant)
 var MTAFdb = make(map[string]Variant)
 
+// WGS
+var intronSheet *xlsx.Sheet
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -288,6 +298,10 @@ func main() {
 		if *prefix == "" {
 			*prefix = snvs[0]
 		}
+	}
+
+	if *wgs {
+		*annoMT = true
 	}
 
 	if *logfile == "" {
@@ -561,7 +575,7 @@ func main() {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
 
-			anno.AddTier(item, stats, geneList, specVarDb, *trio)
+			anno.AddTier(item, stats, geneList, specVarDb, *trio, *wgs)
 
 			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 				anno.UpdateSnvTier1(item)
@@ -577,16 +591,29 @@ func main() {
 			// only for Tier1
 			if item["Tier"] == "Tier1" {
 				anno.InheritCheck(item, inheritDb)
+				tier1GeneList[item["Gene Symbol"]] = true
 			}
 		}
+
 		if *annoMT {
 			MTxlsx = xlsx.NewFile()
+			// MT sheet
 			MTsheet, err = MTxlsx.AddSheet("MT")
 			simple_util.CheckErr(err)
 			rowMT := MTsheet.AddRow()
 			for _, key := range MTTitle {
 				rowMT.AddCell().SetString(key)
 			}
+			// intron sheet
+			if *wgs {
+				intronSheet, err = MTxlsx.AddSheet("intron")
+				simple_util.CheckErr(err)
+				rowIntron := MTsheet.AddRow()
+				for _, key := range tier1.title {
+					rowIntron.AddCell().SetString(key)
+				}
+			}
+
 			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", &TIPdb)
 			//fmt.Printf("%+v\n",TIPdb)
 			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", &MTdisease)
@@ -641,6 +668,12 @@ func main() {
 
 			if *annoMT && isMT.MatchString(item["#Chr"]) {
 				addMTRow(MTsheet, item)
+			}
+			if *wgs && tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "intron" {
+				intronRow := intronSheet.AddRow()
+				for _, str := range tier1.title {
+					intronRow.AddCell().SetString(item[str])
+				}
 			}
 			// add to tier3
 			tier3Row := tier3.sheet.AddRow()

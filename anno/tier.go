@@ -42,13 +42,13 @@ var (
 )
 
 // add Tier to item
-func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio bool) {
+func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio, isWGS bool) {
 	if isTrio {
 		if noProband.MatchString(item["Zygosity"]) {
 			stats["noProband"]++
 			return
 		}
-		checkTierTrio(item, stats, geneList)
+		checkTierTrio(item, stats, geneList, isWGS)
 	} else {
 		checkTierSingle(item, stats, geneList)
 	}
@@ -134,7 +134,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 	}
 }
 
-func checkTierTrio(item map[string]string, stats map[string]int, geneList map[string]bool) {
+func checkTierTrio(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS bool) {
 	gene := item["Gene Symbol"]
 	// Tier
 	if noProband.MatchString(item["Zygosity"]) {
@@ -164,6 +164,9 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 						item["Tier"] = "Tier1"
 						stats["Function"]++
 						stats["Denovo Function"]++
+					} else if isWGS && item["Function"] == "intron" {
+						item["Tier"] = "intron"
+						stats["intron"]++
 					} else {
 						item["Tier"] = "Tier2"
 						stats["noFunction"]++
@@ -203,6 +206,9 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 						stats["Function"]++
 						stats["noDenovo Function"]++
 						//}
+					} else if isWGS && item["Function"] == "intron" {
+						item["Tier"] = "intron"
+						stats["intron"]++
 					} else {
 						item["Tier"] = "Tier3"
 						stats["noFunction"]++
