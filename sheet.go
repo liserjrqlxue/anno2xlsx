@@ -137,3 +137,46 @@ func loadQC(files string, quality []map[string]string) {
 		}
 	}
 }
+
+var MTTitle = []string{
+	"#Chr",
+	"Start",
+	"Stop",
+	"Ref",
+	"Call",
+	"MutationName",
+	"Disease",
+	"pmid",
+	"title",
+	"Status",
+	"Mito TIP",
+}
+
+type Variant struct {
+	Chr   string                 `json:"Chromosome"`
+	Ref   string                 `json:"Ref"`
+	Alt   string                 `json:"Alt"`
+	Start int                    `json:"Start"`
+	End   int                    `json:"End"`
+	Info  map[string]interface{} `json:"Info"`
+}
+
+func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
+	rowMT := sheet.AddRow()
+	key := strings.Join([]string{"MT", item["Start"], item["Stop"], item["Ref"], item["Call"]}, "\t")
+	mut, ok := TIPdb[key]
+	if ok {
+		for _, key := range []string{"Mito TIP"} {
+			item[key] = mut.Info[key].(string)
+		}
+	}
+	mut, ok = MTdisease[key]
+	if ok {
+		for _, key := range []string{"Disease", "pmid", "title", "Status"} {
+			item[key] = mut.Info[key].(string)
+		}
+	}
+	for _, str := range MTTitle {
+		rowMT.AddCell().SetString(item[str])
+	}
+}

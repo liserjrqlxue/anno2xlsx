@@ -249,6 +249,10 @@ var isSMN1 bool
 
 var snvs []string
 
+// MT
+var TIPdb = make(map[string]Variant)
+var MTdisease = make(map[string]Variant)
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -576,6 +580,12 @@ func main() {
 		if *annoMT {
 			sheetMT, err = tier1.xlsx.AddSheet("MT")
 			simple_util.CheckErr(err)
+			rowMT := sheetMT.AddRow()
+			for _, key := range MTTitle {
+				rowMT.AddCell().SetString(key)
+			}
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", TIPdb)
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", MTdisease)
 		}
 		var isMT = regexp.MustCompile(`MT|chrM`)
 		for _, item := range data {
@@ -619,10 +629,7 @@ func main() {
 			}
 
 			if *annoMT && isMT.MatchString(item["#Chr"]) {
-				rowMT := sheetMT.AddRow()
-				for _, str := range tier3.title {
-					rowMT.AddCell().SetString(item[str])
-				}
+				addMTRow(sheetMT, item)
 			}
 			// add to tier3
 			tier3Row := tier3.sheet.AddRow()
