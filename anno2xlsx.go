@@ -608,7 +608,7 @@ func main() {
 			if *wgs {
 				intronSheet, err = MTxlsx.AddSheet("intron")
 				simple_util.CheckErr(err)
-				rowIntron := MTsheet.AddRow()
+				rowIntron := intronSheet.AddRow()
 				for _, key := range tier1.title {
 					rowIntron.AddCell().SetString(key)
 				}
@@ -649,14 +649,18 @@ func main() {
 						}
 					case "DiseaseName/ModeInheritance":
 						inheritance := strings.Split(item["ModeInheritance"], "\n")
+						var disease []string
 						if isEnProduct[*productID] {
-							for i, text := range strings.Split(item["DiseaseNameEN"], "\n") {
+							disease = strings.Split(item["DiseaseNameEN"], "\n")
+						} else {
+							disease = strings.Split(item["DiseaseNameCH"], "\n")
+						}
+						if len(disease) == len(inheritance) {
+							for i, text := range disease {
 								inheritance[i] = text + "/" + inheritance[i]
 							}
 						} else {
-							for i, text := range strings.Split(item["DiseaseNameCH"], "\n") {
-								inheritance[i] = text + "/" + inheritance[i]
-							}
+							log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
 						}
 						tier2Row.AddCell().SetString(strings.Join(inheritance, "\n"))
 					default:
