@@ -616,11 +616,17 @@ func main() {
 							tier2Row.AddCell().SetString(item[str])
 						}
 					case "DiseaseName/ModeInheritance":
+						inheritance := strings.Split(item["ModeInheritance"], "\n")
 						if isEnProduct[*productID] {
-							tier2Row.AddCell().SetString(item["DiseaseNameEN"] + "/" + item["ModeInheritance"])
+							for i, text := range strings.Split(item["DiseaseNameEN"], "\n") {
+								inheritance[i] = text + "/" + inheritance[i]
+							}
 						} else {
-							tier2Row.AddCell().SetString(item["DiseaseNameCH"] + "/" + item["ModeInheritance"])
+							for i, text := range strings.Split(item["DiseaseNameCH"], "\n") {
+								inheritance[i] = text + "/" + inheritance[i]
+							}
 						}
+						tier2Row.AddCell().SetString(strings.Join(inheritance, "\n"))
 					default:
 						tier2Row.AddCell().SetString(item[str])
 					}
