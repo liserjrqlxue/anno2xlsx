@@ -306,14 +306,14 @@ func main() {
 	}
 
 	// parser etc/config.json
-	defalutConfig := simple_util.JsonFile2Map(*config)
+	defaultConfig := simple_util.JsonFile2Map(*config)
 	if *geneDiseaseDbFile == "" {
-		if simple_util.FileExists(defalutConfig["*geneDiseaseDbFile"]) {
-			*geneDiseaseDbFile = defalutConfig["*geneDiseaseDbFile"]
-		} else if simple_util.FileExists(filepath.Join(exPath, "db", defalutConfig["*geneDiseaseDbFile"])) {
-			*geneDiseaseDbFile = filepath.Join(exPath, "db", defalutConfig["*geneDiseaseDbFile"])
+		if simple_util.FileExists(defaultConfig["geneDiseaseDbFile"]) {
+			*geneDiseaseDbFile = defaultConfig["geneDiseaseDbFile"]
+		} else if simple_util.FileExists(filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"])) {
+			*geneDiseaseDbFile = filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"])
 		} else {
-			log.Fatalf("can not find -geneDiseaseDbFile[%s]\n", defalutConfig["*geneDiseaseDbFile"])
+			log.Fatalf("can not find -geneDiseaseDbFile[%s]\n", defaultConfig["geneDiseaseDbFile"])
 		}
 	}
 
