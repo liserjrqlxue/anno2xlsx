@@ -15,10 +15,9 @@ anno2xlsx
 *.out
 
 # Out of repo
-全外基因基因集整理*
-基因库-更新版基因特征谱-加动态突变-20190110.xlsx
-基因库-更新版基因特征谱-加动态突变-20190110.xlsx.Sheet1.json
-基因库-更新版基因特征谱-加动态突变-20190110.xlsx.Sheet1.json.aes
+backup/
+基因库-更新版基因特征谱-加动态突变-20190110.xlsx*
+全外疾病背景更新V3*
 
 # JetBrains GoLangd
 .idea
