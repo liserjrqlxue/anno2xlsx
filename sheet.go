@@ -139,6 +139,7 @@ func loadQC(files string, quality []map[string]string) {
 }
 
 var MTTitle = []string{
+	"SampleID",
 	"#Chr",
 	"Start",
 	"Stop",
