@@ -153,6 +153,11 @@ var (
 		false,
 		"if wesim, output result.tsv",
 	)
+	acmg = flag.Bool(
+		"acmg",
+		false,
+		"if use new ACMG, fix PS1,PS4,PM4",
+	)
 )
 
 // family list
@@ -281,6 +286,10 @@ var MTAFdb = make(map[string]Variant)
 // WGS
 var intronSheet *xlsx.Sheet
 
+// ACMG
+// PS1
+var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist map[string]int
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -315,6 +324,22 @@ func main() {
 		}
 	}
 
+	if *logfile == "" {
+		*logfile = *prefix + ".log"
+	}
+	logFile, err := os.Create(*logfile)
+	simple_util.CheckErr(err)
+	defer simple_util.DeferClose(logFile)
+	log.SetOutput(logFile)
+	log.SetFlags(log.Ldate | log.Ltime)
+	log.Printf("Log file:%v \n", *logfile)
+
+	if *acmg {
+		ClinVarMissense = simple_util.JsonFile2MapInt(dbPath + "ClinVarPathogenicMissense.json")
+		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(dbPath + "ClinVarPHGVSList.json")
+		HGMDMissense = simple_util.JsonFile2MapInt(dbPath + "HGMDPathogenicMissense.json")
+		HGMDPHGVSlist = simple_util.JsonFile2MapInt(dbPath + "HGMDPHGVSList.json")
+	}
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 	if *geneDiseaseDbFile == "" {
@@ -343,16 +368,6 @@ func main() {
 	if *wgs {
 		*annoMT = true
 	}
-
-	if *logfile == "" {
-		*logfile = *prefix + ".log"
-	}
-	logFile, err := os.Create(*logfile)
-	simple_util.CheckErr(err)
-	defer simple_util.DeferClose(logFile)
-	log.SetOutput(logFile)
-	log.SetFlags(log.Ldate | log.Ltime)
-	log.Printf("Log file:%v \n", *logfile)
 
 	sampleList = strings.Split(*list, ",")
 	var sampleMap = make(map[string]bool)
@@ -591,14 +606,18 @@ func main() {
 			anno.UpdateFunction(item)
 
 			// ues acmg of go
-			evidence.ComparePS4(item)
-			evidence.ComparePM4(item)
-			evidence.ComparePP3(item, true) // PP3 更改条件，更严格了，非splice未考虑保守性
-			//evidence.CompareBA1(item,true) // BA1 更改条件，去除PVFD，新增ESP6500
-			//evidence.CompareBS1(item,true) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-			evidence.CompareBP3(item)
-			evidence.CompareBP4(item, true) // BP4 更改条件，更严格了，非splice未考虑保守性
-			evidence.CompareBP7(item, true) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
+			if *acmg {
+				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
+				item["PS4"] = evidence.CheckPS4(item)
+				item["PM4"] = evidence.CheckPM4(item)
+				evidence.ComparePP3(item, true) // PP3 更改条件，更严格了，非splice未考虑保守性
+				//evidence.CompareBA1(item,true) // BA1 更改条件，去除PVFD，新增ESP6500
+				//evidence.CompareBS1(item,true) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
+				evidence.CompareBP3(item)
+				evidence.CompareBP4(item, true) // BP4 更改条件，更严格了，非splice未考虑保守性
+				evidence.CompareBP7(item, true) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
+			}
+
 			item["自动化判断"] = acmg2015.PredACMG2015(item)
 
 			anno.UpdateSnv(item, *gender)
