@@ -1,14 +1,10 @@
 {
   "geneDiseaseDbFile": "全外疾病背景更新V3-统一疾病库20190510-周更新-0520.xlsx.更新后全外背景库（5181疾病OMIM ID，3991基因）.json.aes",
   "resultColumn":[
-    "#Chr",
-    "Start",
-    "Stop",
     "Gene Symbol",
-    "Transcript",
-    "cHGVS",
-    "pHGVS",
-    "Function",
-    "Zygosity"
+    "#Chr+Stop",
+    "MutationName",
+    "Zygosity",
+    "自动化判断"
   ]
 }
