@@ -201,6 +201,7 @@ var err error
 // WESIM
 var resultColumn []string
 var resultFile *os.File
+var qcFile *os.File
 
 func newXlsxTemplate(flag string) xlsxTemplate {
 	var tier = xlsxTemplate{
@@ -334,6 +335,9 @@ func main() {
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(resultFile)
 		fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
+		qcFile, err = os.Create(*prefix + ".qc.tsv")
+		simple_util.CheckErr(err)
+		defer simple_util.DeferClose(qcFile)
 	}
 
 	if *wgs {
@@ -482,9 +486,15 @@ func main() {
 	qcSheet := tier1.xlsx.Sheet["quality"]
 	if qcSheet != nil {
 		for _, row := range qcSheet.Rows {
+			var qcArray []string
 			key := row.Cells[0].Value
+			qcArray = append(qcArray, key)
 			for _, quality := range qualitys {
 				row.AddCell().SetString(quality[key])
+				qcArray = append(qcArray, quality[key])
+			}
+			if *wesim {
+				fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
 			}
 		}
 		ts = append(ts, time.Now())
