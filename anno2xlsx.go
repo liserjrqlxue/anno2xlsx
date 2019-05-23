@@ -148,6 +148,11 @@ var (
 		filepath.Join(exPath, "etc", "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
+	wesim = flag.Bool(
+		"wesim",
+		false,
+		"if wesim, output result.tsv",
+	)
 )
 
 // family list
@@ -192,6 +197,10 @@ var tierSheet = map[string]string{
 var tier1GeneList = make(map[string]bool)
 
 var err error
+
+// WESIM
+var resultColumn []string
+var resultFile *os.File
 
 func newXlsxTemplate(flag string) xlsxTemplate {
 	var tier = xlsxTemplate{
@@ -306,15 +315,25 @@ func main() {
 	}
 
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Map(*config)
+	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 	if *geneDiseaseDbFile == "" {
-		if simple_util.FileExists(defaultConfig["geneDiseaseDbFile"]) {
-			*geneDiseaseDbFile = defaultConfig["geneDiseaseDbFile"]
-		} else if simple_util.FileExists(filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"])) {
-			*geneDiseaseDbFile = filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"])
+		if simple_util.FileExists(defaultConfig["geneDiseaseDbFile"].(string)) {
+			*geneDiseaseDbFile = defaultConfig["geneDiseaseDbFile"].(string)
+		} else if simple_util.FileExists(filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"].(string))) {
+			*geneDiseaseDbFile = filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"].(string))
 		} else {
 			log.Fatalf("can not find -geneDiseaseDbFile[%s]\n", defaultConfig["geneDiseaseDbFile"])
 		}
+	}
+
+	if *wesim {
+		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
+			resultColumn = append(resultColumn, key.(string))
+		}
+		resultFile, err = os.Create(*prefix + ".result.tsv")
+		simple_util.CheckErr(err)
+		defer simple_util.DeferClose(resultFile)
+		fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
 	}
 
 	if *wgs {
@@ -652,6 +671,13 @@ func main() {
 				tier1Row := tier1.sheet.AddRow()
 				for _, str := range tier1.title {
 					tier1Row.AddCell().SetString(item[str])
+				}
+				if *wesim {
+					var resultArray []string
+					for _, key := range resultColumn {
+						resultArray = append(resultArray, item[key])
+					}
+					fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
 				}
 
 				tier2Row := tier2.sheet.AddRow()
