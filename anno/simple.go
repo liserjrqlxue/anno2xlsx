@@ -314,7 +314,7 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 		return "不相符"
 	} else {
 		if isXL.MatchString(inherit) {
-			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
+			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) || isHemi.MatchString(zygosity) {
 				return "相符"
 			}
 		}
