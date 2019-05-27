@@ -138,24 +138,6 @@ func loadQC(files string, quality []map[string]string) {
 	}
 }
 
-var MTTitle = []string{
-	"SampleID",
-	"#Chr",
-	"Start",
-	"Stop",
-	"Ref",
-	"Call",
-	"MutationName",
-	"Disease",
-	"pmid",
-	"title",
-	"Status",
-	"Mito TIP",
-	"# in HG branch with variant",
-	"Total # HG branch seqs",
-	"Fequency in HG branch(%)",
-}
-
 type Variant struct {
 	Chr   string                 `json:"Chromosome"`
 	Ref   string                 `json:"Ref"`

@@ -277,6 +277,7 @@ var WGSxlsx *xlsx.File
 var TIPdb = make(map[string]Variant)
 var MTdisease = make(map[string]Variant)
 var MTAFdb = make(map[string]Variant)
+var MTTitle []string
 
 // ACMG
 // PS1
@@ -355,6 +356,13 @@ func main() {
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(qcFile)
+	}
+
+	if *wgs {
+		for _, key := range defaultConfig["MTTitle"].([]interface{}) {
+			MTTitle = append(MTTitle, key.(string))
+		}
+
 	}
 
 	sampleList = strings.Split(*list, ",")
