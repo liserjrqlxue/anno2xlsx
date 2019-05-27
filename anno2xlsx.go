@@ -199,9 +199,8 @@ var tier1GeneList = make(map[string]bool)
 var err error
 
 // WESIM
-var resultColumn []string
-var resultFile *os.File
-var qcFile *os.File
+var resultColumn, qualityColumn []string
+var resultFile, qcFile *os.File
 
 func newXlsxTemplate(flag string) xlsxTemplate {
 	var tier = xlsxTemplate{
@@ -353,9 +352,14 @@ func main() {
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(resultFile)
 		fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
+
+		for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
+			qualityColumn = append(qualityColumn, key.(string))
+		}
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(qcFile)
+		fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
 	}
 
 	if *wgs {
@@ -380,6 +384,13 @@ func main() {
 		for _, quality := range qualitys {
 			for k, v := range qualityKeyMap {
 				quality[k] = quality[v]
+			}
+			if *wesim {
+				var qcArray []string
+				for _, key := range qualityColumn {
+					qcArray = append(qcArray, quality[key])
+				}
+				fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
 			}
 		}
 
@@ -503,9 +514,6 @@ func main() {
 			for _, quality := range qualitys {
 				row.AddCell().SetString(quality[key])
 				qcArray = append(qcArray, quality[key])
-			}
-			if *wesim {
-				fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
 			}
 		}
 		ts = append(ts, time.Now())
