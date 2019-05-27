@@ -50,7 +50,7 @@ func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb m
 		}
 		checkTierTrio(item, stats, geneList, isWGS)
 	} else {
-		checkTierSingle(item, stats, geneList)
+		checkTierSingle(item, stats, geneList, isWGS)
 	}
 
 	// HGMD or ClinVar
@@ -101,7 +101,7 @@ func checkHGMDClinVar(item map[string]string, stats map[string]int) {
 	}
 }
 
-func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool) {
+func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS bool) {
 	gene := item["Gene Symbol"]
 	// Tier
 	if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
@@ -119,6 +119,8 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					item["Tier"] = "Tier1"
 					stats["isFunction"]++
 					//}
+				} else if isWGS && item["Function"] == "intron" {
+					item["Tier"] = "Tier1"
 				} else {
 					item["Tier"] = "Tier3"
 					stats["noFunction"]++
@@ -165,8 +167,7 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 						stats["Function"]++
 						stats["Denovo Function"]++
 					} else if isWGS && item["Function"] == "intron" {
-						item["Tier"] = "intron"
-						stats["intron"]++
+						item["Tier"] = "Tier1"
 					} else {
 						item["Tier"] = "Tier2"
 						stats["noFunction"]++
@@ -207,8 +208,7 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 						stats["noDenovo Function"]++
 						//}
 					} else if isWGS && item["Function"] == "intron" {
-						item["Tier"] = "intron"
-						stats["intron"]++
+						item["Tier"] = "Tier1"
 					} else {
 						item["Tier"] = "Tier3"
 						stats["noFunction"]++

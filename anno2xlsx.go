@@ -133,15 +133,10 @@ var (
 		false,
 		"if filter cnv result",
 	)
-	annoMT = flag.Bool(
-		"annoMT",
-		false,
-		"if anno MT",
-	)
 	wgs = flag.Bool(
 		"wgs",
 		false,
-		"if anno wgs (include -annoMT)",
+		"if anno wgs",
 	)
 	config = flag.String(
 		"config",
@@ -268,6 +263,7 @@ var codeKey []byte
 var (
 	isGz      = regexp.MustCompile(`\.gz$`)
 	isComment = regexp.MustCompile(`^##`)
+	isMT      = regexp.MustCompile(`MT|chrM`)
 )
 
 var redisDb *redis.Client
@@ -276,15 +272,11 @@ var isSMN1 bool
 
 var snvs []string
 
-// MT
-var MTxlsx *xlsx.File
-var MTsheet *xlsx.Sheet
+// WGS
+var WGSxlsx *xlsx.File
 var TIPdb = make(map[string]Variant)
 var MTdisease = make(map[string]Variant)
 var MTAFdb = make(map[string]Variant)
-
-// WGS
-var intronSheet *xlsx.Sheet
 
 // ACMG
 // PS1
@@ -363,10 +355,6 @@ func main() {
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(qcFile)
-	}
-
-	if *wgs {
-		*annoMT = true
 	}
 
 	sampleList = strings.Split(*list, ",")
@@ -579,6 +567,7 @@ func main() {
 
 	// anno
 	if *snv != "" {
+		var step0 = step
 		var data []map[string]string
 		for _, snv := range snvs {
 			if isGz.MatchString(snv) {
@@ -640,7 +629,7 @@ func main() {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
 
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, *wgs)
+			anno.AddTier(item, stats, geneList, specVarDb, *trio, false)
 
 			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 				anno.UpdateSnvTier1(item)
@@ -659,56 +648,30 @@ func main() {
 				tier1GeneList[item["Gene Symbol"]] = true
 			}
 		}
-
-		if *annoMT {
-			MTxlsx = xlsx.NewFile()
-			// MT sheet
-			MTsheet, err = MTxlsx.AddSheet("MT")
-			simple_util.CheckErr(err)
-			rowMT := MTsheet.AddRow()
-			for _, key := range MTTitle {
-				rowMT.AddCell().SetString(key)
-			}
-			// intron sheet
-			if *wgs {
-				intronSheet, err = MTxlsx.AddSheet("intron")
-				simple_util.CheckErr(err)
-				rowIntron := intronSheet.AddRow()
-				for _, key := range tier1.title {
-					rowIntron.AddCell().SetString(key)
-				}
-			}
-
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", &TIPdb)
-			//fmt.Printf("%+v\n",TIPdb)
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", &MTdisease)
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.频率库.json.db", &MTAFdb)
-		}
-		var isMT = regexp.MustCompile(`MT|chrM`)
+		logTierStats(stats)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "load snv cycle 1")
 		for _, item := range data {
-			// 遗传相符
 			if item["Tier"] == "Tier1" {
+				// 遗传相符
 				item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
 				if item["遗传相符"] == "相符" {
 					stats["遗传相符"]++
 				}
+				// familyTag
 				if *trio {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
 				}
 				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 
+				// Tier1 Sheet
 				tier1Row := tier1.sheet.AddRow()
 				for _, str := range tier1.title {
 					tier1Row.AddCell().SetString(item[str])
 				}
-				if *wesim {
-					var resultArray []string
-					for _, key := range resultColumn {
-						resultArray = append(resultArray, item[key])
-					}
-					fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
-				}
 
+				// Tier2 Sheet
 				tier2Row := tier2.sheet.AddRow()
 				for _, str := range tier2.title {
 
@@ -740,38 +703,104 @@ func main() {
 					}
 
 				}
+
+				// WESIM
+				if *wesim {
+					var resultArray []string
+					for _, key := range resultColumn {
+						resultArray = append(resultArray, item[key])
+					}
+					fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+				}
+
+				tier1GeneList[item["Gene Symbol"]] = true
 			}
 
-			if *annoMT && isMT.MatchString(item["#Chr"]) {
-				addMTRow(MTsheet, item)
-			}
-			if *wgs && tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "intron" {
-				intronRow := intronSheet.AddRow()
-				for _, str := range tier1.title {
-					intronRow.AddCell().SetString(item[str])
-				}
-			}
 			// add to tier3
 			tier3Row := tier3.sheet.AddRow()
 			for _, str := range tier3.title {
 				tier3Row.AddCell().SetString(item[str])
 			}
 		}
-
-		logTierStats(stats)
 		ts = append(ts, time.Now())
 		step++
-		logTime(ts, step-1, step, "update info")
+		logTime(ts, step-1, step, "load snv cycle 2")
+
+		// WGS
+		if *wgs {
+			WGSxlsx = xlsx.NewFile()
+			// MT sheet
+			MTsheet, err := WGSxlsx.AddSheet("MT")
+			simple_util.CheckErr(err)
+			rowMT := MTsheet.AddRow()
+			for _, key := range MTTitle {
+				rowMT.AddCell().SetString(key)
+			}
+			// intron sheet
+			intronSheet, err := WGSxlsx.AddSheet("intron")
+			simple_util.CheckErr(err)
+			rowIntron := intronSheet.AddRow()
+			for _, key := range tier1.title {
+				rowIntron.AddCell().SetString(key)
+			}
+
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", &TIPdb)
+			//fmt.Printf("%+v\n",TIPdb)
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", &MTdisease)
+			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.频率库.json.db", &MTAFdb)
+			inheritDb = make(map[string]map[string]int)
+			for _, item := range data {
+				anno.AddTier(item, stats, geneList, specVarDb, *trio, true)
+				// 遗传相符
+				// only for Tier1
+				if item["Tier"] == "Tier1" {
+					anno.InheritCheck(item, inheritDb)
+				}
+			}
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "load snv cycle 3")
+			for _, item := range data {
+				if item["Tier"] == "Tier1" {
+					// 遗传相符
+					item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+					if item["遗传相符"] == "相符" {
+						stats["遗传相符"]++
+					}
+					// familyTag
+					if *trio {
+						item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+					}
+					item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
+				}
+				if *wgs && isMT.MatchString(item["#Chr"]) {
+					addMTRow(MTsheet, item)
+				}
+				if tier1GeneList[item["Gene Symbol"]] && item["Function"] == "intron" && item["Tier"] == "Tier1" {
+					intronRow := intronSheet.AddRow()
+					for _, str := range tier1.title {
+						intronRow.AddCell().SetString(item[str])
+					}
+				}
+			}
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "load snv cycle 4")
+		}
+
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step0, step, "update info")
 	}
 
 	if *save {
-		if *annoMT {
-			simple_util.CheckErr(MTxlsx.Save(*prefix + ".MT.xlsx"))
+		if *wgs {
+			simple_util.CheckErr(WGSxlsx.Save(*prefix + ".WGS.xlsx"))
 			err = tier1.save()
 			simple_util.CheckErr(err)
 			ts = append(ts, time.Now())
 			step++
-			logTime(ts, step-1, step, "save MT")
+			logTime(ts, step-1, step, "save WGS")
 		}
 	}
 
