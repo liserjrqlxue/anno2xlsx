@@ -10,9 +10,11 @@ import (
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
 	"log"
+	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime/pprof"
 	"strings"
 	"time"
 )
@@ -153,6 +155,16 @@ var (
 		false,
 		"if use new ACMG, fix PS1,PS4,PM4",
 	)
+	cpuprofile = flag.String(
+		"cpuprofile",
+		"",
+		"cpu profile",
+	)
+	memprofile = flag.String(
+		"memprofile",
+		"",
+		"mem profile",
+	)
 )
 
 // family list
@@ -288,6 +300,14 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 	if *snv == "" && *exon == "" && *large == "" && *smn == "" {
 		flag.Usage()
 		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn")
@@ -845,4 +865,13 @@ func main() {
 		logTime(ts, step-1, step, "save Tier3")
 	}
 	logTime(ts, 0, step, "total work")
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.WriteHeapProfile(f)
+		defer simple_util.DeferClose(f)
+	}
 }
