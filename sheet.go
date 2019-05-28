@@ -5,6 +5,7 @@ import (
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
 	"log"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -121,7 +122,11 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 var isSharp = regexp.MustCompile(`^#`)
 var isBamPath = regexp.MustCompile(`^## Files : (\S+)`)
 
-func loadQC(files string, quality []map[string]string) {
+func loadQC(files string, quality []map[string]string, isWGS bool) {
+	sep := "\t"
+	if isWGS {
+		sep = ": "
+	}
 	file := strings.Split(files, ",")
 	for i, in := range file {
 		report := simple_util.File2Array(in)
@@ -131,8 +136,19 @@ func loadQC(files string, quality []map[string]string) {
 					quality[i]["bamPath"] = m[1]
 				}
 			} else {
-				m := strings.Split(line, "\t")
-				quality[i][strings.TrimSpace(m[0])] = strings.TrimSpace(m[1])
+				m := strings.Split(line, sep)
+				if len(m) > 1 {
+					quality[i][strings.TrimSpace(m[0])] = strings.TrimSpace(m[1])
+				}
+			}
+		}
+		if isWGS {
+			absPath, err := filepath.Abs(in)
+			if err == nil {
+				quality[i]["bamPath"] = filepath.Join(filepath.Dir(absPath), "..", "bam_chr")
+			} else {
+				log.Println(err, in)
+				quality[i]["bamPath"] = filepath.Join(filepath.Dir(in), "..", "bam_chr")
 			}
 		}
 	}

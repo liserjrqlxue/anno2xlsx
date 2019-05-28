@@ -386,7 +386,9 @@ func main() {
 		for _, key := range defaultConfig["MTTitle"].([]interface{}) {
 			MTTitle = append(MTTitle, key.(string))
 		}
-
+		for k, v := range defaultConfig["qualityKeyMapWGS"].(map[string]interface{}) {
+			qualityKeyMap[k] = v.(string)
+		}
 	}
 
 	sampleList = strings.Split(*list, ",")
@@ -400,7 +402,7 @@ func main() {
 
 	// load coverage.report
 	if *qc != "" {
-		loadQC(*qc, qualitys)
+		loadQC(*qc, qualitys, *wgs)
 		for _, quality := range qualitys {
 			for k, v := range qualityKeyMap {
 				quality[k] = quality[v]
