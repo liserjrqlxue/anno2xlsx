@@ -21,7 +21,6 @@ var (
 	isLINS  = regexp.MustCompile(`^([ACGT])(\d+)_(\d+)ins([ACGT]+)$`)
 	isAfSNP = regexp.MustCompile(`^([ACGT])-([ACGT])$`)
 	isAfINS = regexp.MustCompile(`^([ACGT])-([ACGT]+)$`)
-	isAfDel = regexp.MustCompile(`^del$`)
 )
 
 var (
@@ -70,8 +69,9 @@ func main() {
 		mut.Info = item.(map[string]interface{})
 		if *isAF {
 			pos := mut.Info["Pos"].(string)
-			nc := mut.Info["Nucleotide Change"].(string)
-			mut.Ref, mut.Alt, mut.Start, mut.End = MTPosNC2Variant(pos, nc)
+			ref := mut.Info["Ref"].(string)
+			alt := mut.Info["Alt"].(string)
+			mut.Ref, mut.Alt, mut.Start, mut.End = MTPosRefAlt2Variant(pos, ref, alt)
 		} else {
 			allele := mut.Info["Allele"].(string)
 			mut.Ref, mut.Alt, mut.Start, mut.End = MTAllele2Variant(allele)
@@ -221,6 +221,40 @@ func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 	default:
 		log.Printf("can not parser:[%s]\n", allele)
 	}
+	return
+}
+
+func MTPosRefAlt2Variant(Pos, Ref, Alt string) (ref, alt string, start, end int) {
+	var err error
+	if Alt == ":" {
+		ref = Ref
+		alt = ""
+		start, err = strconv.Atoi(Pos)
+		simple_util.CheckErr(err)
+		start--
+		end = start + len(Ref)
+		return
+	}
+	if len(Alt) == 1 {
+		ref = Ref
+		alt = Alt
+		start, err = strconv.Atoi(Pos)
+		simple_util.CheckErr(err)
+		start--
+		end = start + len(Ref)
+		return
+	} else {
+		altChr := strings.Split(Alt, "")
+		if altChr[0] == Ref {
+			ref = ""
+			alt = strings.Join(altChr[1:], "")
+			start, err = strconv.Atoi(Pos)
+			simple_util.CheckErr(err)
+			end = start + len(Ref)
+			return
+		}
+	}
+	log.Fatalf("can not parser:%s:%s>%s\n", Pos, Ref, Alt)
 	return
 }
 
