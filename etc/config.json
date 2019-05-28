@@ -1,5 +1,12 @@
 {
   "geneDiseaseDbFile": "全外疾病背景更新V3-统一疾病库20190510-周更新-0527-V1.xlsx.更新后全外背景库（5181疾病OMIM ID，3996基因）.json.aes",
+  "TIPdb":"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db",
+  "MTdisease":"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db",
+  "MTAFdb":"线粒体突变频率库-fll-20190522.xlsx.线粒体突变频率库-20190521.json.db",
+  "ClinVarMissense":"ClinVarPathogenicMissense.json",
+  "ClinVarPHGVSlist":"ClinVarPHGVSList.json",
+  "HGMDMissense":"HGMDPathogenicMissense.json",
+  "HGMDPHGVSlist":"HGMDPHGVSList.json",
   "resultColumn":[
     "Gene Symbol",
     "#Chr+Stop",
@@ -182,6 +189,17 @@
     "目标区平均深度>10X位点所占比例":"dedup coverage >=10(%)",
     "目标区平均深度>20X位点所占比例":"dedup coverage >=20(%)",
     "目标区平均深度>30X位点所占比例":"dedup coverage >=30(%)",
+    "bam文件路径":"bamPath"
+  },
+  "qualityKeyMapWES":{
+    "原始数据产出（Mb）":"[Total] Raw Data(Mb)",
+    "目标区长度（bp）":"[Target] Len of region",
+    "目标区覆盖度":"[Target] Coverage (>0x)",
+    "目标区平均深度（X）":"[Target] Average depth(rmdup)",
+    "目标区平均深度>4X位点所占比例":"[Target] Coverage (>=4x)",
+    "目标区平均深度>10X位点所占比例":"[Target] Coverage (>=10x)",
+    "目标区平均深度>20X位点所占比例":"[Target] Coverage (>=20x)",
+    "目标区平均深度>30X位点所占比例":"[Target] Coverage (>=30x)",
     "bam文件路径":"bamPath"
   }
 }

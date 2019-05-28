@@ -231,18 +231,7 @@ func newXlsxTemplate(flag string) xlsxTemplate {
 }
 
 var qualitys []map[string]string
-
-var qualityKeyMap = map[string]string{
-	"原始数据产出（Mb）":        "[Total] Raw Data(Mb)",
-	"目标区长度（bp）":         "[Target] Len of region",
-	"目标区覆盖度":            "[Target] Coverage (>0x)",
-	"目标区平均深度（X）":        "[Target] Average depth(rmdup)",
-	"目标区平均深度>4X位点所占比例":  "[Target] Coverage (>=4x)",
-	"目标区平均深度>10X位点所占比例": "[Target] Coverage (>=10x)",
-	"目标区平均深度>20X位点所占比例": "[Target] Coverage (>=20x)",
-	"目标区平均深度>30X位点所占比例": "[Target] Coverage (>=30x)",
-	"bam文件路径":           "bamPath",
-}
+var qualityKeyMap map[string]string
 
 // tier2
 var isEnProduct = map[string]bool{
@@ -346,22 +335,18 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
 
-	if *acmg {
-		ClinVarMissense = simple_util.JsonFile2MapInt(dbPath + "ClinVarPathogenicMissense.json")
-		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(dbPath + "ClinVarPHGVSList.json")
-		HGMDMissense = simple_util.JsonFile2MapInt(dbPath + "HGMDPathogenicMissense.json")
-		HGMDPHGVSlist = simple_util.JsonFile2MapInt(dbPath + "HGMDPHGVSList.json")
-	}
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+
+	if *acmg {
+		ClinVarMissense = simple_util.JsonFile2MapInt(getPath("ClinVarPathogenicMissense", defaultConfig))
+		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(getPath("ClinVarPHGVSList", defaultConfig))
+		HGMDMissense = simple_util.JsonFile2MapInt(getPath("HGMDPathogenicMissense", defaultConfig))
+		HGMDPHGVSlist = simple_util.JsonFile2MapInt(getPath("HGMDPHGVSList", defaultConfig))
+	}
+
 	if *geneDiseaseDbFile == "" {
-		if simple_util.FileExists(defaultConfig["geneDiseaseDbFile"].(string)) {
-			*geneDiseaseDbFile = defaultConfig["geneDiseaseDbFile"].(string)
-		} else if simple_util.FileExists(filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"].(string))) {
-			*geneDiseaseDbFile = filepath.Join(exPath, "db", defaultConfig["geneDiseaseDbFile"].(string))
-		} else {
-			log.Fatalf("can not find -geneDiseaseDbFile[%s]\n", defaultConfig["geneDiseaseDbFile"])
-		}
+		*geneDiseaseDbFile = getPath("geneDiseaseDbFile", defaultConfig)
 	}
 
 	if *wesim {
@@ -387,6 +372,10 @@ func main() {
 			MTTitle = append(MTTitle, key.(string))
 		}
 		for k, v := range defaultConfig["qualityKeyMapWGS"].(map[string]interface{}) {
+			qualityKeyMap[k] = v.(string)
+		}
+	} else {
+		for k, v := range defaultConfig["qualityKeyMapWES"].(map[string]interface{}) {
 			qualityKeyMap[k] = v.(string)
 		}
 	}
@@ -782,10 +771,13 @@ func main() {
 				rowIntron.AddCell().SetString(key)
 			}
 
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db", &TIPdb)
-			//fmt.Printf("%+v\n",TIPdb)
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db", &MTdisease)
-			simple_util.JsonFile2Data(dbPath+"线粒体数据库-fll-20190418.xlsx.频率库.json.db", &MTAFdb)
+			TIPdbPath := getPath("TIPdb", defaultConfig)
+			simple_util.JsonFile2Data(TIPdbPath, &TIPdb)
+			MTdiseasePath := getPath("MTdisease", defaultConfig)
+			simple_util.JsonFile2Data(MTdiseasePath, &MTdisease)
+			MTAFdbPath := getPath("MTAFdb", defaultConfig)
+			simple_util.JsonFile2Data(MTAFdbPath, &MTAFdb)
+
 			inheritDb = make(map[string]map[string]int)
 			for _, item := range data {
 				anno.AddTier(item, stats, geneList, specVarDb, *trio, true)
