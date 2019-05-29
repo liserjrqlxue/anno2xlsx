@@ -968,3 +968,20 @@ func UpdateFunction(item map[string]string) {
 		return
 	}
 }
+
+var floatFormatArray = []string{
+	"GnomAD AF",
+	//"GnomAD EAS AF",
+}
+
+func FloatFormat(item map[string]string) {
+	for _, key := range floatFormatArray {
+		value := item[key]
+		floatValue, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			log.Printf("can not ParseFloat:%s[%s]\n", key, value)
+		} else {
+			item[key] = strconv.FormatFloat(floatValue, 'f', -1, 64)
+		}
+	}
+}

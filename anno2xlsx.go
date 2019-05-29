@@ -692,6 +692,8 @@ func main() {
 				}
 				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 
+				anno.FloatFormat(item)
+
 				// Tier1 Sheet
 				tier1Row := tier1.sheet.AddRow()
 				for _, str := range tier1.title {
