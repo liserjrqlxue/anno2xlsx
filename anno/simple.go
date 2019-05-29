@@ -38,6 +38,7 @@ var (
 	isAR     = regexp.MustCompile(`AR`)
 	isAD     = regexp.MustCompile(`AD`)
 	isXL     = regexp.MustCompile(`XL`)
+	isYL     = regexp.MustCompile(`YL`)
 
 	withHom = regexp.MustCompile(`Hom`)
 
@@ -798,7 +799,8 @@ func GoogleKey(item map[string]string) string {
 var (
 	//isBLB        = regexp.MustCompile(`B|LB`)
 	isClinVarPLP = regexp.MustCompile(`Pathogenic|Likely_pathogenic`)
-	isHgmdDM     = regexp.MustCompile(`DM$|DM\|`)
+	//isHgmdDM     = regexp.MustCompile(`DM$|DM\|`)
+	isHgmdDMplus = regexp.MustCompile(`DM`)
 	//isHgmdDMQ= regexp.MustCompile(`DM\?`)
 	isPP3  = regexp.MustCompile(`PP3`)
 	isZero = regexp.MustCompile(`^0$|^\.$|^$`)
@@ -836,7 +838,7 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string
 	if specVarDb[item["MutationName"]] {
 		flag1 = true
 	}
-	if isHgmdDM.MatchString(item["HGMD Pred"]) {
+	if isHgmdDMplus.MatchString(item["HGMD Pred"]) {
 		flag1 = true
 	}
 	if isClinVarPLP.MatchString(item["ClinVar Significance"]) {
@@ -847,7 +849,7 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string
 			flag2 = true
 		} else {
 			inherit := item["ModeInheritance"]
-			if isAR.MatchString(inherit) || isXL.MatchString(inherit) {
+			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
 				flag2 = true
 			} else if isAD.MatchString(inherit) {
 				var flag = true
@@ -873,7 +875,7 @@ func tag2(item map[string]string, specVarDb map[string]bool) string {
 	if specVarDb[item["MutationName"]] {
 		flag1 = true
 	}
-	if isHgmdDM.MatchString(item["HGMD Pred"]) {
+	if isHgmdDMplus.MatchString(item["HGMD Pred"]) {
 		flag1 = true
 	}
 	if isClinVarPLP.MatchString(item["ClinVar Significance"]) {
@@ -908,6 +910,13 @@ func tag3(item map[string]string) string {
 	return ""
 }
 
+var Tag4Func = map[string]bool{
+	"stop-loss": true,
+	"cds-del":   true,
+	"cds-indel": true,
+	"cds-ins":   true,
+}
+
 func tag4(item map[string]string) string {
 	var flag1, flag2 bool
 	frequency := item["frequency"]
@@ -923,6 +932,9 @@ func tag4(item map[string]string) string {
 		flag1 = true
 	}
 	if isPP3.MatchString(item["autoRuleName"]) {
+		flag2 = true
+	}
+	if Tag4Func[item["Function"]] && (item["RepeatTag"] == "." || item["RepeatTag"] == "") {
 		flag2 = true
 	}
 
