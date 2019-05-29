@@ -824,7 +824,7 @@ func main() {
 	}
 
 	if *save {
-		if *wgs {
+		if *wgs && *snv != "" {
 			simple_util.CheckErr(WGSxlsx.Save(*prefix + ".WGS.xlsx"))
 			err = tier1.save()
 			simple_util.CheckErr(err)
