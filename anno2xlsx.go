@@ -626,12 +626,12 @@ func main() {
 				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
 				item["PS4"] = evidence.CheckPS4(item)
 				item["PM4"] = evidence.CheckPM4(item)
-				evidence.ComparePP3(item, true) // PP3 更改条件，更严格了，非splice未考虑保守性
-				//evidence.CompareBA1(item,true) // BA1 更改条件，去除PVFD，新增ESP6500
-				//evidence.CompareBS1(item,true) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-				evidence.CompareBP3(item)
-				evidence.CompareBP4(item, true) // BP4 更改条件，更严格了，非splice未考虑保守性
-				evidence.CompareBP7(item, true) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
+				item["PP3"] = evidence.CheckPP3(item)
+				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
+				item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
+				item["BP3"] = evidence.CheckBP3(item)
+				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
+				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
 			}
 
 			item["自动化判断"] = acmg2015.PredACMG2015(item)
