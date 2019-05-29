@@ -231,7 +231,7 @@ func newXlsxTemplate(flag string) xlsxTemplate {
 }
 
 var qualitys []map[string]string
-var qualityKeyMap map[string]string
+var qualityKeyMap = make(map[string]string)
 
 // tier2
 var isEnProduct = map[string]bool{
