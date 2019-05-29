@@ -58,8 +58,10 @@ var (
 	isHetNAHet  = regexp.MustCompile(`^Het;NA;Het`)
 	isHetNANA   = regexp.MustCompile(`^Het;NA;NA`)
 
-	isHomInherit  = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
-	isHemiInherit = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;NA;NA`)
+	isHomInherit      = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
+	isXLInheritMale   = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;Het;NA|^Het;NA;Het|^Het;NA;NA`)
+	isXLInheritFemale = regexp.MustCompile(`^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA|^Het;NA;NA`)
+	isYLInherit       = regexp.MustCompile(`^Hemi;NA;NA|^Hemi;Hom;NA|^Hemi;Het;NA|^Hemi;NA;Hom|^Hemi;NA;Het|^Het;Hom;NA|^Het;Het;NA|^Het;NA;Hom|^Het;NA;Het|^Het;NA;NA`)
 )
 
 func UpdateSnvTier1(item map[string]string) {
@@ -285,10 +287,16 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			(isHetNANA.MatchString(zygosity) || isHomNANA.MatchString(zygosity)) {
 			return "相符"
 		}
-		if isXL.MatchString(inherit) && isHemiInherit.MatchString(zygosity) {
+		if isXL.MatchString(inherit) && (isXLInheritMale.MatchString(zygosity) || isXLInheritFemale.MatchString(zygosity)) {
+			return "相符"
+		}
+		if isYL.MatchString(inherit) && isYLInherit.MatchString(zygosity) {
 			return "相符"
 		}
 		if isAR.MatchString(inherit) {
+			if isHetHetHet.MatchString(zygosity) {
+				return "不确定"
+			}
 			if isHomInherit.MatchString(zygosity) {
 				return "相符"
 			}
@@ -300,22 +308,31 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			if inheritDb[geneSymbol]["flag110"] > 0 &&
 				inheritDb[geneSymbol]["flag100"] > 0 &&
 				(isHetHetNA.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
-				return "不确定"
+				return "相符"
 			}
 			if inheritDb[geneSymbol]["flag101"] > 0 &&
 				inheritDb[geneSymbol]["flag100"] > 0 &&
 				(isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
-				return "不确定"
+				return "相符"
 			}
-			if isHetHetHet.MatchString(zygosity) ||
-				(inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity)) {
+			if inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity) {
+				return "相符"
+			}
+		}
+		if isAD.MatchString(inherit) {
+			if isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) {
 				return "不确定"
 			}
 		}
 		return "不相符"
 	} else {
-		if isXL.MatchString(inherit) {
+		if isXL.MatchString(inherit) || isYL.MatchString(inherit) {
 			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) || isHemi.MatchString(zygosity) {
+				return "相符"
+			}
+		}
+		if isAD.MatchString(inherit) {
+			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
 				return "相符"
 			}
 		}
@@ -328,13 +345,6 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 					return "相符"
 				} else {
 					return "不确定"
-				}
-			}
-		}
-		if isAD.MatchString(inherit) {
-			if !isAR.MatchString(inherit) && !isXL.MatchString(inherit) {
-				if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
-					return "相符"
 				}
 			}
 		}
