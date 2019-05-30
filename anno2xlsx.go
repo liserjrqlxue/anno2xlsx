@@ -700,37 +700,8 @@ func main() {
 					tier1Row.AddCell().SetString(item[str])
 				}
 
-				// Tier2 Sheet
-				tier2Row := tier2.sheet.AddRow()
-				for _, str := range tier2.title {
-
-					switch str {
-					case "HGMDorClinvar":
-						if isEnProduct[*productID] {
-							tier2Row.AddCell().SetString(transEN[item[str]])
-						} else {
-							tier2Row.AddCell().SetString(item[str])
-						}
-					case "DiseaseName/ModeInheritance":
-						inheritance := strings.Split(item["ModeInheritance"], "\n")
-						var disease []string
-						if isEnProduct[*productID] {
-							disease = strings.Split(item["DiseaseNameEN"], "\n")
-						} else {
-							disease = strings.Split(item["DiseaseNameCH"], "\n")
-						}
-						if len(disease) == len(inheritance) {
-							for i, text := range disease {
-								inheritance[i] = text + "/" + inheritance[i]
-							}
-						} else {
-							log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
-						}
-						tier2Row.AddCell().SetString(strings.Join(inheritance, "\n"))
-					default:
-						tier2Row.AddCell().SetString(item[str])
-					}
-
+				if !*wgs {
+					addTier2Row(tier2, item)
 				}
 
 				// WESIM
@@ -808,10 +779,14 @@ func main() {
 				if *wgs && isMT.MatchString(item["#Chr"]) {
 					addMTRow(MTsheet, item)
 				}
-				if tier1GeneList[item["Gene Symbol"]] && item["Function"] == "intron" && item["Tier"] == "Tier1" {
-					intronRow := intronSheet.AddRow()
-					for _, str := range tier1.title {
-						intronRow.AddCell().SetString(item[str])
+				if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
+					addTier2Row(tier2, item)
+
+					if item["Function"] == "intron" {
+						intronRow := intronSheet.AddRow()
+						for _, str := range tier1.title {
+							intronRow.AddCell().SetString(item[str])
+						}
 					}
 				}
 			}
