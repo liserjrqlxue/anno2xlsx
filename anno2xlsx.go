@@ -416,7 +416,7 @@ func main() {
 			Addr: *redisAddr,
 		})
 		pong, err := redisDb.Ping().Result()
-		fmt.Println("connect redis:", pong, err)
+		log.Println("connect redis:", pong, err)
 	}
 
 	// load tier template
