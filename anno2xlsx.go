@@ -122,7 +122,7 @@ var (
 	)
 	redisAddr = flag.String(
 		"redisAddr",
-		"192.168.136.114:6380",
+		"10.2.1.4:6380",
 		"redis Addr Option",
 	)
 	seqType = flag.String(
