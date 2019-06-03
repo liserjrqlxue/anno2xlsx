@@ -34,12 +34,12 @@ func main() {
 
 	xlsxList := simple_util.File2Array(*list)
 	var uniqDb = make(map[string]int)
-	var singeleCount [len(xlsxList)]int
-	var cumCount [len(xlsxList)]int
+	var singeleCount []int
+	var cumCount []int
 
 	for i, fileName := range xlsxList {
 		_, mapArray := simple_util.Sheet2MapArray(fileName, "filter_variants")
-		singeleCount[i] = len(mapArray)
+		singeleCount = append(singeleCount, len(mapArray))
 		for _, item := range mapArray {
 			var keyArray []string
 			for _, key := range keyList {
@@ -47,7 +47,7 @@ func main() {
 			}
 			uniqDb[strings.Join(keyArray, "\t")]++
 		}
-		cumCount[i] = len(uniqDb)
+		cumCount = append(cumCount, len(uniqDb))
 		fmt.Printf("%d\t%d\t%d\t%s\n", i, singeleCount[i], cumCount[i], fileName)
 	}
 	simple_util.Json2rawFile("singelCount.json", singeleCount)
