@@ -68,7 +68,9 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 }
 
 func logVersion() {
-	log.Printf("Git Commit Hash: %s\n", gitHash)
-	log.Printf("UTC Build Time : %s\n", buildStamp)
-	log.Printf("Golang Version : %s\n", goVersion)
+	if gitHash != "" || buildStamp != "" || goVersion != "" {
+		log.Printf("Git Commit Hash: %s\n", gitHash)
+		log.Printf("UTC Build Time : %s\n", buildStamp)
+		log.Printf("Golang Version : %s\n", goVersion)
+	}
 }
