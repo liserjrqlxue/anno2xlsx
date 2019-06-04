@@ -28,6 +28,9 @@ var (
 	templatePath = exPath + pSep + "template" + pSep
 )
 
+// version
+var buildStamp, gitHash, goVersion string
+
 // flag
 var (
 	productID = flag.String(
@@ -288,6 +291,7 @@ func main() {
 	var step = 0
 	ts = append(ts, time.Now())
 
+	logVersion()
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
@@ -334,6 +338,7 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
+	logVersion()
 
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})

@@ -66,3 +66,9 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 	str := simple_util.FormatWidth(trim, message, ' ')
 	log.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
+
+func logVersion() {
+	log.Printf("Git Commit Hash: %s\n", gitHash)
+	log.Printf("UTC Build Time : %s\n", buildStamp)
+	log.Printf("Golang Version : %s\n", goVersion)
+}
