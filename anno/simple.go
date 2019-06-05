@@ -238,8 +238,8 @@ func UpdateSnv(item map[string]string, gender string) {
 	if item["自动化判断"] != long2short[item["ACMG"]] {
 		fmt.Fprintf(
 			os.Stderr,
-			"acmg conflict:%s vs %s\n%s",
-			item["ACMG"], item["自动化判断"], item["MutationName"],
+			"acmg conflict:[%s=>%s]:%s\n",
+			long2short[item["ACMG"]], item["自动化判断"], item["MutationName"],
 		)
 	}
 	return

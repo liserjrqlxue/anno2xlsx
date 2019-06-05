@@ -125,7 +125,7 @@ var (
 	)
 	redisAddr = flag.String(
 		"redisAddr",
-		"192.168.136.114:6380",
+		"",
 		"redis Addr Option",
 	)
 	seqType = flag.String(
@@ -348,6 +348,21 @@ func main() {
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
+	if *ifRedis {
+		if *redisAddr == "" {
+			*redisAddr = getStrVal("redisServer", defaultConfig)
+		}
+		redisDb = redis.NewClient(&redis.Options{
+			Addr: *redisAddr,
+		})
+		pong, err := redisDb.Ping().Result()
+		log.Println("connect redis:", pong, err)
+		if err != nil {
+			*ifRedis = false
+			log.Printf("Error connect redis[%+v], skip\n", err)
+		}
+	}
+
 	if *acmg {
 		ClinVarMissense = simple_util.JsonFile2MapInt(getPath("ClinVarPathogenicMissense", defaultConfig))
 		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(getPath("ClinVarPHGVSlist", defaultConfig))
@@ -418,15 +433,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load coverage.report")
-	}
-
-	// redis
-	if *ifRedis {
-		redisDb = redis.NewClient(&redis.Options{
-			Addr: *redisAddr,
-		})
-		pong, err := redisDb.Ping().Result()
-		log.Println("connect redis:", pong, err)
 	}
 
 	// load tier template
