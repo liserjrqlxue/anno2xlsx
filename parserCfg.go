@@ -7,7 +7,10 @@ import (
 )
 
 func getPath(key string, config map[string]interface{}) (path string) {
-	path = config[key].(string)
+	path, ok := config[key].(string)
+	if !ok {
+		log.Fatalf("Error load cfg[%s]:%v\n", key, config[key])
+	}
 	if !simple_util.FileExists(path) {
 		path = filepath.Join(dbPath, path)
 	}

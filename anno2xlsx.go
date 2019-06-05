@@ -156,7 +156,7 @@ var (
 	acmg = flag.Bool(
 		"acmg",
 		false,
-		"if use new ACMG, fix PS1,PS4,PM4",
+		"if use new ACMG, fix PS1,PS4,PM4, PP3,BA1,BS1,BP3,BP4,BP7",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -167,6 +167,11 @@ var (
 		"memprofile",
 		"",
 		"mem profile",
+	)
+	noTier3 = flag.Bool(
+		"noTier3",
+		false,
+		"if not output Tier3.xlsx",
 	)
 )
 
@@ -345,9 +350,9 @@ func main() {
 
 	if *acmg {
 		ClinVarMissense = simple_util.JsonFile2MapInt(getPath("ClinVarPathogenicMissense", defaultConfig))
-		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(getPath("ClinVarPHGVSList", defaultConfig))
+		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(getPath("ClinVarPHGVSlist", defaultConfig))
 		HGMDMissense = simple_util.JsonFile2MapInt(getPath("HGMDPathogenicMissense", defaultConfig))
-		HGMDPHGVSlist = simple_util.JsonFile2MapInt(getPath("HGMDPHGVSList", defaultConfig))
+		HGMDPHGVSlist = simple_util.JsonFile2MapInt(getPath("HGMDPHGVSlist", defaultConfig))
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -496,7 +501,7 @@ func main() {
 	}
 	ts = append(ts, time.Now())
 	step++
-	logTime(ts, step-1, step, "load 突变频谱")
+	logTime(ts, step-1, step, "load mutation spectrum")
 
 	// 基因-疾病
 	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
@@ -510,7 +515,7 @@ func main() {
 	}
 	ts = append(ts, time.Now())
 	step++
-	logTime(ts, step-1, step, "load 基因-疾病")
+	logTime(ts, step-1, step, "load Gene-Disease DB")
 
 	// 特殊位点库
 	for _, key := range simple_util.File2Array(*specVarList) {
@@ -518,7 +523,7 @@ func main() {
 	}
 	ts = append(ts, time.Now())
 	step++
-	logTime(ts, step-1, step, "load 特殊位点库")
+	logTime(ts, step-1, step, "load Special mutation DB")
 
 	// QC Sheet
 	qcSheet := tier1.xlsx.Sheet["quality"]
@@ -722,9 +727,11 @@ func main() {
 			}
 
 			// add to tier3
-			tier3Row := tier3.sheet.AddRow()
-			for _, str := range tier3.title {
-				tier3Row.AddCell().SetString(item[str])
+			if !*noTier3 {
+				tier3Row := tier3.sheet.AddRow()
+				for _, str := range tier3.title {
+					tier3Row.AddCell().SetString(item[str])
+				}
 			}
 		}
 		ts = append(ts, time.Now())
@@ -834,7 +841,7 @@ func main() {
 		logTime(ts, step-1, step, "save Tier2")
 	}
 
-	if *save && *snv != "" {
+	if *save && *snv != "" && !*noTier3 {
 		simple_util.CheckErr(tier3.save())
 		ts = append(ts, time.Now())
 		step++
