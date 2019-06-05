@@ -977,6 +977,9 @@ var floatFormatArray = []string{
 func FloatFormat(item map[string]string) {
 	for _, key := range floatFormatArray {
 		value := item[key]
+		if value == "" {
+			return
+		}
 		floatValue, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			log.Printf("can not ParseFloat:%s[%s]\n", key, value)
