@@ -55,7 +55,7 @@ var (
 	)
 	geneDbFile = flag.String(
 		"geneDb",
-		dbPath+"基因库-更新版基因特征谱-加动态突变-20190110.xlsx.Sheet1.json.aes",
+		"",
 		"database of 突变频谱",
 	)
 	geneDiseaseDbFile = flag.String(
@@ -65,17 +65,17 @@ var (
 	)
 	geneDiseaseDbTitle = flag.String(
 		"geneDiseaseTitle",
-		dbPath+"基因-疾病数据库.Title.json",
+		"",
 		"Title map of 基因-疾病数据库",
 	)
 	specVarList = flag.String(
 		"specVarList",
-		dbPath+"spec.var.list",
+		"",
 		"特殊位点库",
 	)
 	transInfo = flag.String(
 		"transInfo",
-		dbPath+"trans.exonCount.json.new.json",
+		"",
 		"info of transcript",
 	)
 	save = flag.Bool(
@@ -372,6 +372,18 @@ func main() {
 
 	if *geneDiseaseDbFile == "" {
 		*geneDiseaseDbFile = getPath("geneDiseaseDbFile", defaultConfig)
+	}
+	if *geneDiseaseDbTitle == "" {
+		*geneDiseaseDbTitle = getPath("geneDiseaseDbTitle", defaultConfig)
+	}
+	if *geneDbFile == "" {
+		*geneDbFile = getPath("geneDbFile", defaultConfig)
+	}
+	if *specVarList == "" {
+		*specVarList = getPath("specVarList", defaultConfig)
+	}
+	if *transInfo == "" {
+		*transInfo = getPath("transInfo", defaultConfig)
 	}
 
 	if *wesim {
