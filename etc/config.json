@@ -11,6 +11,9 @@
   "ClinVarPHGVSlist":"ClinVarPHGVSList.json",
   "HGMDPathogenicMissense":"HGMDPathogenicMissense.json",
   "HGMDPHGVSlist":"HGMDPHGVSList.json",
+  "PM1dbNSFPDomain":"PM1dbNSFPDomain.json",
+  "PM1PfamDomain":"PM1PfamDomain.json",
+  "PathogenicLite":"PathogenicLite.bed.gz",
   "redisServer":"10.2.1.4:6380",
   "resultColumn":[
     "Gene Symbol",

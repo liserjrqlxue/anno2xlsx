@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/brentp/bix"
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
@@ -156,7 +157,7 @@ var (
 	acmg = flag.Bool(
 		"acmg",
 		false,
-		"if use new ACMG, fix PS1,PS4,PM4, PP3,BA1,BS1,BP3,BP4,BP7",
+		"if use new ACMG, fix PS1,PS4,PM1,PM2,PM4, PP3,BA1,BS1,BP3,BP4,BP7",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -291,6 +292,10 @@ var MTTitle []string
 // PS1
 var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist map[string]int
 
+// PM1
+var tbx *bix.Bix
+var dbNSFPDomain, PfamDomain map[string]bool
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -364,10 +369,17 @@ func main() {
 	}
 
 	if *acmg {
+		// PS1
 		ClinVarMissense = simple_util.JsonFile2MapInt(getPath("ClinVarPathogenicMissense", defaultConfig))
 		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(getPath("ClinVarPHGVSlist", defaultConfig))
 		HGMDMissense = simple_util.JsonFile2MapInt(getPath("HGMDPathogenicMissense", defaultConfig))
 		HGMDPHGVSlist = simple_util.JsonFile2MapInt(getPath("HGMDPHGVSlist", defaultConfig))
+
+		// PM1
+		simple_util.JsonFile2Data(getPath("PM1dbNSFPDomain", defaultConfig), dbNSFPDomain)
+		simple_util.JsonFile2Data(getPath("PM1PfamDomain", defaultConfig), PfamDomain)
+		tbx, err = bix.New(getPath("PathogenicLite", defaultConfig))
+		simple_util.CheckErr(err, "load tabix")
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -653,6 +665,8 @@ func main() {
 			if *acmg {
 				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
 				item["PS4"] = evidence.CheckPS4(item)
+				item["PM1"] = evidence.CheckPM1(item, dbNSFPDomain, PfamDomain, tbx)
+				item["PM2"] = evidence.CheckPM2(item)
 				item["PM4"] = evidence.CheckPM4(item)
 				item["PP3"] = evidence.CheckPP3(item)
 				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
