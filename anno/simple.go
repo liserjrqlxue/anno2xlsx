@@ -187,7 +187,7 @@ func inPAR(chr string, start, end int) bool {
 	return false
 }
 
-func UpdateSnv(item map[string]string, gender string) {
+func UpdateSnv(item map[string]string, gender string, debug bool) {
 
 	// #Chr+Stop
 	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
@@ -235,7 +235,7 @@ func UpdateSnv(item map[string]string, gender string) {
 		}
 	}
 
-	if item["自动化判断"] != long2short[item["ACMG"]] {
+	if debug && item["自动化判断"] != long2short[item["ACMG"]] {
 		fmt.Fprintf(
 			os.Stderr,
 			"acmg conflict:[%s=>%s]:%s\n",

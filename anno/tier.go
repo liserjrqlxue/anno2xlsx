@@ -104,7 +104,7 @@ func checkHGMDClinVar(item map[string]string, stats map[string]int) {
 func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS bool) {
 	gene := item["Gene Symbol"]
 	// Tier
-	if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
+	if item["自动化判断"] != "B" && item["自动化判断"] != "LB" {
 		stats["noB/LB"]++
 		if checkAF(item, 0.01) {
 			stats["isAF"]++
@@ -146,7 +146,7 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 	if isDenovo.MatchString(item["Zygosity"]) {
 		stats["Denovo"]++
 	}
-	if item["ACMG"] != "Benign" && item["ACMG"] != "Likely Benign" {
+	if item["自动化判断"] != "B" && item["自动化判断"] != "LB" {
 		stats["noB/LB"]++
 		if isDenovo.MatchString(item["Zygosity"]) {
 			stats["isDenovo noB/LB"]++

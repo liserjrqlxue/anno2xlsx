@@ -174,6 +174,11 @@ var (
 		false,
 		"if not output Tier3.xlsx",
 	)
+	debug = flag.Bool(
+		"debug",
+		false,
+		"if print some log",
+	)
 )
 
 // family list
@@ -713,7 +718,7 @@ func main() {
 
 			item["自动化判断"] = acmg2015.PredACMG2015(item)
 
-			anno.UpdateSnv(item, *gender)
+			anno.UpdateSnv(item, *gender, *debug)
 
 			gene := item["Gene Symbol"]
 			// 突变频谱
