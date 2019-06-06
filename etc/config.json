@@ -18,6 +18,7 @@
   "ClinVarPP2GeneList":"ClinVarPP2GeneList.json",
   "HgmdPP2GeneList":"HgmdPP2GeneList.json",
   "PathogenicLite":"PathogenicLite.bed.gz",
+  "LateOnset":"LateOnset.lst",
   "redisServer":"10.2.1.4:6380",
   "resultColumn":[
     "Gene Symbol",

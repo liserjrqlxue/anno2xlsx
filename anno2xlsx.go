@@ -157,7 +157,7 @@ var (
 	acmg = flag.Bool(
 		"acmg",
 		false,
-		"if use new ACMG, fix PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3,BA1,BS1,BP3,BP4,BP7",
+		"if use new ACMG, fix PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP3,BP4,BP7",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -299,6 +299,9 @@ var dbNSFPDomain, PfamDomain map[string]bool
 // PP2
 var ClinVarPP2GeneList, HgmdPP2GeneList map[string]float64
 
+// BS2
+var lateOnsetList map[string]int
+
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -392,6 +395,8 @@ func main() {
 		simple_util.JsonFile2Data(getPath("HgmdPP2GeneList", defaultConfig), &HgmdPP2GeneList)
 		fmt.Println(len(HgmdPP2GeneList))
 
+		// BS2
+		lateOnsetList = evidence.GetLateOnsetList(getPath("LateOnset", defaultConfig))
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -685,6 +690,7 @@ func main() {
 				item["PP3"] = evidence.CheckPP3(item)
 				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
 				item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
+				item["BS2"] = evidence.CheckBS2(item, lateOnsetList)
 				item["BP3"] = evidence.CheckBP3(item)
 				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
 				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
