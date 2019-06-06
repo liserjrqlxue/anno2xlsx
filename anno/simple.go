@@ -294,9 +294,6 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			return "相符"
 		}
 		if isAR.MatchString(inherit) {
-			if isHetHetHet.MatchString(zygosity) {
-				return "不确定"
-			}
 			if isHomInherit.MatchString(zygosity) {
 				return "相符"
 			}
@@ -321,6 +318,11 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 		}
 		if isAD.MatchString(inherit) {
 			if isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) {
+				return "不确定"
+			}
+		}
+		if isAR.MatchString(inherit) {
+			if isHetHetHet.MatchString(zygosity) || isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity) {
 				return "不确定"
 			}
 		}
