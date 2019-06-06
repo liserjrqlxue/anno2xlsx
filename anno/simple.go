@@ -403,7 +403,7 @@ func zygosityFormat(zygosity string) string {
 
 var inheritFromMap = map[string]string{
 	"Het":    "（杂合）",
-	"Hom":    "（纯和）",
+	"Hom":    "（纯合）",
 	"Hemi":   "（半合）",
 	"UC":     "不确定",
 	"Denovo": "新发",
