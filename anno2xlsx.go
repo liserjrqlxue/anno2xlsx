@@ -693,7 +693,6 @@ func main() {
 
 			// ues acmg of go
 			if *acmg {
-				evidence.ComparePVS1(item, LOFList, transcriptInfo, tbx)
 				item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
 				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
 				item["PM5"] = evidence.CheckPM5(item, ClinVarPHGVSlist, ClinVarAAPosList, HGMDPHGVSlist, HGMDAAPosList)
