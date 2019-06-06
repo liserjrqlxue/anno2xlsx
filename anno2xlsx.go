@@ -385,8 +385,6 @@ func main() {
 		// PVS1
 		simple_util.JsonFile2Data(getPath("LOFList", defaultConfig), &LOFList)
 		simple_util.JsonFile2Data(getPath("transcriptInfo", defaultConfig), &transcriptInfo)
-		fmt.Println(len(LOFList))
-		fmt.Println(len(transcriptInfo))
 
 		// PS1 & PM5
 		simple_util.JsonFile2Data(getPath("ClinVarPathogenicMissense", defaultConfig), &ClinVarMissense)
