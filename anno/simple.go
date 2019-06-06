@@ -977,7 +977,8 @@ var floatFormatArray = []string{
 func FloatFormat(item map[string]string) {
 	for _, key := range floatFormatArray {
 		value := item[key]
-		if value == "" {
+		if value == "" || value == "." {
+			item[key] = ""
 			return
 		}
 		floatValue, err := strconv.ParseFloat(value, 64)
