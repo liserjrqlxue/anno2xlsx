@@ -157,7 +157,7 @@ var (
 	acmg = flag.Bool(
 		"acmg",
 		false,
-		"if use new ACMG, fix PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
+		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -289,6 +289,10 @@ var MTAFdb = make(map[string]Variant)
 var MTTitle []string
 
 // ACMG
+// PVS1
+var LOFList map[string]int
+var transcriptInfo map[string][]evidence.Region
+
 // PS1 & PM5
 var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist, ClinVarAAPosList, HGMDAAPosList map[string]int
 
@@ -378,6 +382,12 @@ func main() {
 	}
 
 	if *acmg {
+		// PVS1
+		simple_util.JsonFile2Data(getPath("LOFList", defaultConfig), &LOFList)
+		simple_util.JsonFile2Data(getPath("transcriptInfo", defaultConfig), &transcriptInfo)
+		fmt.Println(len(LOFList))
+		fmt.Println(len(transcriptInfo))
+
 		// PS1 & PM5
 		simple_util.JsonFile2Data(getPath("ClinVarPathogenicMissense", defaultConfig), &ClinVarMissense)
 		simple_util.JsonFile2Data(getPath("ClinVarPHGVSlist", defaultConfig), &ClinVarPHGVSlist)
@@ -685,6 +695,8 @@ func main() {
 
 			// ues acmg of go
 			if *acmg {
+				evidence.ComparePVS1(item, LOFList, transcriptInfo, tbx)
+				item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
 				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
 				item["PM5"] = evidence.CheckPM5(item, ClinVarPHGVSlist, ClinVarAAPosList, HGMDPHGVSlist, HGMDAAPosList)
 				item["PS4"] = evidence.CheckPS4(item)
