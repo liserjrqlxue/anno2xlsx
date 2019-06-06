@@ -696,6 +696,13 @@ func main() {
 			// update Function
 			anno.UpdateFunction(item)
 
+			gene := item["Gene Symbol"]
+			// 基因-疾病
+			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			item["Gene"] = item["Omim Gene"]
+			item["OMIM"] = item["OMIM_Phenotype_ID"]
+			item["death age"] = item["hpo_cn"]
+
 			// ues acmg of go
 			if *acmg {
 				item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
@@ -720,14 +727,8 @@ func main() {
 
 			anno.UpdateSnv(item, *gender, *debug)
 
-			gene := item["Gene Symbol"]
 			// 突变频谱
 			item["突变频谱"] = geneDb[gene]
-			// 基因-疾病
-			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
-			item["Gene"] = item["Omim Gene"]
-			item["OMIM"] = item["OMIM_Phenotype_ID"]
-			item["death age"] = item["hpo_cn"]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
