@@ -11,8 +11,12 @@
   "ClinVarPHGVSlist":"ClinVarPHGVSList.json",
   "HGMDPathogenicMissense":"HGMDPathogenicMissense.json",
   "HGMDPHGVSlist":"HGMDPHGVSList.json",
+  "ClinVarAAPosList":"ClinVarAAPosList.json",
+  "HGMDAAPosList":"HGMDAAPosList.json",
   "PM1dbNSFPDomain":"PM1dbNSFPDomain.json",
   "PM1PfamDomain":"PM1PfamDomain.json",
+  "ClinVarPP2GeneList":"ClinVarPP2GeneList.json",
+  "HgmdPP2GeneList":"HgmdPP2GeneList.json",
   "PathogenicLite":"PathogenicLite.bed.gz",
   "redisServer":"10.2.1.4:6380",
   "resultColumn":[

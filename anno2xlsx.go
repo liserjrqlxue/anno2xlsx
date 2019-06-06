@@ -157,7 +157,7 @@ var (
 	acmg = flag.Bool(
 		"acmg",
 		false,
-		"if use new ACMG, fix PS1,PS4,PM1,PM2,PM4, PP3,BA1,BS1,BP3,BP4,BP7",
+		"if use new ACMG, fix PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3,BA1,BS1,BP3,BP4,BP7",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -289,12 +289,15 @@ var MTAFdb = make(map[string]Variant)
 var MTTitle []string
 
 // ACMG
-// PS1
-var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist map[string]int
+// PS1 & PM5
+var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist, ClinVarAAPosList, HGMDAAPosList map[string]int
 
 // PM1
 var tbx *bix.Bix
 var dbNSFPDomain, PfamDomain map[string]bool
+
+// PP2
+var ClinVarPP2GeneList, HgmdPP2GeneList map[string]float64
 
 func main() {
 	var ts []time.Time
@@ -369,17 +372,26 @@ func main() {
 	}
 
 	if *acmg {
-		// PS1
-		ClinVarMissense = simple_util.JsonFile2MapInt(getPath("ClinVarPathogenicMissense", defaultConfig))
-		ClinVarPHGVSlist = simple_util.JsonFile2MapInt(getPath("ClinVarPHGVSlist", defaultConfig))
-		HGMDMissense = simple_util.JsonFile2MapInt(getPath("HGMDPathogenicMissense", defaultConfig))
-		HGMDPHGVSlist = simple_util.JsonFile2MapInt(getPath("HGMDPHGVSlist", defaultConfig))
+		// PS1 & PM5
+		simple_util.JsonFile2Data(getPath("ClinVarPathogenicMissense", defaultConfig), &ClinVarMissense)
+		simple_util.JsonFile2Data(getPath("ClinVarPHGVSlist", defaultConfig), &ClinVarPHGVSlist)
+		simple_util.JsonFile2Data(getPath("HGMDPathogenicMissense", defaultConfig), &HGMDMissense)
+		simple_util.JsonFile2Data(getPath("HGMDPHGVSlist", defaultConfig), &HGMDPHGVSlist)
+		simple_util.JsonFile2Data(getPath("ClinVarAAPosList", defaultConfig), &ClinVarAAPosList)
+		simple_util.JsonFile2Data(getPath("HGMDAAPosList", defaultConfig), &HGMDAAPosList)
 
 		// PM1
-		simple_util.JsonFile2Data(getPath("PM1dbNSFPDomain", defaultConfig), dbNSFPDomain)
-		simple_util.JsonFile2Data(getPath("PM1PfamDomain", defaultConfig), PfamDomain)
+		simple_util.JsonFile2Data(getPath("PM1dbNSFPDomain", defaultConfig), &dbNSFPDomain)
+		simple_util.JsonFile2Data(getPath("PM1PfamDomain", defaultConfig), &PfamDomain)
 		tbx, err = bix.New(getPath("PathogenicLite", defaultConfig))
 		simple_util.CheckErr(err, "load tabix")
+
+		// PP2
+		simple_util.JsonFile2Data(getPath("ClinVarPP2GeneList", defaultConfig), &ClinVarPP2GeneList)
+		fmt.Println(len(ClinVarPP2GeneList))
+		simple_util.JsonFile2Data(getPath("HgmdPP2GeneList", defaultConfig), &HgmdPP2GeneList)
+		fmt.Println(len(HgmdPP2GeneList))
+
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -664,6 +676,7 @@ func main() {
 			// ues acmg of go
 			if *acmg {
 				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
+				item["PM5"] = evidence.CheckPM5(item, ClinVarPHGVSlist, ClinVarAAPosList, HGMDPHGVSlist, HGMDAAPosList)
 				item["PS4"] = evidence.CheckPS4(item)
 				item["PM1"] = evidence.CheckPM1(item, dbNSFPDomain, PfamDomain, tbx)
 				item["PM2"] = evidence.CheckPM2(item)
