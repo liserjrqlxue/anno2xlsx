@@ -179,6 +179,11 @@ var (
 		false,
 		"if print some log",
 	)
+	allGene = flag.Bool(
+		"allgene",
+		false,
+		"if not filter gene",
+	)
 )
 
 // family list
@@ -739,7 +744,7 @@ func main() {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
 
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, false)
+			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene)
 
 			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 				anno.UpdateSnvTier1(item)
