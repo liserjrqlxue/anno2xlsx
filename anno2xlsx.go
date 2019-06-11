@@ -843,7 +843,7 @@ func main() {
 
 			inheritDb = make(map[string]map[string]int)
 			for _, item := range data {
-				anno.AddTier(item, stats, geneList, specVarDb, *trio, true)
+				anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene)
 				// 遗传相符
 				// only for Tier1
 				if item["Tier"] == "Tier1" {
