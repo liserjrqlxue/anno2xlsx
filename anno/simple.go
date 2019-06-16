@@ -187,7 +187,7 @@ func inPAR(chr string, start, end int) bool {
 	return false
 }
 
-func UpdateSnv(item map[string]string, gender string) {
+func UpdateSnv(item map[string]string, gender string, debug bool) {
 
 	// #Chr+Stop
 	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
@@ -235,11 +235,11 @@ func UpdateSnv(item map[string]string, gender string) {
 		}
 	}
 
-	if item["自动化判断"] != long2short[item["ACMG"]] {
+	if debug && item["自动化判断"] != long2short[item["ACMG"]] {
 		fmt.Fprintf(
 			os.Stderr,
-			"acmg conflict:%s vs %s\n%s",
-			item["ACMG"], item["自动化判断"], item["MutationName"],
+			"acmg conflict:[%s=>%s]:%s\n",
+			long2short[item["ACMG"]], item["自动化判断"], item["MutationName"],
 		)
 	}
 	return
@@ -294,9 +294,6 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			return "相符"
 		}
 		if isAR.MatchString(inherit) {
-			if isHetHetHet.MatchString(zygosity) {
-				return "不确定"
-			}
 			if isHomInherit.MatchString(zygosity) {
 				return "相符"
 			}
@@ -321,6 +318,11 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 		}
 		if isAD.MatchString(inherit) {
 			if isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) {
+				return "不确定"
+			}
+		}
+		if isAR.MatchString(inherit) {
+			if isHetHetHet.MatchString(zygosity) || isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity) {
 				return "不确定"
 			}
 		}
@@ -403,7 +405,7 @@ func zygosityFormat(zygosity string) string {
 
 var inheritFromMap = map[string]string{
 	"Het":    "（杂合）",
-	"Hom":    "（纯和）",
+	"Hom":    "（纯合）",
 	"Hemi":   "（半合）",
 	"UC":     "不确定",
 	"Denovo": "新发",
@@ -977,6 +979,10 @@ var floatFormatArray = []string{
 func FloatFormat(item map[string]string) {
 	for _, key := range floatFormatArray {
 		value := item[key]
+		if value == "" || value == "." {
+			item[key] = ""
+			return
+		}
 		floatValue, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			log.Printf("can not ParseFloat:%s[%s]\n", key, value)
