@@ -415,7 +415,7 @@ func main() {
 		simple_util.JsonFile2Data(getPath("HgmdPP2GeneList", defaultConfig), &HgmdPP2GeneList)
 
 		// BS2
-		lateOnsetList = evidence.GetLateOnsetList(getPath("LateOnset", defaultConfig))
+		simple_util.JsonFile2Data(getPath("BS2GeneList.json", defaultConfig), &lateOnsetList)
 
 		// BP1
 		simple_util.JsonFile2Data(getPath("ClinVarBP1GeneList", defaultConfig), &ClinVarBP1GeneList)
