@@ -126,7 +126,7 @@ var (
 	)
 	redisAddr = flag.String(
 		"redisAddr",
-		"",
+		"10.2.1.4:6380",
 		"redis Addr Option",
 	)
 	seqType = flag.String(
@@ -415,7 +415,7 @@ func main() {
 		simple_util.JsonFile2Data(getPath("HgmdPP2GeneList", defaultConfig), &HgmdPP2GeneList)
 
 		// BS2
-		lateOnsetList = evidence.GetLateOnsetList(getPath("LateOnset", defaultConfig))
+		simple_util.JsonFile2Data(getPath("LateOnset", defaultConfig), &lateOnsetList)
 
 		// BP1
 		simple_util.JsonFile2Data(getPath("ClinVarBP1GeneList", defaultConfig), &ClinVarBP1GeneList)
