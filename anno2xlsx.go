@@ -438,6 +438,16 @@ func main() {
 		*transInfo = getPath("transInfo", defaultConfig)
 	}
 
+	if *wgs {
+		for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
+			qualityColumn = append(qualityColumn, key.(string))
+		}
+	} else {
+		for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
+			qualityColumn = append(qualityColumn, key.(string))
+		}
+	}
+
 	if *wesim {
 		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
 			resultColumn = append(resultColumn, key.(string))
@@ -446,16 +456,6 @@ func main() {
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(resultFile)
 		fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
-
-		if *wgs {
-			for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
-				qualityColumn = append(qualityColumn, key.(string))
-			}
-		} else {
-			for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
-				qualityColumn = append(qualityColumn, key.(string))
-			}
-		}
 
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simple_util.CheckErr(err)
