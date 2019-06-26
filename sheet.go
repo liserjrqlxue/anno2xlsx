@@ -22,6 +22,19 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	}
 }
 
+func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qualitys []map[string]string) {
+	sheet, err := excel.AddSheet(sheetName)
+	simple_util.CheckErr(err)
+
+	for _, key := range qualityColumn {
+		row := sheet.AddRow()
+		row.AddCell().SetString(key)
+		for _, item := range qualitys {
+			row.AddCell().SetString(item[key])
+		}
+	}
+}
+
 func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 

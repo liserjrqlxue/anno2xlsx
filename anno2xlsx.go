@@ -447,9 +447,16 @@ func main() {
 		defer simple_util.DeferClose(resultFile)
 		fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
 
-		for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
-			qualityColumn = append(qualityColumn, key.(string))
+		if *wgs {
+			for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
+				qualityColumn = append(qualityColumn, key.(string))
+			}
+		} else {
+			for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
+				qualityColumn = append(qualityColumn, key.(string))
+			}
 		}
+
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(qcFile)
@@ -596,21 +603,10 @@ func main() {
 	logTime(ts, step-1, step, "load Special mutation DB")
 
 	// QC Sheet
-	qcSheet := tier1.xlsx.Sheet["quality"]
-	if qcSheet != nil {
-		for _, row := range qcSheet.Rows {
-			var qcArray []string
-			key := row.Cells[0].Value
-			qcArray = append(qcArray, key)
-			for _, quality := range qualitys {
-				row.AddCell().SetString(quality[key])
-				qcArray = append(qcArray, quality[key])
-			}
-		}
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add qc")
-	}
+	addQCSheet(tier1.xlsx, "quality", qualityColumn, qualitys)
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "add qc")
 	//qcSheet.Cols[1].Width = 12
 
 	if *exon != "" {
