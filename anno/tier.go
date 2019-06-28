@@ -83,7 +83,7 @@ func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[st
 func checkHGMDClinVar(item map[string]string, stats map[string]int) {
 	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
 		stats["HGMD/ClinVar"]++
-		if checkAF(item, 0.01) {
+		if checkAF(item, 0.05) {
 			stats["HGMD/ClinVar isAF"]++
 			if isChrAXY.MatchString(item["#Chr"]) {
 				item["Tier"] = "Tier1"
