@@ -184,6 +184,16 @@ var (
 		false,
 		"if not filter gene",
 	)
+	extra = flag.String(
+		"extra",
+		"",
+		"extra file path to excel, comma as sep",
+	)
+	extraSheetName = flag.String(
+		"extraSheet",
+		"",
+		"extra sheet name, comma as sep, same order with -extra",
+	)
 )
 
 // family list
@@ -668,6 +678,22 @@ func main() {
 	}
 	addFamInfoSheet(tier1.xlsx, "fam_info", sampleList)
 
+	// extra sheet
+	if *extra != "" {
+		extraArray := strings.Split(*extra, ",")
+		extraSheetArray := strings.Split(*extraSheetName, ",")
+		if len(extraArray) != len(extraSheetArray) {
+			log.Printf(
+				"extra files not equal length to sheetnames:%+vvs.%+v",
+				extraArray,
+				extraSheetArray,
+			)
+		} else {
+			for i := range extraArray {
+				addTxt2Sheet(tier1.xlsx, extraSheetArray[i], extraArray[i])
+			}
+		}
+	}
 	// anno
 	if *snv != "" {
 		var step0 = step
@@ -897,6 +923,7 @@ func main() {
 		}
 	}
 
+	// Tier1 excel
 	if *save {
 		if isSMN1 {
 			tier1.output = *prefix + ".Tier1.SMN1.xlsx"

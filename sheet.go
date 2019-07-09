@@ -35,6 +35,19 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 	}
 }
 
+func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
+	sheet, err := excel.AddSheet(sheetName)
+	simple_util.CheckErr(err)
+
+	slice := simple_util.File2Slice(file, "\t")
+	for _, line := range slice {
+		row := sheet.AddRow()
+		for _, val := range line {
+			row.AddCell().SetString(val)
+		}
+	}
+}
+
 func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
