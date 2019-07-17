@@ -928,10 +928,14 @@ func main() {
 
 	// Tier1 excel
 	if *save {
+		tagStr := ""
+		if *tag != "" {
+			tagStr = simple_util.File2Array(*tag)[0]
+		}
 		if isSMN1 {
-			tier1.output = *prefix + ".Tier1" + *tag + ".SMN1.xlsx"
+			tier1.output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
 		} else {
-			tier1.output = *prefix + ".Tier1" + *tag + ".xlsx"
+			tier1.output = *prefix + ".Tier1" + tagStr + ".xlsx"
 		}
 		err = tier1.save()
 		simple_util.CheckErr(err)
