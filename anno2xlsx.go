@@ -194,6 +194,11 @@ var (
 		"",
 		"extra sheet name, comma as sep, same order with -extra",
 	)
+	tag = flag.String(
+		"tag",
+		"",
+		"add tag to tier1 file name:[prefix].Tier1[tag].xlsx",
+	)
 )
 
 // family list
@@ -915,8 +920,6 @@ func main() {
 	if *save {
 		if *wgs && *snv != "" {
 			simple_util.CheckErr(WGSxlsx.Save(*prefix + ".WGS.xlsx"))
-			err = tier1.save()
-			simple_util.CheckErr(err)
 			ts = append(ts, time.Now())
 			step++
 			logTime(ts, step-1, step, "save WGS")
@@ -926,7 +929,9 @@ func main() {
 	// Tier1 excel
 	if *save {
 		if isSMN1 {
-			tier1.output = *prefix + ".Tier1.SMN1.xlsx"
+			tier1.output = *prefix + ".Tier1" + *tag + ".SMN1.xlsx"
+		} else {
+			tier1.output = *prefix + ".Tier1" + *tag + ".xlsx"
 		}
 		err = tier1.save()
 		simple_util.CheckErr(err)
