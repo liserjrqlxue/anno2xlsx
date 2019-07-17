@@ -197,7 +197,7 @@ var (
 	tag = flag.String(
 		"tag",
 		"",
-		"add tag to tier1 file name:[prefix].Tier1[tag].xlsx",
+		"read tag from file, add to tier1 file name:[prefix].Tier1[tag].xlsx",
 	)
 )
 
