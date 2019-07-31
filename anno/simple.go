@@ -573,7 +573,7 @@ func PrimerDesign(item map[string]string) string {
 	if item["VarType"] == "snv" {
 		pos = item["Stop"]
 	} else {
-		pos = item["Start"] + ".." + item["Stop"]
+		pos = item["Start"] + "-" + item["Stop"]
 	}
 	var flank = item["Flank"]
 	if item["Strand"] == "-" {
