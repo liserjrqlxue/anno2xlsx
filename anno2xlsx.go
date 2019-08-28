@@ -474,6 +474,9 @@ func main() {
 		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
 			resultColumn = append(resultColumn, key.(string))
 		}
+		if *trio {
+			resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
+		}
 		resultFile, err = os.Create(*prefix + ".result.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(resultFile)
@@ -831,6 +834,13 @@ func main() {
 					item["IsACMG59"] = "N"
 					if Acmg59Gene[item["Gene Symbol"]] {
 						item["IsACMG59"] = "Y"
+					}
+					if *trio {
+						zygosity := strings.Split(item["Zygosity"], ";")
+						zygosity = append(zygosity, "NA", "NA")
+						item["Zygosity"] = zygosity[0]
+						item["Genotype of Family Member 1"] = zygosity[1]
+						item["Genotype of Family Member 2"] = zygosity[2]
 					}
 					var resultArray []string
 					for _, key := range resultColumn {
