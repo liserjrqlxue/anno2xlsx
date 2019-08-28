@@ -306,6 +306,8 @@ var isSMN1 bool
 
 var snvs []string
 
+var Acmg59Gene = make(map[string]bool)
+
 // WGS
 var WGSxlsx *xlsx.File
 var TIPdb = make(map[string]Variant)
@@ -464,6 +466,11 @@ func main() {
 	}
 
 	if *wesim {
+		acmg59GeneList := simple_util.File2Array(getPath("Acmg59Gene", defaultConfig))
+		for _, gene := range acmg59GeneList {
+			Acmg59Gene[gene] = true
+		}
+
 		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
 			resultColumn = append(resultColumn, key.(string))
 		}
@@ -821,6 +828,10 @@ func main() {
 
 				// WESIM
 				if *wesim {
+					item["IsACMG59"] = "N"
+					if Acmg59Gene[item["Gene Symbol"]] {
+						item["IsACMG59"] = "Y"
+					}
 					var resultArray []string
 					for _, key := range resultColumn {
 						resultArray = append(resultArray, item[key])

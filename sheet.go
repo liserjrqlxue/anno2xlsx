@@ -253,6 +253,7 @@ func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
 				log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
 			}
 			tier2Row.AddCell().SetString(strings.Join(inheritance, "\n"))
+			item["DiseaseName/ModeInheritance"] = strings.Join(inheritance, "<br>")
 		default:
 			tier2Row.AddCell().SetString(item[str])
 		}

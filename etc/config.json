@@ -29,8 +29,11 @@
     "#Chr+Stop",
     "MutationName",
     "Zygosity",
-    "自动化判断"
+    "自动化判断",
+    "DiseaseName/ModeInheritance",
+    "IsACMG59"
   ],
+  "Acmg59Gene":"ACMG59Gene.list",
   "qualityColumn":[
     "样本编号",
     "原始数据产出（Mb）",
