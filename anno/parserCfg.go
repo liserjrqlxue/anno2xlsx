@@ -1,4 +1,4 @@
-package main
+package anno
 
 import (
 	"github.com/liserjrqlxue/simple-util"
@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-func getPath(key string, config map[string]interface{}) (path string) {
-	path = getStrVal(key, config)
+func GetPath(key, dbPath string, config map[string]interface{}) (path string) {
+	path = GetStrVal(key, config)
 
 	if !simple_util.FileExists(path) {
 		path = filepath.Join(dbPath, path)
@@ -18,7 +18,7 @@ func getPath(key string, config map[string]interface{}) (path string) {
 	return
 }
 
-func getStrVal(key string, config map[string]interface{}) (val string) {
+func GetStrVal(key string, config map[string]interface{}) (val string) {
 	val, ok := config[key].(string)
 	if !ok {
 		log.Fatalf("Error load cfg[%s]:%v\n", key, config[key])
