@@ -150,39 +150,39 @@ func main() {
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
 	// PVS1
-	simple_util.JsonFile2Data(getPath("LOFList", defaultConfig), &LOFList)
-	simple_util.JsonFile2Data(getPath("transcriptInfo", defaultConfig), &transcriptInfo)
+	simple_util.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
+	simple_util.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
 
 	// PS1 & PM5
-	simple_util.JsonFile2Data(getPath("ClinVarPathogenicMissense", defaultConfig), &ClinVarMissense)
-	simple_util.JsonFile2Data(getPath("ClinVarPHGVSlist", defaultConfig), &ClinVarPHGVSlist)
-	simple_util.JsonFile2Data(getPath("HGMDPathogenicMissense", defaultConfig), &HGMDMissense)
-	simple_util.JsonFile2Data(getPath("HGMDPHGVSlist", defaultConfig), &HGMDPHGVSlist)
-	simple_util.JsonFile2Data(getPath("ClinVarAAPosList", defaultConfig), &ClinVarAAPosList)
-	simple_util.JsonFile2Data(getPath("HGMDAAPosList", defaultConfig), &HGMDAAPosList)
+	simple_util.JsonFile2Data(anno.GetPath("ClinVarPathogenicMissense", dbPath, defaultConfig), &ClinVarMissense)
+	simple_util.JsonFile2Data(anno.GetPath("ClinVarPHGVSlist", dbPath, defaultConfig), &ClinVarPHGVSlist)
+	simple_util.JsonFile2Data(anno.GetPath("HGMDPathogenicMissense", dbPath, defaultConfig), &HGMDMissense)
+	simple_util.JsonFile2Data(anno.GetPath("HGMDPHGVSlist", dbPath, defaultConfig), &HGMDPHGVSlist)
+	simple_util.JsonFile2Data(anno.GetPath("ClinVarAAPosList", dbPath, defaultConfig), &ClinVarAAPosList)
+	simple_util.JsonFile2Data(anno.GetPath("HGMDAAPosList", dbPath, defaultConfig), &HGMDAAPosList)
 
 	// PM1
-	simple_util.JsonFile2Data(getPath("PM1dbNSFPDomain", defaultConfig), &dbNSFPDomain)
-	simple_util.JsonFile2Data(getPath("PM1PfamDomain", defaultConfig), &PfamDomain)
-	tbx, err = bix.New(getPath("PathogenicLite", defaultConfig))
+	simple_util.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
+	simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &PfamDomain)
+	tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
 	simple_util.CheckErr(err, "load tabix")
 
 	// PP2
-	simple_util.JsonFile2Data(getPath("ClinVarPP2GeneList", defaultConfig), &ClinVarPP2GeneList)
-	simple_util.JsonFile2Data(getPath("HgmdPP2GeneList", defaultConfig), &HgmdPP2GeneList)
+	simple_util.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &ClinVarPP2GeneList)
+	simple_util.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &HgmdPP2GeneList)
 
 	// BS2
-	simple_util.JsonFile2Data(getPath("LateOnset", defaultConfig), &lateOnsetList)
+	simple_util.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
 
 	// BP1
-	simple_util.JsonFile2Data(getPath("ClinVarBP1GeneList", defaultConfig), &ClinVarBP1GeneList)
-	simple_util.JsonFile2Data(getPath("HgmdBP1GeneList", defaultConfig), &HgmdBP1GeneList)
+	simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &ClinVarBP1GeneList)
+	simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &HgmdBP1GeneList)
 
 	if *geneDiseaseDbFile == "" {
-		*geneDiseaseDbFile = getPath("geneDiseaseDbFile", defaultConfig)
+		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
 	}
 	if *geneDiseaseDbTitle == "" {
-		*geneDiseaseDbTitle = getPath("geneDiseaseDbTitle", defaultConfig)
+		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
 	}
 
 	// 基因-疾病
@@ -273,28 +273,6 @@ func main() {
 		pprof.WriteHeapProfile(f)
 		defer simple_util.DeferClose(f)
 	}
-}
-
-func getPath(key string, config map[string]interface{}) (path string) {
-	path = getStrVal(key, config)
-
-	if !simple_util.FileExists(path) {
-		path = filepath.Join(dbPath, path)
-	}
-	if !simple_util.FileExists(path) {
-		log.Fatalf("can not find %s in config[%v]\n", key, path)
-	}
-	return
-}
-
-func getStrVal(key string, config map[string]interface{}) (val string) {
-	val, ok := config[key].(string)
-	if !ok {
-		log.Fatalf("Error load cfg[%s]:%v\n", key, config[key])
-	} else {
-		log.Printf("load cfg[%s]:%v\n", key, config[key])
-	}
-	return
 }
 
 func updateDisease(gene string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
