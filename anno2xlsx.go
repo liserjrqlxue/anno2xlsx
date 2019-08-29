@@ -847,9 +847,10 @@ func main() {
 
 				// WESIM
 				if *wesim {
-					item["IsACMG59"] = "N"
 					if Acmg59Gene[item["Gene Symbol"]] {
 						item["IsACMG59"] = "Y"
+					} else {
+						item["IsACMG59"] = "N"
 					}
 					if *trio {
 						zygosity := strings.Split(item["Zygosity"], ";")
