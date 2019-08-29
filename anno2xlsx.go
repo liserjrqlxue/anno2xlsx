@@ -24,9 +24,8 @@ import (
 var (
 	ex, _        = os.Executable()
 	exPath       = filepath.Dir(ex)
-	pSep         = string(os.PathSeparator)
-	dbPath       = exPath + pSep + "db" + pSep
-	templatePath = exPath + pSep + "template" + pSep
+	dbPath       = filepath.Join(exPath, "db")
+	templatePath = filepath.Join(exPath, "template")
 )
 
 // version
