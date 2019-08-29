@@ -321,20 +321,36 @@ var LOFList map[string]int
 var transcriptInfo map[string][]evidence.Region
 
 // PS1 & PM5
-var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist, ClinVarAAPosList, HGMDAAPosList map[string]int
+var (
+	HGMDAAPosList    map[string]int
+	ClinVarAAPosList map[string]int
+	HGMDPHGVSlist    map[string]int
+	HGMDMissense     map[string]int
+	ClinVarPHGVSlist map[string]int
+	ClinVarMissense  map[string]int
+)
 
 // PM1
 var tbx *bix.Bix
-var dbNSFPDomain, PfamDomain map[string]bool
+var (
+	PfamDomain   map[string]bool
+	dbNSFPDomain map[string]bool
+)
 
 // PP2
-var ClinVarPP2GeneList, HgmdPP2GeneList map[string]float64
+var (
+	HgmdPP2GeneList    map[string]float64
+	ClinVarPP2GeneList map[string]float64
+)
 
 // BS2
 var lateOnsetList map[string]int
 
 // BP1
-var ClinVarBP1GeneList, HgmdBP1GeneList map[string]float64
+var (
+	HgmdBP1GeneList    map[string]float64
+	ClinVarBP1GeneList map[string]float64
+)
 
 func main() {
 	var ts []time.Time
