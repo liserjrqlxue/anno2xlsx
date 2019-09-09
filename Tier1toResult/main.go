@@ -44,6 +44,11 @@ var (
 		false,
 		"if trio",
 	)
+	top = flag.Int(
+		"top",
+		20,
+		"output only top -top item",
+	)
 )
 
 var Acmg59Gene = make(map[string]bool)
@@ -78,7 +83,8 @@ func main() {
 	resultFile, err := os.Create(*prefix + ".result.tsv")
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(resultFile)
-	fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
+	_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
+	simple_util.CheckErr(err)
 
 	var title []string
 	for i, row := range xlF.Sheet[*sheetName].Rows {
@@ -86,10 +92,12 @@ func main() {
 			for _, cell := range row.Cells {
 				title = append(title, cell.Value)
 			}
-		} else {
+		} else if i <= *top {
 			var item = make(map[string]string)
-			for i, cell := range row.Cells {
-				item[title[i]] = cell.Value
+			for j, cell := range row.Cells {
+				if j < len(title) {
+					item[title[j]] = cell.Value
+				}
 			}
 			item["IsACMG59"] = "N"
 			if Acmg59Gene[item["Gene Symbol"]] {
@@ -108,7 +116,8 @@ func main() {
 			for _, key := range resultColumn {
 				resultArray = append(resultArray, item[key])
 			}
-			fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+			_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+			simple_util.CheckErr(err)
 		}
 	}
 }
