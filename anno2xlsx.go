@@ -572,7 +572,7 @@ func main() {
 	tier2.xlsx = xlsx.NewFile()
 
 	var tier2TemplateInfo templateInfo
-	tier2Template, err := xlsx.OpenFile(templatePath + "Tier2.xlsx")
+	tier2Template, err := xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))
 	simple_util.CheckErr(err)
 	tier2Infos, err := tier2Template.ToSlice()
 	simple_util.CheckErr(err)
