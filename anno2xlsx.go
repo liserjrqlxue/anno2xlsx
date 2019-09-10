@@ -118,6 +118,10 @@ var (
 		"",
 		"coverage.report file to fill quality sheet, comma as sep, same order with -list",
 	)
+	karyotype = flag.String(
+		"karyotype",
+		"",
+		"karyotype file to fill quality sheet's 核型预测")
 	ifRedis = flag.Bool(
 		"redis",
 		false,
@@ -363,7 +367,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.StartCPUProfile(f)
+		simple_util.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
 	if *snv == "" && *exon == "" && *large == "" && *smn == "" {
@@ -495,12 +499,14 @@ func main() {
 		resultFile, err = os.Create(*prefix + ".result.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(resultFile)
-		fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
+		_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
+		simple_util.CheckErr(err)
 
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simple_util.CheckErr(err)
 		defer simple_util.DeferClose(qcFile)
-		fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
+		_, err = fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
+		simple_util.CheckErr(err)
 	}
 
 	if *wgs {
@@ -525,6 +531,11 @@ func main() {
 		qualitys = append(qualitys, quality)
 	}
 
+	var karyotypeMap = make(map[string]string)
+	if *karyotype != "" {
+		karyotypeMap, err = simple_util.File2Map(*karyotype, "\t", true)
+		simple_util.CheckErr(err)
+	}
 	// load coverage.report
 	if *qc != "" {
 		loadQC(*qc, qualitys, *wgs)
@@ -537,8 +548,10 @@ func main() {
 				for _, key := range qualityColumn {
 					qcArray = append(qcArray, quality[key])
 				}
-				fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
+				_, err = fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
+				simple_util.CheckErr(err)
 			}
+			quality["核型预测"] = karyotypeMap[quality["样本编号"]]
 		}
 
 		ts = append(ts, time.Now())
