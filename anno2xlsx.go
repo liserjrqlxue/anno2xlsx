@@ -254,7 +254,7 @@ var resultFile, qcFile *os.File
 func newXlsxTemplate(flag string) xlsxTemplate {
 	var tier = xlsxTemplate{
 		flag:      flag,
-		template:  templatePath + flag + ".xlsx",
+		template:  filepath.Join(templatePath, flag+".xlsx"),
 		sheetName: tierSheet[flag],
 		output:    *prefix + "." + flag + ".xlsx",
 	}
