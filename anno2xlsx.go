@@ -121,7 +121,7 @@ var (
 	karyotype = flag.String(
 		"karyotype",
 		"",
-		"karyotype file to fill quality sheet's 核型预测")
+		"karyotype files to fill quality sheet's 核型预测, comma as sep")
 	ifRedis = flag.Bool(
 		"redis",
 		false,
@@ -533,7 +533,7 @@ func main() {
 
 	var karyotypeMap = make(map[string]string)
 	if *karyotype != "" {
-		karyotypeMap, err = simple_util.File2Map(*karyotype, "\t", true)
+		karyotypeMap, err = simple_util.Files2Map(*karyotype, "\t", true)
 		simple_util.CheckErr(err)
 	}
 	// load coverage.report
@@ -875,7 +875,8 @@ func main() {
 					for _, key := range resultColumn {
 						resultArray = append(resultArray, item[key])
 					}
-					fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+					_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+					simple_util.CheckErr(err)
 				}
 
 				tier1GeneList[item["Gene Symbol"]] = true
@@ -1014,7 +1015,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.WriteHeapProfile(f)
+		simple_util.CheckErr(pprof.WriteHeapProfile(f))
 		defer simple_util.DeferClose(f)
 	}
 }
