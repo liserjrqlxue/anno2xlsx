@@ -543,6 +543,7 @@ func main() {
 			for k, v := range qualityKeyMap {
 				quality[k] = quality[v]
 			}
+			quality["核型预测"] = karyotypeMap[quality["样本编号"]]
 			if *wesim {
 				var qcArray []string
 				for _, key := range qualityColumn {
@@ -551,7 +552,6 @@ func main() {
 				_, err = fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
 				simple_util.CheckErr(err)
 			}
-			quality["核型预测"] = karyotypeMap[quality["样本编号"]]
 		}
 
 		ts = append(ts, time.Now())
