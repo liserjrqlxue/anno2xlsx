@@ -662,6 +662,9 @@ func main() {
 	logTime(ts, step-1, step, "add qc")
 	//qcSheet.Cols[1].Width = 12
 
+	var stats = make(map[string]int)
+	var isHom = regexp.MustCompile(`^Hom`)
+
 	if *exon != "" {
 		var paths []string
 		for _, path := range strings.Split(*exon, ",") {
@@ -672,9 +675,9 @@ func main() {
 			}
 		}
 		if *cnvFilter {
-			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, true)
+			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, true, stats, "exonCNV")
 		} else {
-			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, false)
+			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, false, stats, "exonCNV")
 
 		}
 		ts = append(ts, time.Now())
@@ -694,9 +697,9 @@ func main() {
 			}
 		}
 		if *cnvFilter {
-			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, true, false)
+			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, true, false, stats, "largeCNV")
 		} else {
-			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, false, false)
+			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, false, false, stats, "largeCNV")
 		}
 		ts = append(ts, time.Now())
 		step++
@@ -754,8 +757,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load anno file")
-
-		var stats = make(map[string]int)
 
 		stats["Total"] = len(data)
 		for _, item := range data {
@@ -826,7 +827,20 @@ func main() {
 			if item["Tier"] == "Tier1" {
 				anno.InheritCheck(item, inheritDb)
 				tier1GeneList[item["Gene Symbol"]] = true
+				if anno.FuncInfo[item["Function"]] >= 3 {
+					stats["Tier1LoF"]++
+				}
+				if isHom.MatchString(item["Zygosity"]) {
+					stats["Tier1Hom"]++
+				}
+				stats["Tier1"+item["VarType"]]++
 			}
+			stats[item["#Chr"]]++
+			if isHom.MatchString(item["Zygosity"]) {
+				stats["Hom"]++
+				stats["Hom:"+item["#Chr"]]++
+			}
+			stats[item["VarType"]]++
 		}
 		logTierStats(stats)
 		ts = append(ts, time.Now())

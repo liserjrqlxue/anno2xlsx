@@ -48,7 +48,7 @@ func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
 	}
 }
 
-func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool) {
+func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int, key string) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
@@ -64,6 +64,10 @@ func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, 
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
+			stats[key]++
+			if item["OMIM"] != "" {
+				stats["Tier1"+key]++
+			}
 			if filterGene && item["OMIM"] == "" {
 				continue
 			}

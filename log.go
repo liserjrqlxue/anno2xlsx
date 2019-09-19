@@ -59,6 +59,28 @@ func logTierStats(stats map[string]int) {
 	fmt.Printf("    遗传相符        Count : %7d\n", stats["遗传相符"])
 	fmt.Printf("  Tier2             Count : %7d\n", stats["Tier2"])
 	fmt.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
+
+	fmt.Printf("罕见变异占比（Tier1/总） : %0.2f%%\n", float64(stats["Tier1"])/float64(stats["Total"])*100)
+	fmt.Printf("罕见烈性变异占比in tier1 : %0.2f%%\n", float64(stats["Tier1LoF"])/float64(stats["Tier1"])*100)
+	fmt.Printf("罕见纯合变异占比in tier1 : %0.2f%%\n", float64(stats["Tier1Hom"])/float64(stats["Tier1"])*100)
+	fmt.Printf("纯合变异占比in all   : %0.2f%%\n", float64(stats["Hom"])/float64(stats["Total"])*100)
+
+	for _, chr := range []string{
+		"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13",
+		"14", "15", "16", "17", "18", "19", "20", "21", "22", "X",
+	} {
+		fmt.Printf("chr%-2s纯合变异占比in tier1: %0.2f%%\n", chr, float64(stats["Hom:chr"+chr])/float64(stats["chr"+chr])*100)
+	}
+	fmt.Printf("SNVs : %7d\n", stats["snv"])
+	fmt.Printf("SNVs : %7d\n", stats["Tier1snv"])
+	fmt.Printf("Small insertion（包含 dup）: %7d\n", stats["ins"])
+	fmt.Printf("Small insertion（包含 dup）: %7d\n", stats["Tier1ins"])
+	fmt.Printf("Small deletion: %7d\n", stats["del"])
+	fmt.Printf("Small deletion: %7d\n", stats["Tier1del"])
+	fmt.Printf("exon CNV: %7d\n", stats["exonCNV"])
+	fmt.Printf("exon CNV: %7d\n", stats["Tier1exonCNV"])
+	fmt.Printf("large CNV: %7d\n", stats["largeCNV"])
+	fmt.Printf("large CNV: %7d\n", stats["Tier1largeCNV"])
 }
 
 func logTime(timeList []time.Time, step1, step2 int, message string) {
