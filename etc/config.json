@@ -284,6 +284,6 @@
     "bam文件路径":"bamPath",
     "核型预测":"核型预测",
     "On target 率":"[Target] Fraction of Target Reads in all reads",
-    "Duplicate reads 的比例": "[Total] PCR duplicate reads"
+    "Duplicate reads 的比例": "[Total] Fraction of PCR duplicate reads"
   }
 }
