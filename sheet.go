@@ -5,8 +5,6 @@ import (
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx"
 	"log"
-	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -149,41 +147,6 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 	}
 }
 
-var isSharp = regexp.MustCompile(`^#`)
-var isBamPath = regexp.MustCompile(`^## Files : (\S+)`)
-
-func loadQC(files string, quality []map[string]string, isWGS bool) {
-	sep := "\t"
-	if isWGS {
-		sep = ": "
-	}
-	file := strings.Split(files, ",")
-	for i, in := range file {
-		report := simple_util.File2Array(in)
-		for _, line := range report {
-			if isSharp.MatchString(line) {
-				if m := isBamPath.FindStringSubmatch(line); m != nil {
-					quality[i]["bamPath"] = m[1]
-				}
-			} else {
-				m := strings.Split(line, sep)
-				if len(m) > 1 {
-					quality[i][strings.TrimSpace(m[0])] = strings.TrimSpace(m[1])
-				}
-			}
-		}
-		if isWGS {
-			absPath, err := filepath.Abs(in)
-			if err == nil {
-				quality[i]["bamPath"] = filepath.Join(filepath.Dir(absPath), "..", "bam_chr")
-			} else {
-				log.Println(err, in)
-				quality[i]["bamPath"] = filepath.Join(filepath.Dir(in), "..", "bam_chr")
-			}
-		}
-	}
-}
-
 type Variant struct {
 	Chr   string                 `json:"Chromosome"`
 	Ref   string                 `json:"Ref"`
@@ -218,9 +181,6 @@ func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
 	}
 	mut, ok = MTAFdb[key]
 	if ok {
-		//for _, key := range []string{	"# in HG branch with variant", "Total # HG branch seqs"} {
-		//item[key] =strconv.Itoa(mut.Info[key].(int))
-		//}
 		for _, key := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
 			item[key] = strconv.FormatFloat(mut.Info[key].(float64), 'f', 5, 64)
 		}

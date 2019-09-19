@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime/pprof"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -564,39 +563,8 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "load coverage.report")
 	}
-	if *filterStat != "" {
-		var db = make(map[string]float64)
-		filters := strings.Split(*filterStat, ",")
-		for _, filter := range filters {
-			fDb, err := simple_util.File2Map(filter, "\t", false)
-			simple_util.CheckErr(err)
-			numberOfReads, err := strconv.ParseFloat(fDb["Number of Reads:"], 32)
-			simple_util.CheckErr(err)
-			GCfq1, err := strconv.ParseFloat(fDb["GC(%) of fq1:"], 32)
-			simple_util.CheckErr(err)
-			GCfq2, err := strconv.ParseFloat(fDb["GC(%) of fq2:"], 32)
-			simple_util.CheckErr(err)
-			Q20fq1, err := strconv.ParseFloat(fDb["Q20(%) of fq1:"], 32)
-			simple_util.CheckErr(err)
-			Q20fq2, err := strconv.ParseFloat(fDb["Q20(%) of fq2:"], 32)
-			simple_util.CheckErr(err)
-			Q30fq1, err := strconv.ParseFloat(fDb["Q30(%) of fq1:"], 32)
-			simple_util.CheckErr(err)
-			Q30fq2, err := strconv.ParseFloat(fDb["Q30(%) of fq2:"], 32)
-			simple_util.CheckErr(err)
-			lowQualReads, err := strconv.ParseFloat(strings.TrimSpace(fDb["Discard Reads related to low qual:"]), 32)
-			simple_util.CheckErr(err)
-			db["numberOfReads"] += numberOfReads
-			db["lowQualReads"] += lowQualReads
-			db["GC"] += (GCfq1 + GCfq2) / 2 * numberOfReads
-			db["Q20"] += (Q20fq1 + Q20fq2) / 2 * numberOfReads
-			db["Q30"] += (Q30fq1 + Q30fq2) / 2 * numberOfReads
-		}
-		qualitys[0]["Q20 碱基的比例"] = strconv.FormatFloat(db["Q20"]/db["numberOfReads"], 'f', 2, 32) + "%"
-		qualitys[0]["Q30 碱基的比例"] = strconv.FormatFloat(db["Q30"]/db["numberOfReads"], 'f', 2, 32) + "%"
-		qualitys[0]["测序数据的 GC 含量"] = strconv.FormatFloat(db["GC"]/db["numberOfReads"], 'f', 2, 32) + "%"
-		qualitys[0]["低质量 reads 比例"] = strconv.FormatFloat(db["lowQualReads"]/db["numberOfReads"], 'f', 2, 32) + "%"
-	}
+	loadFilterStat(*filterStat, qualitys[0])
+
 	// load tier template
 	tier1 := newXlsxTemplate("Tier1")
 	tier3 := newXlsxTemplate("Tier3")
