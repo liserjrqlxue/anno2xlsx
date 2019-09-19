@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime/pprof"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -201,6 +202,11 @@ var (
 		"tag",
 		"",
 		"read tag from file, add to tier1 file name:[prefix].Tier1[tag].xlsx",
+	)
+	filterStat = flag.String(
+		"filterStat",
+		"",
+		"filter.stat files to calculate reads QC, comma as sep",
 	)
 )
 
@@ -558,7 +564,39 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "load coverage.report")
 	}
-
+	if *filterStat != "" {
+		var db = make(map[string]float64)
+		filters := strings.Split(*filterStat, ",")
+		for _, filter := range filters {
+			fDb, err := simple_util.File2Map(filter, "\t", false)
+			simple_util.CheckErr(err)
+			numberOfReads, err := strconv.ParseFloat(fDb["Number of Reads:"], 32)
+			simple_util.CheckErr(err)
+			GCfq1, err := strconv.ParseFloat(fDb["GC(%) of fq1:"], 32)
+			simple_util.CheckErr(err)
+			GCfq2, err := strconv.ParseFloat(fDb["GC(%) of fq2:"], 32)
+			simple_util.CheckErr(err)
+			Q20fq1, err := strconv.ParseFloat(fDb["Q20(%) of fq1:"], 32)
+			simple_util.CheckErr(err)
+			Q20fq2, err := strconv.ParseFloat(fDb["Q20(%) of fq2:"], 32)
+			simple_util.CheckErr(err)
+			Q30fq1, err := strconv.ParseFloat(fDb["Q20(%) of fq1:"], 32)
+			simple_util.CheckErr(err)
+			Q30fq2, err := strconv.ParseFloat(fDb["Q20(%) of fq2:"], 32)
+			simple_util.CheckErr(err)
+			lowQualReads, err := strconv.ParseFloat(strings.TrimSpace(fDb["Discard Reads related to low qual:"]), 32)
+			simple_util.CheckErr(err)
+			db["numberOfReads"] += numberOfReads
+			db["lowQualReads"] += lowQualReads
+			db["GC"] += (GCfq1 + GCfq2) / 2 * numberOfReads
+			db["Q20"] += (Q20fq1 + Q20fq2) / 2 * numberOfReads
+			db["Q30"] += (Q30fq1 + Q30fq2) / 2 * numberOfReads
+		}
+		qualitys[0]["Q20 碱基的比例"] = strconv.FormatFloat(db["Q20"]/db["numberOfReads"], 'f', 2, 32) + "%"
+		qualitys[0]["Q30 碱基的比例"] = strconv.FormatFloat(db["Q30"]/db["numberOfReads"], 'f', 2, 32) + "%"
+		qualitys[0]["测序数据的 GC 含量"] = strconv.FormatFloat(db["GC"]/db["numberOfReads"], 'f', 2, 32) + "%"
+		qualitys[0]["低质量 reads 比例"] = strconv.FormatFloat(db["lowQualReads"]/db["numberOfReads"], 'f', 2, 32) + "%"
+	}
 	// load tier template
 	tier1 := newXlsxTemplate("Tier1")
 	tier3 := newXlsxTemplate("Tier3")
@@ -654,13 +692,6 @@ func main() {
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load Special mutation DB")
-
-	// QC Sheet
-	addQCSheet(tier1.xlsx, "quality", qualityColumn, qualitys)
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "add qc")
-	//qcSheet.Cols[1].Width = 12
 
 	var stats = make(map[string]int)
 	var isHom = regexp.MustCompile(`^Hom`)
@@ -981,6 +1012,14 @@ func main() {
 		step++
 		logTime(ts, step0, step, "update info")
 	}
+
+	// QC Sheet
+	updateQC(stats, qualitys[0])
+	addQCSheet(tier1.xlsx, "quality", qualityColumn, qualitys)
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "add qc")
+	//qcSheet.Cols[1].Width = 12
 
 	if *save {
 		if *wgs && *snv != "" {
