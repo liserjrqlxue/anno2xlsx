@@ -33,8 +33,13 @@ func loadFilterStat(filterStat string, quality map[string]string) {
 		simple_util.CheckErr(err)
 		Q30fq2, err := strconv.ParseFloat(fDb["Q30(%) of fq2:"], 32)
 		simple_util.CheckErr(err)
-		lowQualReads, err := strconv.ParseFloat(strings.TrimSpace(fDb["Discard Reads related to low qual:"]), 32)
-		simple_util.CheckErr(err)
+		fDb["Discard Reads related to low qual:"] = strings.TrimSpace(fDb["Discard Reads related to low qual:"])
+		var lowQualReads = 0.0
+		if fDb["Discard Reads related to low qual:"] != "" {
+			lowQualReads, err = strconv.ParseFloat(strings.TrimSpace(fDb["Discard Reads related to low qual:"]), 32)
+			simple_util.CheckErr(err)
+		}
+
 		db["numberOfReads"] += numberOfReads
 		db["lowQualReads"] += lowQualReads
 		db["GC"] += (GCfq1 + GCfq2) / 2 * numberOfReads
