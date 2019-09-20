@@ -30,7 +30,7 @@ var (
 		"input tsv",
 	)
 	output = flag.String(
-		"prefix",
+		"output",
 		"",
 		"output, default is -input.tsv",
 	)
