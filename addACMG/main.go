@@ -8,7 +8,6 @@ import (
 	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -69,20 +68,6 @@ var (
 var geneDiseaseDb = make(map[string]map[string]string)
 var geneDiseaseDbColumn = make(map[string]string)
 
-type xlsxTemplate struct {
-	flag      string
-	template  string
-	xlsx      *xlsx.File
-	sheetName string
-	sheet     *xlsx.Sheet
-	title     []string
-	output    string
-}
-
-func (xt *xlsxTemplate) save() error {
-	return xt.xlsx.Save(xt.output)
-}
-
 var codeKey []byte
 
 // regexp
@@ -97,22 +82,38 @@ var LOFList map[string]int
 var transcriptInfo map[string][]evidence.Region
 
 // PS1 & PM5
-var ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist, ClinVarAAPosList, HGMDAAPosList map[string]int
+var (
+	HGMDAAPosList    map[string]int
+	ClinVarAAPosList map[string]int
+	HGMDPHGVSlist    map[string]int
+	HGMDMissense     map[string]int
+	ClinVarPHGVSlist map[string]int
+	ClinVarMissense  map[string]int
+)
 
 // PM1
 var tbx *bix.Bix
-var dbNSFPDomain, PfamDomain map[string]bool
+var (
+	PfamDomain   map[string]bool
+	dbNSFPDomain map[string]bool
+)
 
 // PP2
-var ClinVarPP2GeneList, HgmdPP2GeneList map[string]float64
+var (
+	HgmdPP2GeneList    map[string]float64
+	ClinVarPP2GeneList map[string]float64
+)
 
 // BS2
 var lateOnsetList map[string]int
 
 // BP1
-var ClinVarBP1GeneList, HgmdBP1GeneList map[string]float64
+var (
+	HgmdBP1GeneList    map[string]float64
+	ClinVarBP1GeneList map[string]float64
+)
 
-var err error
+//var err error
 
 func main() {
 	var ts []time.Time
@@ -124,7 +125,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.StartCPUProfile(f)
+		simple_util.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
 	if *snv == "" {
@@ -133,13 +134,7 @@ func main() {
 		os.Exit(0)
 	}
 	if *prefix == "" {
-		if *snv == "" {
-			flag.Usage()
-			fmt.Println("\nshold have -prefix for output")
-			os.Exit(0)
-		} else {
-			*prefix = *snv
-		}
+		*prefix = *snv
 	}
 
 	out, err := os.Create(*prefix + ".tsv")
@@ -270,7 +265,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.WriteHeapProfile(f)
+		simple_util.CheckErr(pprof.WriteHeapProfile(f))
 		defer simple_util.DeferClose(f)
 	}
 }

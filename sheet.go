@@ -139,7 +139,6 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 			if ok {
 				vals = append(vals, geneDb[key])
 			}
-			//fmt.Println(gene,":",key,":",vals)
 		}
 		if len(vals) > 0 {
 			item[value] = strings.Join(vals, "\n")
