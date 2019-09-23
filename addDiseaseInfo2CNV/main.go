@@ -34,6 +34,11 @@ var (
 		"",
 		"output, default is -input.tsv",
 	)
+	cnvType = flag.String(
+		"cnvType",
+		"",
+		"cnvType[exon_cnv|large_cnv]",
+	)
 	title = flag.String(
 		"title",
 		filepath.Join(exPath, "title.list"),
@@ -131,7 +136,7 @@ func main() {
 		anno.UpdateDiseaseMultiGene("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
 		item["OMIM"] = item["OMIM_Phenotype_ID"]
 		// Primer
-		item["Primer"] = anno.ExomePrimer(item)
+		item["Primer"] = anno.CnvPrimer(item, *cnvType)
 
 		var array []string
 		for _, key := range titles {
