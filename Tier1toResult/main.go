@@ -47,7 +47,7 @@ var (
 	top = flag.Int(
 		"top",
 		20,
-		"output only top -top item",
+		"output only top -top item  (exclude Acmg59Gene)",
 	)
 )
 
@@ -87,15 +87,16 @@ func main() {
 	simple_util.CheckErr(err)
 
 	var title []string
+	var count = 0
 	for i, row := range xlF.Sheet[*sheetName].Rows {
 		if i == 0 {
 			for _, cell := range row.Cells {
 				title = append(title, cell.Value)
 			}
-		} else if i <= *top {
+		} else {
 			var item = make(map[string]string)
 			for j, cell := range row.Cells {
-				if j < len(title) {
+				if j < len(title) && title != nil {
 					item[title[j]] = cell.Value
 				}
 			}
@@ -104,6 +105,10 @@ func main() {
 				item["IsACMG59"] = "Y"
 			} else {
 				item["IsACMG59"] = "N"
+				count++
+			}
+			if count > *top {
+				break
 			}
 			if *trio {
 				zygosity := strings.Split(item["Zygosity"], ";")
