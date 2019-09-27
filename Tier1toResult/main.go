@@ -107,8 +107,8 @@ func main() {
 				item["IsACMG59"] = "N"
 				count++
 			}
-			if count > *top {
-				break
+			if item["IsACMG59"] == "N" && count > *top {
+				continue
 			}
 			if *trio {
 				zygosity := strings.Split(item["Zygosity"], ";")
