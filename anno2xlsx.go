@@ -129,7 +129,7 @@ var (
 	)
 	redisAddr = flag.String(
 		"redisAddr",
-		"10.2.1.4:6380",
+		"",
 		"redis Addr Option",
 	)
 	seqType = flag.String(
@@ -472,6 +472,7 @@ func main() {
 	if *geneDbFile == "" {
 		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
 	}
+	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
@@ -633,7 +634,7 @@ func main() {
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
 	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
 	for k := range geneDbExt {
-		geneDb[k] = geneDbExt[k]["突变谱"]
+		geneDb[k] = geneDbExt[k][geneDbKey]
 	}
 	ts = append(ts, time.Now())
 	step++
