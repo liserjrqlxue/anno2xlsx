@@ -633,7 +633,7 @@ func main() {
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
 	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
 	for k := range geneDbExt {
-		geneDb[k] = geneDbExt[k]["突变/致病多样性-补充/更正"]
+		geneDb[k] = geneDbExt[k]["突变谱"]
 	}
 	ts = append(ts, time.Now())
 	step++
