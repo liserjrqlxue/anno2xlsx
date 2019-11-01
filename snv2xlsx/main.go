@@ -25,7 +25,7 @@ var (
 	ex, _        = os.Executable()
 	exPath       = filepath.Dir(ex)
 	dbPath       = filepath.Join(exPath, "..", "db")
-	templatePath = filepath.Join(exPath, "template")
+	templatePath = filepath.Join(exPath, "..", "template")
 )
 
 // flag
