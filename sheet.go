@@ -61,6 +61,8 @@ func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, 
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
 			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			// 突变频谱
+			updateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			stats[key]++
 			if item["OMIM"] != "" {
@@ -144,6 +146,16 @@ func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[strin
 			item[value] = strings.Join(vals, "\n")
 		}
 	}
+}
+
+func updateGeneDb(geneList string, item, geneDb map[string]string) {
+	genes := strings.Split(geneList, ";")
+	// 突变频谱
+	var vals []string
+	for _, gene := range genes {
+		vals = append(vals, geneDb[gene])
+	}
+	item["突变频谱"] = strings.Join(vals, "\n")
 }
 
 type Variant struct {
