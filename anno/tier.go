@@ -83,7 +83,7 @@ func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[st
 func checkHGMDClinVar(item map[string]string, stats map[string]int) {
 	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
 		stats["HGMD/ClinVar"]++
-		if checkAF(item, 0.05) {
+		if checkAF(item, AFlist, 0.05) {
 			stats["HGMD/ClinVar isAF"]++
 			if isChrAXY.MatchString(item["#Chr"]) {
 				item["Tier"] = "Tier1"
@@ -106,7 +106,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 	// Tier
 	if item["自动化判断"] != "B" && item["自动化判断"] != "LB" {
 		stats["noB/LB"]++
-		if checkAF(item, 0.01) {
+		if checkAF(item, AFlist, 0.01) {
 			stats["isAF"]++
 			if geneList[gene] || allGene {
 				stats["isGene"]++
@@ -150,7 +150,7 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 		stats["noB/LB"]++
 		if isDenovo.MatchString(item["Zygosity"]) {
 			stats["isDenovo noB/LB"]++
-			if checkAF(item, 0.01) {
+			if checkAF(item, AFlist, 0.01) {
 				stats["low AF"]++
 				stats["Denovo AF"]++
 				if geneList[gene] || allGene {
@@ -190,7 +190,7 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 			}
 		} else {
 			stats["noDenovo noB/LB"]++
-			if checkAF(item, 0.01) {
+			if checkAF(item, AFlist, 0.01) {
 				stats["low AF"]++
 				stats["noDenovo AF"]++
 				if geneList[gene] || allGene {
@@ -241,7 +241,7 @@ var AFlist = []string{
 	"Panel AlleleFreq",
 }
 
-func checkAF(item map[string]string, threshold float64) bool {
+func checkAF(item map[string]string, AFlist []string, threshold float64) bool {
 	for _, key := range AFlist {
 		af := item[key]
 		if af == "" || af == "." {
