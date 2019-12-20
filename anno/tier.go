@@ -120,7 +120,13 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					stats["isFunction"]++
 					//}
 				} else if isWGS && item["Function"] == "intron" {
-					item["Tier"] = "Tier1"
+					if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+						item["Tier"] = "Tier1"
+						stats["isFunction"]++
+					} else {
+						item["Tier"] = "Tier3"
+						stats["noFunction"]++
+					}
 				} else {
 					item["Tier"] = "Tier3"
 					stats["noFunction"]++
@@ -167,7 +173,15 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 						stats["Function"]++
 						stats["Denovo Function"]++
 					} else if isWGS && item["Function"] == "intron" {
-						item["Tier"] = "Tier1"
+						if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+							item["Tier"] = "Tier1"
+							stats["Function"]++
+							stats["Denovo Function"]++
+						} else {
+							item["Tier"] = "Tier2"
+							stats["noFunction"]++
+							stats["Denovo noFunction"]++
+						}
 					} else {
 						item["Tier"] = "Tier2"
 						stats["noFunction"]++
@@ -208,7 +222,15 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 						stats["noDenovo Function"]++
 						//}
 					} else if isWGS && item["Function"] == "intron" {
-						item["Tier"] = "Tier1"
+						if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+							item["Tier"] = "Tier1"
+							stats["Function"]++
+							stats["noDenovo Function"]++
+						} else {
+							item["Tier"] = "Tier3"
+							stats["noFunction"]++
+							stats["noDenovo noFunction"]++
+						}
 					} else {
 						item["Tier"] = "Tier3"
 						stats["noFunction"]++
