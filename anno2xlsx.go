@@ -846,6 +846,7 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load snv cycle 1")
+
 		for _, item := range data {
 			if item["Tier"] == "Tier1" {
 				// 遗传相符
@@ -856,6 +857,8 @@ func main() {
 				// familyTag
 				if *trio {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+				} else {
+					item["familyTag"] = anno.FamilyTag(item, inheritDb, "single")
 				}
 				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 
