@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"github.com/360EntSecGroup-Skylar/excelize"
+	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
 	"os"
@@ -65,6 +65,11 @@ var (
 		"trio",
 		false,
 		"if trio mode",
+	)
+	gender = flag.String(
+		"gender",
+		"",
+		"gender of sample",
 	)
 )
 
@@ -135,7 +140,7 @@ func main() {
 	logTime(ts, step-1, step, "load 特殊位点库")
 
 	// anno
-	data, title := simple_util.File2MapArray(*input, "\t")
+	data, title := simple_util.File2MapArray(*input, "\t", nil)
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load anno file")
@@ -155,7 +160,7 @@ func main() {
 		simple_util.CheckErr(w3.Write(title))
 	}
 	for _, item := range data {
-		anno.UpdateSnv(item)
+		anno.UpdateSnv(item, *gender, false)
 		gene := item["Gene Symbol"]
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
@@ -168,7 +173,7 @@ func main() {
 		for _, key := range title {
 			arr = append(arr, item[key])
 		}
-		anno.AddTier(item, stats, geneList, specVarDb, *trio)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false)
 
 		if *save {
 			simple_util.CheckErr(w1.Write(arr))
@@ -240,7 +245,8 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 func loadGeneDb(excelFile, sheetName string, geneDb map[string]string) {
 	xlsxFh, err := excelize.OpenFile(excelFile)
 	simple_util.CheckErr(err)
-	rows := xlsxFh.GetRows(sheetName)
+	rows, err := xlsxFh.GetRows(sheetName)
+	simple_util.CheckErr(err)
 	var title []string
 
 	for i, row := range rows {
@@ -264,7 +270,8 @@ func loadGeneDb(excelFile, sheetName string, geneDb map[string]string) {
 func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map[string]string, geneList map[string]bool) {
 	xlsxFh, err := excelize.OpenFile(excelFile)
 	simple_util.CheckErr(err)
-	rows := xlsxFh.GetRows(sheetName)
+	rows, err := xlsxFh.GetRows(sheetName)
+	simple_util.CheckErr(err)
 	var title []string
 
 	for i, row := range rows {
