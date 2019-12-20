@@ -381,16 +381,6 @@ func main() {
 		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn")
 		os.Exit(0)
 	}
-	if *prefix == "" {
-		if *snv == "" {
-			flag.Usage()
-			fmt.Println("\nshold have -prefix for output")
-			os.Exit(0)
-		} else {
-			snvs = strings.Split(*snv, ",")
-			*prefix = snvs[0]
-		}
-	}
 	if *snv == "" {
 		if *prefix == "" {
 			flag.Usage()
