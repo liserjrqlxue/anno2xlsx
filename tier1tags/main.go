@@ -89,7 +89,7 @@ func main() {
 	}
 
 	title := simple_util.File2Array(*columns)
-	out, err := os.Create(*prefix + "tier1.tsv")
+	out, err := os.Create(*prefix + ".tier1.tsv")
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)
 	_, err = fmt.Fprintln(out, strings.Join(title, "\t"))
@@ -166,6 +166,6 @@ func main() {
 			simple_util.CheckErr(err)
 		}
 	}
-	err = outXlsx.Save(*prefix + "tier1.xlsx")
+	err = outXlsx.Save(*prefix + ".tier1.xlsx")
 	simple_util.CheckErr(err)
 }
