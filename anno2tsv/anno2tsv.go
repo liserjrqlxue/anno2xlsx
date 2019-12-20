@@ -16,8 +16,7 @@ import (
 var (
 	ex, _  = os.Executable()
 	exPath = filepath.Dir(ex)
-	pSep   = string(os.PathSeparator)
-	dbPath = exPath + pSep + ".." + pSep + "db" + pSep
+	dbPath = filepath.Join(exPath, "..", "db")
 )
 
 // flag
@@ -32,29 +31,24 @@ var (
 		"",
 		"output xlsx prefix.tier{1,2,3}.xlsx",
 	)
-	geneDbExcel = flag.String(
+	geneDbFile = flag.String(
 		"geneDb",
-		dbPath+"基因库-更新版基因特征谱-加动态突变-20190110.xlsx",
+		"",
 		"database of 突变频谱",
 	)
-	geneDbSheet = flag.String(
-		"geneDbSheet",
-		"Sheet1",
-		"sheet name of 突变频谱 database in excel",
-	)
-	geneDiseaseDbExcel = flag.String(
+	geneDiseaseDbFile = flag.String(
 		"geneDisease",
-		dbPath+"全外基因基因集整理OMIM-20190122.xlsx",
+		"",
 		"database of 基因-疾病数据库",
 	)
-	geneDiseaseSheet = flag.String(
-		"geneDiseaseSheet",
-		"Database",
-		"sheet name of geneDiseaseDbExcel",
+	geneDiseaseDbTitle = flag.String(
+		"geneDiseaseTitle",
+		"",
+		"Title map of 基因-疾病数据库",
 	)
 	specVarList = flag.String(
 		"specVarList",
-		dbPath+"spec.var.list",
+		filepath.Join(dbPath, "spec.var.list"),
 		"特殊位点库")
 	save = flag.Bool(
 		"save",
@@ -71,27 +65,21 @@ var (
 		"",
 		"gender of sample",
 	)
+	config = flag.String(
+		"config",
+		filepath.Join(exPath, "..", "etc", "config.json"),
+		"default config file, config will be overwrite by flag",
+	)
 )
 
 // 突变频谱
+var codeKey []byte
 var geneDb = make(map[string]string)
 
 // 基因-疾病
 var geneList = make(map[string]bool)
 var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = map[string]string{
-	"Gene/Locus":                 "Gene",
-	"Phenotype MIM number":       "OMIM",
-	"Disease NameEN":             "DiseaseNameEN",
-	"Disease NameCH":             "DiseaseNameCH",
-	"Alternative Disease NameEN": "AliasEN",
-	"Location":                   "Location",
-	"Gene/Locus MIM number":      "Gene/Locus MIM number",
-	"Inheritance":                "ModeInheritance",
-	"GeneralizationEN":           "GeneralizationEN",
-	"GeneralizationCH":           "GeneralizationCH",
-	"SystemSort":                 "SystemSort",
-}
+var geneDiseaseDbColumn = make(map[string]string)
 
 // 特殊位点库
 var specVarDb = make(map[string]bool)
@@ -109,6 +97,20 @@ func main() {
 		os.Exit(0)
 	}
 
+	// parser etc/config.json
+	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+
+	if *geneDiseaseDbFile == "" {
+		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
+	}
+	if *geneDiseaseDbTitle == "" {
+		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
+	}
+	if *geneDbFile == "" {
+		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
+	}
+	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
+
 	// open file to write
 	if *save {
 		f1 := writeTsv(w1, *prefix+".解读表.tsv")
@@ -120,13 +122,25 @@ func main() {
 	}
 
 	// 突变频谱
-	loadGeneDb(*geneDbExcel, *geneDbSheet, geneDb)
+	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
+	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	for k := range geneDbExt {
+		geneDb[k] = geneDbExt[k][geneDbKey]
+	}
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load 突变频谱")
 
 	// 基因-疾病
-	loadGeneDiseaseDb(*geneDiseaseDbExcel, *geneDiseaseSheet, geneDiseaseDb, geneList)
+	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
+	for key, item := range geneDiseaseDbTitleInfo {
+		geneDiseaseDbColumn[key] = item["Key"]
+	}
+	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
+	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
+	for key := range geneDiseaseDb {
+		geneList[key] = true
+	}
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load 基因-疾病")
