@@ -322,6 +322,7 @@ var TIPdb = make(map[string]Variant)
 var MTdisease = make(map[string]Variant)
 var MTAFdb = make(map[string]Variant)
 var MTTitle []string
+var tier1Db = make(map[string]bool)
 
 // ACMG
 // PVS1
@@ -872,6 +873,8 @@ func main() {
 
 				if !*wgs {
 					addTier2Row(tier2, item)
+				} else {
+					tier1Db[item["MutationName"]] = true
 				}
 
 				// WESIM
@@ -967,7 +970,7 @@ func main() {
 				if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
 					addTier2Row(tier2, item)
 
-					if item["Function"] == "intron" {
+					if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
 						intronRow := intronSheet.AddRow()
 						for _, str := range tier1.title {
 							intronRow.AddCell().SetString(item[str])
