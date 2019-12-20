@@ -8,10 +8,10 @@
 
 ### 示例
 `tier1tags -snv input.anno.tsv,intron.anno.filter.tsv`  
-output:`input.anno.tsv.tier1.tsv`
+output:`input.anno.tsv.tier1.tsv`,`input.anno.tsv.tier1.xlsx`
 
 `tier1tags -snv input.anno.tsv,intron.anno.filter.tsv -prefix test`  
-output:`test.tier1.tsv`
+output:`test.tier1.tsv`,`test.tier1.xlsx`
 
 ### 预期用途
 输入tier1数据和过滤后的intron数据

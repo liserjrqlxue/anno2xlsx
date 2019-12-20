@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	simple_util "github.com/liserjrqlxue/simple-util"
+	"github.com/tealeg/xlsx"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -28,7 +29,7 @@ var (
 	prefix = flag.String(
 		"prefix",
 		"",
-		"output prefix.tier1.tsv, default is same to first file of -snv",
+		"output prefix.tier1.{tsv,xlsx}, default is same to first file of -snv",
 	)
 	columns = flag.String(
 		"columns",
@@ -94,6 +95,14 @@ func main() {
 	_, err = fmt.Fprintln(out, strings.Join(title, "\t"))
 	simple_util.CheckErr(err)
 
+	outXlsx := xlsx.NewFile()
+	sheet, err := outXlsx.AddSheet("filter_variants")
+	simple_util.CheckErr(err)
+	row := sheet.AddRow()
+	for _, key := range title {
+		row.AddCell().SetString(key)
+	}
+
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
@@ -148,11 +157,15 @@ func main() {
 			}
 			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 			var array []string
+			row = sheet.AddRow()
 			for _, key := range title {
+				row.AddCell().SetString(item[key])
 				array = append(array, item[key])
 			}
 			_, err = fmt.Fprintln(out, strings.Join(array, "\t"))
 			simple_util.CheckErr(err)
 		}
 	}
+	err = outXlsx.Save(*prefix + "tier1.xlsx")
+	simple_util.CheckErr(err)
 }
