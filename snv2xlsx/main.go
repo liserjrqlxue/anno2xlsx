@@ -9,7 +9,7 @@ import (
 	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v2"
 	"log"
 	_ "net/http/pprof"
 	"os"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	simple_util "github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v2"
 	"os"
 	"path/filepath"
 	"regexp"

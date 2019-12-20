@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v2"
 	"log"
 	"strconv"
 	"strings"
