@@ -991,3 +991,11 @@ func FloatFormat(item map[string]string) {
 		}
 	}
 }
+
+func UpdateDisease(gene string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+	// 基因-疾病
+	gDiseaseDb := geneDiseaseDb[gene]
+	for key, value := range geneDiseaseDbColumn {
+		item[value] = gDiseaseDb[key]
+	}
+}

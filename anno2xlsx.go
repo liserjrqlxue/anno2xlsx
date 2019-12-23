@@ -760,7 +760,7 @@ func main() {
 
 			gene := item["Gene Symbol"]
 			// 基因-疾病
-			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]

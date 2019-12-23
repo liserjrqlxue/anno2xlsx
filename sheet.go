@@ -123,14 +123,6 @@ func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) 
 	}
 }
 
-func updateDisease(gene string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
-	// 基因-疾病
-	gDiseaseDb := geneDiseaseDb[gene]
-	for key, value := range geneDiseaseDbColumn {
-		item[value] = gDiseaseDb[key]
-	}
-}
-
 func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
 	genes := strings.Split(geneList, ";")
 	// 基因-疾病
