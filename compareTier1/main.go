@@ -71,7 +71,7 @@ var (
 	)
 	config = flag.String(
 		"config",
-		filepath.Join(exPath, "etc", "config.json"),
+		filepath.Join(exPath, "..", "etc", "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
 )
