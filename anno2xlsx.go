@@ -207,6 +207,11 @@ var (
 		"",
 		"filter.stat files to calculate reads QC, comma as sep",
 	)
+	tier1template = flag.String(
+		"tier1template",
+		"",
+		"tier1 template",
+	)
 )
 
 // family list
@@ -256,10 +261,13 @@ var err error
 var resultColumn, qualityColumn []string
 var resultFile, qcFile *os.File
 
-func newXlsxTemplate(flag string) xlsxTemplate {
+func newXlsxTemplate(flag, template string) xlsxTemplate {
+	if template == "" {
+		template = filepath.Join(templatePath, flag+".xlsx")
+	}
 	var tier = xlsxTemplate{
 		flag:      flag,
-		template:  filepath.Join(templatePath, flag+".xlsx"),
+		template:  template,
 		sheetName: tierSheet[flag],
 		output:    *prefix + "." + flag + ".xlsx",
 	}
@@ -569,8 +577,8 @@ func main() {
 	loadFilterStat(*filterStat, qualitys[0])
 
 	// load tier template
-	tier1 := newXlsxTemplate("Tier1")
-	tier3 := newXlsxTemplate("Tier3")
+	tier1 := newXlsxTemplate("Tier1", *tier1template)
+	tier3 := newXlsxTemplate("Tier3", "")
 
 	// tier2
 	var tier2 = xlsxTemplate{
