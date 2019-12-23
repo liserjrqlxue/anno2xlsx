@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/brentp/bix"
-	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
@@ -87,19 +86,13 @@ var geneDiseaseDbColumn = make(map[string]string)
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
-// 遗传相符
-var inheritDb = make(map[string]map[string]int)
-
 var codeKey []byte
 
 // regexp
 var (
 	isGz      = regexp.MustCompile(`\.gz$`)
 	isComment = regexp.MustCompile(`^##`)
-	isMT      = regexp.MustCompile(`MT|chrM`)
 )
-
-var redisDb *redis.Client
 
 var snvs []string
 
@@ -245,6 +238,7 @@ func main() {
 	}
 	var stats = make(map[string]int)
 	tier1Count := 0
+	tier1Count2 := 0
 	for _, item := range data {
 
 		// score to prediction
@@ -287,10 +281,34 @@ func main() {
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
 
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, AFlist1)
 		if item["Tier"] == "Tier1" {
 			tier1Count++
 		}
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, AFlist2)
+		if item["Tier"] == "Tier1" {
+			tier1Count2++
+		}
 	}
-	fmt.Printf("Tier1:\t%d", tier1Count)
+	fmt.Printf("Tier1:\t%d\t%d\n", tier1Count, tier1Count2)
+}
+
+var AFlist1 = []string{
+	"GnomAD EAS AF",
+	"GnomAD AF",
+	"1000G AF",
+	"ESP6500 AF",
+	"ExAC EAS AF",
+	"ExAC AF",
+	"PVFD AF",
+	"Panel AlleleFreq",
+}
+
+var AFlist2 = []string{
+	"GnomAD EAS AF",
+	"GnomAD AF",
+	"1000G AF",
+	"ESP6500 AF",
+	"PVFD AF",
+	"Panel AlleleFreq",
 }

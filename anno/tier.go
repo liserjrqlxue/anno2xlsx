@@ -42,19 +42,19 @@ var (
 )
 
 // add Tier to item
-func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio, isWGS, allGene bool) {
+func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio, isWGS, allGene bool, AFlist []string) {
 	if isTrio {
 		if noProband.MatchString(item["Zygosity"]) {
 			stats["noProband"]++
 			return
 		}
-		checkTierTrio(item, stats, geneList, isWGS, allGene)
+		checkTierTrio(item, stats, geneList, isWGS, allGene, AFlist)
 	} else {
-		checkTierSingle(item, stats, geneList, isWGS, allGene)
+		checkTierSingle(item, stats, geneList, isWGS, allGene, AFlist)
 	}
 
 	// HGMD or ClinVar
-	checkHGMDClinVar(item, stats)
+	checkHGMDClinVar(item, stats, AFlist)
 
 	// 特殊位点库
 	checkSpecVar(item, stats, specVarDb)
@@ -80,7 +80,7 @@ func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[st
 	}
 }
 
-func checkHGMDClinVar(item map[string]string, stats map[string]int) {
+func checkHGMDClinVar(item map[string]string, stats map[string]int, AFlist []string) {
 	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
 		stats["HGMD/ClinVar"]++
 		if checkAF(item, AFlist, 0.05) {
@@ -101,7 +101,7 @@ func checkHGMDClinVar(item map[string]string, stats map[string]int) {
 	}
 }
 
-func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool) {
+func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
 	gene := item["Gene Symbol"]
 	// Tier
 	if item["自动化判断"] != "B" && item["自动化判断"] != "LB" {
@@ -142,7 +142,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 	}
 }
 
-func checkTierTrio(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool) {
+func checkTierTrio(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
 	gene := item["Gene Symbol"]
 	// Tier
 	if noProband.MatchString(item["Zygosity"]) {
@@ -250,17 +250,6 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 	} else if isDenovo.MatchString(item["Zygosity"]) {
 		stats["Denovo B/LB"]++
 	}
-}
-
-var AFlist = []string{
-	"GnomAD EAS AF",
-	"GnomAD AF",
-	"1000G AF",
-	"ESP6500 AF",
-	"ExAC EAS AF",
-	"ExAC AF",
-	"PVFD AF",
-	"Panel AlleleFreq",
 }
 
 func checkAF(item map[string]string, AFlist []string, threshold float64) bool {
