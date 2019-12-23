@@ -138,11 +138,11 @@ func main() {
 	// cycle 1 find common tier1 gene list
 	var stats = make(map[string]int)
 	for _, item := range data {
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, anno.AFlist)
 		if item["Tier"] == "Tier1" {
 			tier1GeneList[item["Gene Symbol"]] = true
 		}
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, true, false)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, true, false, anno.AFlist)
 		if item["Tier"] == "Tier1" {
 			anno.InheritCheck(item, inheritDb)
 		}

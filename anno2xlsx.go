@@ -369,17 +369,6 @@ var (
 	ClinVarBP1GeneList map[string]float64
 )
 
-var AFlist = []string{
-	"GnomAD EAS AF",
-	"GnomAD AF",
-	"1000G AF",
-	"ESP6500 AF",
-	"ExAC EAS AF",
-	"ExAC AF",
-	"PVFD AF",
-	"Panel AlleleFreq",
-}
-
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -820,7 +809,7 @@ func main() {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
 
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, AFlist)
+			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
 
 			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 				anno.UpdateSnvTier1(item)
@@ -950,7 +939,7 @@ func main() {
 
 			inheritDb = make(map[string]map[string]int)
 			for _, item := range data {
-				anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, AFlist)
+				anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, anno.AFlist)
 				// 遗传相符
 				// only for Tier1
 				if item["Tier"] == "Tier1" {

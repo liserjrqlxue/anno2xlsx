@@ -999,3 +999,14 @@ func UpdateDisease(gene string, item, geneDiseaseDbColumn map[string]string, gen
 		item[value] = gDiseaseDb[key]
 	}
 }
+
+var AFlist = []string{
+	"GnomAD EAS AF",
+	"GnomAD AF",
+	"1000G AF",
+	"ESP6500 AF",
+	"ExAC EAS AF",
+	"ExAC AF",
+	"PVFD AF",
+	"Panel AlleleFreq",
+}
