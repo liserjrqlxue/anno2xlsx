@@ -3,13 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	simple_util "github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	simpleUtil "github.com/liserjrqlxue/simple-util"
+	"github.com/tealeg/xlsx/v2"
+
+	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
 // os
@@ -81,30 +83,30 @@ func main() {
 	flag.Parse()
 	if *snv == "" {
 		flag.Usage()
-		fmt.Println("\n-snv is required!")
+		fmt.Println("\n-db is required!")
 		os.Exit(1)
 	}
 	if *prefix == "" {
 		*prefix = strings.Split(*snv, ",")[0]
 	}
 
-	title := simple_util.File2Array(*columns)
+	title := simpleUtil.File2Array(*columns)
 	out, err := os.Create(*prefix + ".tier1.tsv")
-	simple_util.CheckErr(err)
-	defer simple_util.DeferClose(out)
+	simpleUtil.CheckErr(err)
+	defer simpleUtil.DeferClose(out)
 	_, err = fmt.Fprintln(out, strings.Join(title, "\t"))
-	simple_util.CheckErr(err)
+	simpleUtil.CheckErr(err)
 
-	outXlsx := xlsx.NewFile()
-	sheet, err := outXlsx.AddSheet("filter_variants")
-	simple_util.CheckErr(err)
+	outExcel := xlsx.NewFile()
+	sheet, err := outExcel.AddSheet("filter_variants")
+	simpleUtil.CheckErr(err)
 	row := sheet.AddRow()
 	for _, key := range title {
 		row.AddCell().SetString(key)
 	}
 
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig := simpleUtil.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
@@ -114,24 +116,24 @@ func main() {
 	}
 
 	// 特殊位点库
-	for _, key := range simple_util.File2Array(*specVarList) {
+	for _, key := range simpleUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 	// 基因-疾病
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
+	geneDiseaseDb = simpleUtil.Json2MapMap(simpleUtil.File2Decode(*geneDiseaseDbFile, codeKey))
 	for key := range geneDiseaseDb {
 		geneList[key] = true
 	}
 
 	// tier1 filter
 	var data []map[string]string
-	for _, snv := range strings.Split(*snv, ",") {
-		if isGz.MatchString(snv) {
-			d, _ := simple_util.Gz2MapArray(snv, "\t", isComment)
+	for _, db := range strings.Split(*snv, ",") {
+		if isGz.MatchString(db) {
+			d, _ := simpleUtil.Gz2MapArray(db, "\t", isComment)
 			data = append(data, d...)
 		} else {
-			d, _ := simple_util.File2MapArray(snv, "\t", isComment)
+			d, _ := simpleUtil.File2MapArray(db, "\t", isComment)
 			data = append(data, d...)
 		}
 	}
@@ -163,9 +165,9 @@ func main() {
 				array = append(array, item[key])
 			}
 			_, err = fmt.Fprintln(out, strings.Join(array, "\t"))
-			simple_util.CheckErr(err)
+			simpleUtil.CheckErr(err)
 		}
 	}
-	err = outXlsx.Save(*prefix + ".tier1.xlsx")
-	simple_util.CheckErr(err)
+	err = outExcel.Save(*prefix + ".tier1.xlsx")
+	simpleUtil.CheckErr(err)
 }
