@@ -305,10 +305,10 @@ var AFlist1 = []string{
 }
 
 var AFlist2 = []string{
-	"GnomAD EAS AF",
 	"GnomAD AF",
 	"1000G AF",
 	"ESP6500 AF",
+	"ExAC AF",
 	"PVFD AF",
 	"Panel AlleleFreq",
 }
