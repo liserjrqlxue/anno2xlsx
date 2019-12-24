@@ -69,9 +69,11 @@ var (
 var specVarDb = make(map[string]bool)
 
 // 基因-疾病
-var codeKey []byte
-var geneList = make(map[string]bool)
-var geneDiseaseDb = make(map[string]map[string]string)
+var (
+	codeKey       []byte
+	geneList      = make(map[string]bool)
+	geneDiseaseDb = make(map[string]map[string]string)
+)
 
 // 遗传相符
 var inheritDb = make(map[string]map[string]int)

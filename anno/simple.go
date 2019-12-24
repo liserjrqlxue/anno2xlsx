@@ -2,12 +2,13 @@ package anno
 
 import (
 	"fmt"
-	"github.com/liserjrqlxue/simple-util"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	simpleUtil "github.com/liserjrqlxue/simple-util"
 )
 
 var long2short = map[string]string{
@@ -64,9 +65,10 @@ var (
 	isYLInherit       = regexp.MustCompile(`^Hemi;NA;NA|^Hemi;Hom;NA|^Hemi;Het;NA|^Hemi;NA;Hom|^Hemi;NA;Het|^Het;Hom;NA|^Het;Het;NA|^Het;NA;Hom|^Het;NA;Het|^Het;NA;NA`)
 )
 
+//UpdateSnvTier1 add other info for tier1 variant
 func UpdateSnvTier1(item map[string]string) {
 
-	item["一键搜索链接"] = GoogleKey(item)
+	item["一键搜索链接"] = googleKey(item)
 
 	// addition
 	item["烈性突变"] = "否"
@@ -91,18 +93,19 @@ func UpdateSnvTier1(item map[string]string) {
 	// remove index
 	for _, k := range [2]string{"GeneralizationEN", "GeneralizationCH"} {
 		sep := "\n\n"
-		keys := strings.Split(item[k], sep)
-		for i := range keys {
-			keys[i] = indexReg.ReplaceAllLiteralString(keys[i], "")
+		key := strings.Split(item[k], sep)
+		for i := range key {
+			key[i] = indexReg.ReplaceAllLiteralString(key[i], "")
 		}
-		item[k] = strings.Join(keys, sep)
+		item[k] = strings.Join(key, sep)
 	}
 
 }
 
+//Score2Pred add _pred for scores
 func Score2Pred(item map[string]string) {
-	score, err := strconv.ParseFloat(item["dbscSNV_ADA_SCORE"], 32)
-	if err != nil {
+	score, e := strconv.ParseFloat(item["dbscSNV_ADA_SCORE"], 32)
+	if e != nil {
 		item["dbscSNV_ADA_pred"] = item["dbscSNV_ADA_SCORE"]
 	} else {
 		if score >= 0.6 {
@@ -111,8 +114,8 @@ func Score2Pred(item map[string]string) {
 			item["dbscSNV_ADA_pred"] = "P"
 		}
 	}
-	score, err = strconv.ParseFloat(item["dbscSNV_RF_SCORE"], 32)
-	if err != nil {
+	score, e = strconv.ParseFloat(item["dbscSNV_RF_SCORE"], 32)
+	if e != nil {
 		item["dbscSNV_RF_pred"] = item["dbscSNV_RF_SCORE"]
 	} else {
 		if score >= 0.6 {
@@ -123,8 +126,8 @@ func Score2Pred(item map[string]string) {
 	}
 
 	// ＞=2.0 保守
-	score, err = strconv.ParseFloat(item["GERP++_RS"], 32)
-	if err != nil {
+	score, e = strconv.ParseFloat(item["GERP++_RS"], 32)
+	if e != nil {
 		item["GERP++_RS_pred"] = item["GERP++_RS"]
 	} else {
 		if score >= 2.0 {
@@ -133,8 +136,8 @@ func Score2Pred(item map[string]string) {
 			item["GERP++_RS_pred"] = "不保守"
 		}
 	}
-	score, err = strconv.ParseFloat(item["PhyloP Vertebrates"], 32)
-	if err != nil {
+	score, e = strconv.ParseFloat(item["PhyloP Vertebrates"], 32)
+	if e != nil {
 		item["PhyloP Vertebrates Pred"] = item["PhyloP Vertebrates"]
 	} else {
 		if score >= 2.0 {
@@ -143,8 +146,8 @@ func Score2Pred(item map[string]string) {
 			item["PhyloP Vertebrates Pred"] = "不保守"
 		}
 	}
-	score, err = strconv.ParseFloat(item["PhyloP Placental Mammals"], 32)
-	if err != nil {
+	score, e = strconv.ParseFloat(item["PhyloP Placental Mammals"], 32)
+	if e != nil {
 		item["PhyloP Placental Mammals Pred"] = item["PhyloP Placental Mammals"]
 	} else {
 		if score >= 2.0 {
@@ -187,6 +190,7 @@ func inPAR(chr string, start, end int) bool {
 	return false
 }
 
+//UpdateSnv add info for all variant
 func UpdateSnv(item map[string]string, gender string, debug bool) {
 
 	// #Chr+Stop
@@ -215,10 +219,10 @@ func UpdateSnv(item map[string]string, gender string, debug bool) {
 
 	chr := item["#Chr"]
 	if isChrXY.MatchString(chr) && isMale.MatchString(gender) {
-		start, err := strconv.Atoi(item["Start"])
-		simple_util.CheckErr(err)
-		stop, err := strconv.Atoi(item["Stop"])
-		simple_util.CheckErr(err)
+		start, e := strconv.Atoi(item["Start"])
+		simpleUtil.CheckErr(e)
+		stop, e := strconv.Atoi(item["Stop"])
+		simpleUtil.CheckErr(e)
 		if !inPAR(chr, start, stop) && withHom.MatchString(item["Zygosity"]) {
 			zygosity := strings.Split(item["Zygosity"], ";")
 			genders := strings.Split(gender, ",")
@@ -236,15 +240,17 @@ func UpdateSnv(item map[string]string, gender string, debug bool) {
 	}
 
 	if debug && item["自动化判断"] != long2short[item["ACMG"]] {
-		fmt.Fprintf(
+		_, err = fmt.Fprintf(
 			os.Stderr,
 			"acmg conflict:[%s=>%s]:%s\n",
 			long2short[item["ACMG"]], item["自动化判断"], item["MutationName"],
 		)
+		simpleUtil.CheckErr(err)
 	}
 	return
 }
 
+//InheritCheck count variants of gene
 func InheritCheck(item map[string]string, inheritDb map[string]map[string]int) {
 	geneSymbol := item["Gene Symbol"]
 	inherit := item["ModeInheritance"]
@@ -275,6 +281,7 @@ func InheritCheck(item map[string]string, inheritDb map[string]map[string]int) {
 	}
 }
 
+//InheritCoincide calculate 遗传相符
 func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int, isTrio bool) string {
 	geneSymbol := item["Gene Symbol"]
 	inherit := item["ModeInheritance"]
@@ -322,7 +329,8 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			}
 		}
 		if isAR.MatchString(inherit) {
-			if isHetHetHet.MatchString(zygosity) || isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity) {
+			if isHetHetHet.MatchString(zygosity) || isHetHetNA.MatchString(zygosity) ||
+				isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity) {
 				return "不确定"
 			}
 		}
@@ -354,6 +362,7 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 	}
 }
 
+// FamilyTag return familyTag
 func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag string) string {
 	geneSymbol := item["Gene Symbol"]
 	inherit := item["ModeInheritance"]
@@ -412,6 +421,7 @@ var inheritFromMap = map[string]string{
 	"NA":     "NA",
 }
 
+//InheritFrom return 变异来源
 func InheritFrom(item map[string]string, sampleList []string) string {
 	if len(sampleList) < 3 {
 		return "NA1"
@@ -551,7 +561,7 @@ var tr = map[rune]rune{
 	't': 'a',
 }
 
-func ReverseComplement(s string) string {
+func reverseComplement(s string) string {
 	runes := []rune(s)
 	for i := range runes {
 		if tr[runes[i]] != '\x00' {
@@ -566,6 +576,7 @@ func ReverseComplement(s string) string {
 
 var err error
 
+//PrimerDesign return 引物设计
 func PrimerDesign(item map[string]string) string {
 	var transcript = item["Transcript"]
 
@@ -577,7 +588,7 @@ func PrimerDesign(item map[string]string) string {
 	}
 	var flank = item["Flank"]
 	if item["Strand"] == "-" {
-		flank = ReverseComplement(flank)
+		flank = reverseComplement(flank)
 	}
 	funcRegion := cds.ReplaceAllString(item["FuncRegion"], "CDS")
 
@@ -585,13 +596,13 @@ func PrimerDesign(item map[string]string) string {
 	adepth := strings.Split(item["A.Depth"], ";")[0]
 	if reInt.MatchString(adepth) {
 		Adepth, err = strconv.Atoi(adepth)
-		simple_util.CheckErr(err)
+		simpleUtil.CheckErr(err)
 	}
 
 	aratio := strings.Split(item["A.Ratio"], ";")[0]
 	if ratio.MatchString(aratio) && aratio != "0" {
-		Aratio, err := strconv.ParseFloat(aratio, 32)
-		simple_util.CheckErr(err)
+		Aratio, e := strconv.ParseFloat(aratio, 32)
+		simpleUtil.CheckErr(e)
 
 		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
 		if item["Depth"] == "" && Adepth > 0 {
@@ -618,7 +629,8 @@ func PrimerDesign(item map[string]string) string {
 	return primer
 }
 
-func ExomePrimer(item map[string]string) (primer string) {
+//exomePrimer return 引物设计 for exon cnv
+func exomePrimer(item map[string]string) (primer string) {
 	annos := strings.Split(item["CNV_annot"], ";")
 	var t string
 	if item["type"] == "duplication" {
@@ -643,7 +655,8 @@ func ExomePrimer(item map[string]string) (primer string) {
 	return
 }
 
-func LargePrimer(item map[string]string) (primer string) {
+//largePrimer return 引物设计 for large cnv
+func largePrimer(item map[string]string) (primer string) {
 	summary := item["Summary"]
 	infos := strings.SplitN(summary, "[", 2)
 	primer = strings.Replace(infos[0], ",", "", -1)
@@ -652,11 +665,12 @@ func LargePrimer(item map[string]string) (primer string) {
 	return
 }
 
+//CnvPrimer return 引物设计 for cnv
 func CnvPrimer(item map[string]string, cnvType string) (primer string) {
 	if cnvType == "exon_cnv" {
-		primer = ExomePrimer(item)
+		primer = exomePrimer(item)
 	} else if cnvType == "large_cnv" {
-		primer = LargePrimer(item)
+		primer = largePrimer(item)
 	}
 	return
 }
@@ -679,7 +693,7 @@ var (
 	ivs4     = regexp.MustCompile(`c\.([-*]\d+)([+-]\d+)_([-*]\d+)([+-]\d+)(.*)$`)
 )
 
-func GoogleKey(item map[string]string) string {
+func googleKey(item map[string]string) string {
 	gene, chgvs, phgvs := item["Gene Symbol"], item["cHGVS"], item["pHGVS"]
 	var searchKey []string
 
@@ -839,9 +853,9 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string
 	if frequency == "" || frequency == "." {
 		frequency = "0"
 	}
-	freq, err := strconv.ParseFloat(frequency, 32)
-	if err != nil {
-		log.Printf("%s ParseFloat error:%v", frequency, err)
+	freq, e := strconv.ParseFloat(frequency, 32)
+	if e != nil {
+		log.Printf("%s ParseFloat error:%v", frequency, e)
 		freq = 0
 	}
 	if freq <= 0.01 {
@@ -905,9 +919,9 @@ func tag3(item map[string]string) string {
 	if frequency == "" || frequency == "." {
 		frequency = "0"
 	}
-	freq, err := strconv.ParseFloat(frequency, 32)
-	if err != nil {
-		log.Printf("%s ParseFloat error:%v", frequency, err)
+	freq, e := strconv.ParseFloat(frequency, 32)
+	if e != nil {
+		log.Printf("%s ParseFloat error:%v", frequency, e)
 		freq = 0
 	}
 	if freq <= 0.01 {
@@ -922,7 +936,7 @@ func tag3(item map[string]string) string {
 	return ""
 }
 
-var Tag4Func = map[string]bool{
+var tag4Func = map[string]bool{
 	"stop-loss": true,
 	"cds-del":   true,
 	"cds-indel": true,
@@ -935,9 +949,9 @@ func tag4(item map[string]string) string {
 	if frequency == "" || frequency == "." {
 		frequency = "0"
 	}
-	freq, err := strconv.ParseFloat(frequency, 32)
-	if err != nil {
-		log.Printf("%s ParseFloat error:%v", frequency, err)
+	freq, e := strconv.ParseFloat(frequency, 32)
+	if e != nil {
+		log.Printf("%s ParseFloat error:%v", frequency, e)
 		freq = 0
 	}
 	if freq <= 0.01 {
@@ -946,7 +960,7 @@ func tag4(item map[string]string) string {
 	if isPP3.MatchString(item["autoRuleName"]) {
 		flag2 = true
 	}
-	if Tag4Func[item["Function"]] && (item["RepeatTag"] == "." || item["RepeatTag"] == "") {
+	if tag4Func[item["Function"]] && (item["RepeatTag"] == "." || item["RepeatTag"] == "") {
 		flag2 = true
 	}
 
@@ -956,14 +970,16 @@ func tag4(item map[string]string) string {
 	return ""
 }
 
+//UpdateTags return 筛选标签
 func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) string {
-	tag1 := tag1(item, specVarDb, isTrio)
-	tag2 := tag2(item, specVarDb)
-	tag3 := tag3(item)
-	tag4 := tag4(item)
-	return strings.Join([]string{tag1, tag2, tag3, tag4}, "")
+	Tag1 := tag1(item, specVarDb, isTrio)
+	Tag2 := tag2(item, specVarDb)
+	Tag3 := tag3(item)
+	Tag4 := tag4(item)
+	return strings.Join([]string{Tag1, Tag2, Tag3, Tag4}, "")
 }
 
+//UpdateFunction fix splice+-20, have not implement
 func UpdateFunction(item map[string]string) {
 	function := item["Function"]
 	if function != "intron" {
@@ -976,6 +992,7 @@ var floatFormatArray = []string{
 	//"GnomAD EAS AF",
 }
 
+//FloatFormat warp strconv.FormatFloat
 func FloatFormat(item map[string]string) {
 	for _, key := range floatFormatArray {
 		value := item[key]
@@ -983,8 +1000,8 @@ func FloatFormat(item map[string]string) {
 			item[key] = ""
 			return
 		}
-		floatValue, err := strconv.ParseFloat(value, 64)
-		if err != nil {
+		floatValue, e := strconv.ParseFloat(value, 64)
+		if e != nil {
 			log.Printf("can not ParseFloat:%s[%s]\n", key, value)
 		} else {
 			item[key] = strconv.FormatFloat(floatValue, 'f', -1, 64)
@@ -992,14 +1009,16 @@ func FloatFormat(item map[string]string) {
 	}
 }
 
-func UpdateDisease(gene string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+//UpdateDisease add disease info to item
+func UpdateDisease(gene string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
 	// 基因-疾病
 	gDiseaseDb := geneDiseaseDb[gene]
-	for key, value := range geneDiseaseDbColumn {
+	for key, value := range gDiseaseDbColumn {
 		item[value] = gDiseaseDb[key]
 	}
 }
 
+// AFlist default AF list for check
 var AFlist = []string{
 	"GnomAD EAS AF",
 	"GnomAD AF",
