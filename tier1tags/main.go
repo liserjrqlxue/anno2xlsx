@@ -62,6 +62,7 @@ var (
 // regexp
 var (
 	isGz      = regexp.MustCompile(`\.gz$`)
+	isXlsx    = regexp.MustCompile(`\.xlsx$`)
 	isComment = regexp.MustCompile(`^##`)
 )
 
@@ -133,6 +134,9 @@ func main() {
 	for _, db := range strings.Split(*snv, ",") {
 		if isGz.MatchString(db) {
 			d, _ := simpleUtil.Gz2MapArray(db, "\t", isComment)
+			data = append(data, d...)
+		} else if isXlsx.MatchString(db) {
+			_, d := simpleUtil.Sheet2MapArray(db,"sheet1")
 			data = append(data, d...)
 		} else {
 			d, _ := simpleUtil.File2MapArray(db, "\t", isComment)
