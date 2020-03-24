@@ -3,13 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/brentp/bix"
-	"github.com/go-redis/redis"
-	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/acmg2015/evidence"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -18,6 +11,15 @@ import (
 	"runtime/pprof"
 	"strings"
 	"time"
+
+	"github.com/brentp/bix"
+	"github.com/go-redis/redis"
+	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/simple-util"
+	"github.com/tealeg/xlsx/v2"
+
+	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
 // os
@@ -151,6 +153,11 @@ var (
 		"config",
 		filepath.Join(exPath, "etc", "config.json"),
 		"default config file, config will be overwrite by flag",
+	)
+	tier1Title = flag.String(
+		"tier1Title",
+		filepath.Join(exPath, "etc", "Tier1.filter_variants.txt"),
+		"overwrite template/tier1.xlsx filter_variants sheet columns' title",
 	)
 	wesim = flag.Bool(
 		"wesim",
@@ -569,6 +576,18 @@ func main() {
 	tier1 := newXlsxTemplate("Tier1", *tier1template)
 	tier3 := newXlsxTemplate("Tier3", "")
 
+	// update tier1 titles
+	titleRow := tier1.sheet.Row(0)
+	tier1.title = simple_util.File2Array(*tier1Title)
+	titleCells := titleRow.Cells
+	for i, title := range tier1.title {
+		if i < len(titleCells) {
+			titleRow.Cells[i].SetString(title)
+		} else {
+			titleRow.AddCell().SetString(title)
+		}
+	}
+
 	// tier2
 	var tier2 = xlsxTemplate{
 		flag:      "Tier2",
@@ -739,6 +758,7 @@ func main() {
 			}
 		}
 	}
+
 	// anno
 	if *snv != "" {
 		var step0 = step
