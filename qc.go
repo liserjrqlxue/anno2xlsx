@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	simple_util "github.com/liserjrqlxue/simple-util"
 	"log"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	simple_util "github.com/liserjrqlxue/simple-util"
 )
 
 func loadFilterStat(filterStat string, quality map[string]string) {
@@ -78,7 +79,11 @@ func updateQC(stats map[string]int, quality map[string]string) {
 var isSharp = regexp.MustCompile(`^#`)
 var isBamPath = regexp.MustCompile(`^## Files : (\S+)`)
 
-func loadQC(files string, quality []map[string]string, isWGS bool) {
+func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
+	var kinshipHash = make(map[string]map[string]string)
+	if kinship != "" {
+		kinshipHash = simple_util.File2MapMap(kinship, "样品ID", "\t")
+	}
 	sep := "\t"
 	if isWGS {
 		sep = ": "
@@ -105,6 +110,12 @@ func loadQC(files string, quality []map[string]string, isWGS bool) {
 			} else {
 				log.Println(err, in)
 				quality[i]["bamPath"] = filepath.Join(filepath.Dir(in), "..", "bam_chr")
+			}
+		}
+		kinshipInfo, ok := kinshipHash[quality[i]["样本编号"]]
+		if ok {
+			for k, v := range kinshipInfo {
+				quality[i][k] = v
 			}
 		}
 	}

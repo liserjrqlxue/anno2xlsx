@@ -120,6 +120,11 @@ var (
 		"",
 		"coverage.report file to fill quality sheet, comma as sep, same order with -list",
 	)
+	kinship = flag.String(
+		"kinship",
+		"",
+		"kinship result for trio only",
+	)
 	karyotype = flag.String(
 		"karyotype",
 		"",
@@ -550,7 +555,7 @@ func main() {
 	}
 	// load coverage.report
 	if *qc != "" {
-		loadQC(*qc, qualitys, *wgs)
+		loadQC(*qc, *kinship, qualitys, *wgs)
 		for _, quality := range qualitys {
 			for k, v := range qualityKeyMap {
 				quality[k] = quality[v]
