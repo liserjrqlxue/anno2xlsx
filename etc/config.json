@@ -89,7 +89,9 @@
     "exon CNV_all",
     "exon CNV_tier1",
     "large CNV_all",
-    "large CNV_tier1"
+    "large CNV_tier1",
+    "亲缘关系",
+    "夫妻关系"
   ],
   "qualityColumnWGS":[
     "样本编号",
