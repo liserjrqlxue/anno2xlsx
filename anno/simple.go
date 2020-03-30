@@ -970,13 +970,21 @@ func tag4(item map[string]string) string {
 	return ""
 }
 
+func tag5(item map[string]string) string {
+	if item["SecondaryFinding_Var_致病等级"] != "" {
+		return "5"
+	}
+	return ""
+}
+
 //UpdateTags return 筛选标签
 func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) string {
 	Tag1 := tag1(item, specVarDb, isTrio)
 	Tag2 := tag2(item, specVarDb)
 	Tag3 := tag3(item)
 	Tag4 := tag4(item)
-	return strings.Join([]string{Tag1, Tag2, Tag3, Tag4}, "")
+	Tag5 := tag5(item)
+	return strings.Join([]string{Tag1, Tag2, Tag3, Tag4, Tag5}, "")
 }
 
 //UpdateFunction fix splice+-20, have not implement
