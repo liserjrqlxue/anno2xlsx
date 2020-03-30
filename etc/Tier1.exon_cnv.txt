@@ -1,0 +1,36 @@
+Sample
+start.p
+end.p
+type
+nexons
+start
+end
+chromosome
+id
+BF
+reads.expected
+reads.observed
+reads.ratio
+Conrad.hg19
+exons.hg19
+Copy_Num
+Transcript
+Gene
+OMIM_Gene
+OMIM_exon
+OMIM_chr_start_end
+CNV_annot
+OMIM_Phenotype
+Omim Gene
+Gene/Locus MIM number
+OMIM
+DiseaseNameEN
+DiseaseNameCH
+AliasEN
+Location
+ModeInheritance
+GeneralizationEN
+GeneralizationCH
+SystemSort
+Primer
+HGMD content

@@ -159,10 +159,20 @@ var (
 		filepath.Join(exPath, "etc", "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
-	tier1Title = flag.String(
-		"tier1Title",
+	filterVariants = flag.String(
+		"filter_variants",
 		filepath.Join(exPath, "etc", "Tier1.filter_variants.txt"),
 		"overwrite template/tier1.xlsx filter_variants sheet columns' title",
+	)
+	exonCnv = flag.String(
+		"exon_cnv",
+		filepath.Join(exPath, "etc", "Tier1.exon_cnv.txt"),
+		"overwrite template/tier1.xlsx exon_cnv sheet columns' title",
+	)
+	largeCnv = flag.String(
+		"large_cnv",
+		filepath.Join(exPath, "etc", "Tier1.large_cnv.txt"),
+		"overwrite template/tier1.xlsx large_cnv sheet columns' title",
 	)
 	wesim = flag.Bool(
 		"wesim",
@@ -267,8 +277,6 @@ var tierSheet = map[string]string{
 
 var tier1GeneList = make(map[string]bool)
 
-var err error
-
 // WESIM
 var resultColumn, qualityColumn []string
 var resultFile, qcFile *os.File
@@ -283,6 +291,7 @@ func newXlsxTemplate(flag, template string) xlsxTemplate {
 		sheetName: tierSheet[flag],
 		output:    *prefix + "." + flag + ".xlsx",
 	}
+	var err error
 	tier.xlsx, err = xlsx.OpenFile(tier.template)
 	simple_util.CheckErr(err)
 	tier.sheet = tier.xlsx.Sheet[tier.sheetName]
@@ -583,13 +592,13 @@ func main() {
 
 	// update tier1 titles
 	titleRow := tier1.sheet.Row(0)
-	tier1.title = simple_util.File2Array(*tier1Title)
+	tier1.title = simple_util.File2Array(*filterVariants)
 	titleCells := titleRow.Cells
-	for i, title := range tier1.title {
+	for i, v := range tier1.title {
 		if i < len(titleCells) {
-			titleRow.Cells[i].SetString(title)
+			titleRow.Cells[i].SetString(v)
 		} else {
-			titleRow.AddCell().SetString(title)
+			titleRow.AddCell().SetString(v)
 		}
 	}
 
@@ -697,12 +706,7 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		if *cnvFilter {
-			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, true, stats, "exonCNV")
-		} else {
-			addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, false, stats, "exonCNV")
-
-		}
+		addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, *cnvFilter, stats, "exonCNV", *exonCnv)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
@@ -719,11 +723,7 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		if *cnvFilter {
-			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, true, false, stats, "largeCNV")
-		} else {
-			addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, false, false, stats, "largeCNV")
-		}
+		addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, true, *cnvFilter, stats, "largeCNV", *largeCnv)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add large cnv")
@@ -768,12 +768,12 @@ func main() {
 	if *snv != "" {
 		var step0 = step
 		var data []map[string]string
-		for _, snv := range snvs {
-			if isGz.MatchString(snv) {
-				d, _ := simple_util.Gz2MapArray(snv, "\t", isComment)
+		for _, f := range snvs {
+			if isGz.MatchString(f) {
+				d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
 				data = append(data, d...)
 			} else {
-				d, _ := simple_util.File2MapArray(snv, "\t", isComment)
+				d, _ := simple_util.File2MapArray(f, "\t", isComment)
 				data = append(data, d...)
 			}
 		}

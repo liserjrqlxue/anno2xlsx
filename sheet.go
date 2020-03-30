@@ -1,16 +1,18 @@
 package main
 
 import (
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/liserjrqlxue/simple-util"
+	"github.com/tealeg/xlsx/v2"
+
+	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
 func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
-	sheet, err := excel.AddSheet(sheetName)
+	var sheet, err = excel.AddSheet(sheetName)
 	simple_util.CheckErr(err)
 
 	sheet.AddRow().AddCell().SetString("SampleID")
@@ -46,11 +48,22 @@ func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
 	}
 }
 
-func addCnv2Sheet(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int, key string) {
+func addCnv2Sheet(
+	sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
+	key, titleFile string) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
-	var title []string
+	title := simple_util.File2Array(titleFile)
+	titleRow := sheet.Row(0)
+	titleCells := titleRow.Cells
+	for i, v := range title {
+		if i < len(titleCells) {
+			titleRow.Cells[i].SetString(v)
+		} else {
+			titleRow.AddCell().SetString(v)
+		}
+	}
 	for _, cell := range sheet.Row(0).Cells {
 		title = append(title, cell.Value)
 	}
@@ -123,13 +136,13 @@ func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) 
 	}
 }
 
-func updateDiseaseMultiGene(geneList string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+func updateDiseaseMultiGene(geneList string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
 	genes := strings.Split(geneList, ";")
 	// 基因-疾病
-	for key, value := range geneDiseaseDbColumn {
+	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			geneDb, ok := geneDiseaseDb[gene]
+			geneDb, ok := geneDisDb[gene]
 			if ok {
 				vals = append(vals, geneDb[key])
 			}
