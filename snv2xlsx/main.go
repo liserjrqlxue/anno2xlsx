@@ -140,6 +140,11 @@ var (
 		"",
 		"read tag from file, add to tier1 file name:[prefix].Tier1[tag].xlsx",
 	)
+	filterVariants = flag.String(
+		"filter_variants",
+		filepath.Join(exPath, "..", "etc", "Tier1.filter_variants.txt"),
+		"overwrite template/tier1.xlsx filter_variants sheet columns' title",
+	)
 )
 
 // family list
@@ -202,20 +207,12 @@ func newXlsxTemplate(flag string) xlsxTemplate {
 	return tier
 }
 
-type templateInfo struct {
-	cols      []string
-	titles    [2][]string
-	noteTitle [2]string
-	note      [2][]string
-}
-
 var codeKey []byte
 
 // regexp
 var (
 	isGz      = regexp.MustCompile(`\.gz$`)
 	isComment = regexp.MustCompile(`^##`)
-	isMT      = regexp.MustCompile(`MT|chrM`)
 )
 
 var redisDb *redis.Client
@@ -418,6 +415,17 @@ func main() {
 
 	// load tier template
 	tier1 := newXlsxTemplate("Tier1")
+	// update tier1 titles
+	titleRow := tier1.sheet.Row(0)
+	tier1.title = simple_util.File2Array(*filterVariants)
+	titleCells := titleRow.Cells
+	for i, v := range tier1.title {
+		if i < len(titleCells) {
+			titleRow.Cells[i].SetString(v)
+		} else {
+			titleRow.AddCell().SetString(v)
+		}
+	}
 
 	ts = append(ts, time.Now())
 	step++
@@ -530,7 +538,7 @@ func main() {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
 
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false)
+			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, anno.AFlist)
 
 			anno.UpdateSnvTier1(item)
 			if *ifRedis {
@@ -613,10 +621,10 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
-func updateDisease(gene string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+func updateDisease(gene string, item, geneDisDbColumn map[string]string, geneDisDb map[string]map[string]string) {
 	// 基因-疾病
-	gDiseaseDb := geneDiseaseDb[gene]
-	for key, value := range geneDiseaseDbColumn {
+	gDiseaseDb := geneDisDb[gene]
+	for key, value := range geneDisDbColumn {
 		item[value] = gDiseaseDb[key]
 	}
 }
