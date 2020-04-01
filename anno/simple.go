@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	simpleUtil "github.com/liserjrqlxue/simple-util"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/stringsUtil"
 )
 
 var long2short = map[string]string{
@@ -171,6 +172,7 @@ var (
 	isChrY  = regexp.MustCompile(`Y`)
 	isChrXY = regexp.MustCompile(`[XY]`)
 	isMale  = regexp.MustCompile(`M`)
+	isDel   = regexp.MustCompile(`del`)
 )
 
 func inPAR(chr string, start, end int) bool {
@@ -197,8 +199,14 @@ func UpdateSnv(item map[string]string, gender string, debug bool) {
 	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
 	if item["VarType"] == "snv" {
 		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Stop"]
+		item["chr-show"] = item["#Chr"] + ":" + item["Stop"]
 	} else {
 		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Start"] + "-" + item["Stop"]
+		if isDel.MatchString(item["VarType"]) {
+			item["chr-show"] = item["#Chr"] + ":" + stringsUtil.StringPlus(item["Start"], 1) + ".." + item["Stop"]
+		} else {
+			item["chr-show"] = item["#Chr"] + ":" + item["Start"] + ".." + stringsUtil.StringPlus(item["Stop"], 1)
+		}
 	}
 
 	// pHGVS= pHGVS1+"|"+pHGVS3

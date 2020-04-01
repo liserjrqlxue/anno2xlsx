@@ -90,6 +90,7 @@ pHGVS1
 pHGVS3
 Flank
 #Chr+Stop
+chr-show
 Protein
 Ens SIFT Score
 Ens Polyphen2HumVar Score
