@@ -1036,4 +1036,5 @@ var AFlist = []string{
 	"ExAC AF",
 	"PVFD AF",
 	"Panel AlleleFreq",
+	"wgs_GnomAD_AF",
 }
