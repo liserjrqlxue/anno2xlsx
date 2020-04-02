@@ -64,9 +64,6 @@ func addCnv2Sheet(
 			titleRow.AddCell().SetString(v)
 		}
 	}
-	for _, cell := range sheet.Row(0).Cells {
-		title = append(title, cell.Value)
-	}
 
 	for _, item := range cnvDb {
 		sample := item["Sample"]
