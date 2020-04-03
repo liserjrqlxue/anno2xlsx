@@ -1,51 +1,26 @@
 package main
 
 import (
-	"github.com/liserjrqlxue/goUtil/simpleUtil"
-	"github.com/liserjrqlxue/goUtil/textUtil"
 	"log"
 	"strconv"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
-func addSheets(excel *xlsx.File, sheetNames []string) {
-	for _, sheetName := range sheetNames {
-		var _, err = excel.AddSheet(sheetName)
-		simpleUtil.CheckErr(err)
-	}
-}
-
-func addSheet(xlsx *xlsx.File, sheetName string) *xlsx.Sheet {
-	var sheet, err = xlsx.AddSheet(sheetName)
-	simpleUtil.CheckErr(err)
-	return sheet
-}
-
 func addFile2Row(file string, row *xlsx.Row) (rows []string) {
 	rows = textUtil.File2Array(file)
-	addArray2Row(rows, row)
+	xlsxUtil.AddArray2Row(rows, row)
 	return
 }
 
-func addArray2Row(rows []string, row *xlsx.Row) {
-	for _, str := range rows {
-		row.AddCell().SetString(str)
-	}
-}
-
-func addMap2Rwo(item map[string]string, keys []string, row *xlsx.Row) {
-	for _, key := range keys {
-		row.AddCell().SetString(item[key])
-	}
-}
-
 func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
-	var sheet = addSheet(excel, sheetName)
+	var sheet = xlsxUtil.AddSheet(excel, sheetName)
 	sheet.AddRow().AddCell().SetString("SampleID")
 
 	for _, sample := range sampleList {
@@ -62,18 +37,6 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 		row.AddCell().SetString(key)
 		for _, item := range qualitys {
 			row.AddCell().SetString(item[key])
-		}
-	}
-}
-
-func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
-	var sheet = addSheet(excel, sheetName)
-
-	slice := simple_util.File2Slice(file, "\t")
-	for _, line := range slice {
-		row := sheet.AddRow()
-		for _, val := range line {
-			row.AddCell().SetString(val)
 		}
 	}
 }
@@ -110,10 +73,7 @@ func addCnv2Sheet(
 					continue
 				}
 			}
-			row := sheet.AddRow()
-			for _, str := range title {
-				row.AddCell().SetString(item[str])
-			}
+			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
 		}
 	}
 }
@@ -137,10 +97,7 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 				item["SMN1_result"] = "Hom"
 				isSMN1 = true
 			}
-			row := sheet.AddRow()
-			for _, key := range title {
-				row.AddCell().SetString(item[key])
-			}
+			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
 		}
 	}
 }
@@ -183,7 +140,6 @@ type variant struct {
 }
 
 func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
-	rowMT := sheet.AddRow()
 	ref := item["Ref"]
 	alt := item["Call"]
 	if ref == "." {
@@ -212,9 +168,7 @@ func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
 		}
 
 	}
-	for _, str := range MTTitle {
-		rowMT.AddCell().SetString(item[str])
-	}
+	xlsxUtil.AddMap2Row(item, MTTitle, sheet.AddRow())
 }
 
 func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
