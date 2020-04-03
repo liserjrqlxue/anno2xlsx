@@ -16,10 +16,11 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
-	"github.com/liserjrqlxue/simple-util"
+	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/anno"
@@ -413,7 +414,7 @@ func main() {
 	logVersion()
 
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *ifRedis {
 		if *redisAddr == "" {
@@ -432,33 +433,33 @@ func main() {
 
 	if *acmg {
 		// PVS1
-		simple_util.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
-		simple_util.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
+		jsonUtil.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
+		jsonUtil.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
 
 		// PS1 & PM5
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPathogenicMissense", dbPath, defaultConfig), &ClinVarMissense)
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPHGVSlist", dbPath, defaultConfig), &ClinVarPHGVSlist)
-		simple_util.JsonFile2Data(anno.GetPath("HGMDPathogenicMissense", dbPath, defaultConfig), &HGMDMissense)
-		simple_util.JsonFile2Data(anno.GetPath("HGMDPHGVSlist", dbPath, defaultConfig), &HGMDPHGVSlist)
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarAAPosList", dbPath, defaultConfig), &ClinVarAAPosList)
-		simple_util.JsonFile2Data(anno.GetPath("HGMDAAPosList", dbPath, defaultConfig), &HGMDAAPosList)
+		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarPathogenicMissense", dbPath, defaultConfig), &ClinVarMissense)
+		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarPHGVSlist", dbPath, defaultConfig), &ClinVarPHGVSlist)
+		jsonUtil.JsonFile2Data(anno.GetPath("HGMDPathogenicMissense", dbPath, defaultConfig), &HGMDMissense)
+		jsonUtil.JsonFile2Data(anno.GetPath("HGMDPHGVSlist", dbPath, defaultConfig), &HGMDPHGVSlist)
+		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarAAPosList", dbPath, defaultConfig), &ClinVarAAPosList)
+		jsonUtil.JsonFile2Data(anno.GetPath("HGMDAAPosList", dbPath, defaultConfig), &HGMDAAPosList)
 
 		// PM1
-		simple_util.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
-		simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &pfamDomain)
+		jsonUtil.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
+		jsonUtil.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &pfamDomain)
 		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
 		simpleUtil.CheckErr(err, "load tabix")
 
 		// PP2
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &clinVarPP2GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &hgmdPP2GeneList)
+		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &clinVarPP2GeneList)
+		jsonUtil.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &hgmdPP2GeneList)
 
 		// BS2
-		simple_util.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
+		jsonUtil.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
 
 		// BP1
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
+		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
+		jsonUtil.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -637,11 +638,11 @@ func main() {
 	logTime(ts, step-1, step, "load template")
 
 	// exonCount
-	exonCount = simple_util.JsonFile2Map(*transInfo)
+	exonCount = jsonUtil.JsonFile2Map(*transInfo)
 
 	// 突变频谱
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	geneDbExt := jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
 	for k := range geneDbExt {
 		geneDb[k] = geneDbExt[k][geneDbKey]
 	}
@@ -650,12 +651,12 @@ func main() {
 	logTime(ts, step-1, step, "load mutation spectrum")
 
 	// 基因-疾病
-	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
+	geneDiseaseDbTitleInfo := jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
 	for key, item := range geneDiseaseDbTitleInfo {
 		geneDiseaseDbColumn[key] = item["Key"]
 	}
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
+	geneDiseaseDb = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
 	for key := range geneDiseaseDb {
 		geneList[key] = true
 	}
@@ -928,11 +929,11 @@ func main() {
 			xlsxUtil.AddArray2Row(filterVariantsTitle, intronSheet.AddRow())
 
 			TIPdbPath := anno.GetPath("TIPdb", dbPath, defaultConfig)
-			simple_util.JsonFile2Data(TIPdbPath, &TIPdb)
+			jsonUtil.JsonFile2Data(TIPdbPath, &TIPdb)
 			MTdiseasePath := anno.GetPath("MTdisease", dbPath, defaultConfig)
-			simple_util.JsonFile2Data(MTdiseasePath, &MTdisease)
+			jsonUtil.JsonFile2Data(MTdiseasePath, &MTdisease)
 			MTAFdbPath := anno.GetPath("MTAFdb", dbPath, defaultConfig)
-			simple_util.JsonFile2Data(MTAFdbPath, &MTAFdb)
+			jsonUtil.JsonFile2Data(MTAFdbPath, &MTAFdb)
 
 			inheritDb = make(map[string]map[string]int)
 			for _, item := range data {
