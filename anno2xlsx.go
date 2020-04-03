@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -173,6 +174,11 @@ var (
 		"large_cnv",
 		filepath.Join(exPath, "etc", "Tier1.large_cnv.txt"),
 		"overwrite template/tier1.xlsx large_cnv sheet columns' title",
+	)
+	tier3Title = flag.String(
+		"tier3Title",
+		filepath.Join(exPath, "etc", "Tier3.总表.txt"),
+		"overwrite template/tier3.xlsx 总表 sheet columns' title",
 	)
 	wesim = flag.Bool(
 		"wesim",
@@ -588,7 +594,17 @@ func main() {
 
 	// load tier template
 	tier1 := newXlsxTemplate("Tier1", *tier1template)
-	tier3 := newXlsxTemplate("Tier3", "")
+	tier3Xlsx := xlsx.NewFile()
+	tier3Sheet, err := tier3Xlsx.AddSheet("总表")
+	simpleUtil.CheckErr(err)
+	tier3Row := tier3Sheet.AddRow()
+	var tier3Titles []string
+	if !*noTier3 {
+		tier3Titles = simple_util.File2Array(*tier3Title)
+		for _, str := range tier3Titles {
+			tier3Row.AddCell().SetString(str)
+		}
+	}
 
 	// update tier1 titles
 	titleRow := tier1.sheet.Row(0)
@@ -927,8 +943,8 @@ func main() {
 
 			// add to tier3
 			if !*noTier3 {
-				tier3Row := tier3.sheet.AddRow()
-				for _, str := range tier3.title {
+				tier3Row = tier3Sheet.AddRow()
+				for _, str := range tier3Titles {
 					tier3Row.AddCell().SetString(item[str])
 				}
 			}
@@ -1054,7 +1070,7 @@ func main() {
 	}
 
 	if *save && *snv != "" && !*noTier3 {
-		simple_util.CheckErr(tier3.save())
+		simple_util.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier3")
