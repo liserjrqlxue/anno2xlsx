@@ -7,6 +7,7 @@ import (
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	simple_util "github.com/liserjrqlxue/simple-util"
 	"os"
 	"path/filepath"
@@ -222,7 +223,7 @@ func main() {
 	}
 
 	// 特殊位点库
-	for _, key := range simple_util.File2Array(*specVarList) {
+	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 

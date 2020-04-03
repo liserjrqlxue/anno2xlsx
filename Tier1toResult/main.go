@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 	"os"
@@ -66,7 +67,7 @@ func main() {
 
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
-	acmg59GeneList := simple_util.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
+	acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
 	for _, gene := range acmg59GeneList {
 		Acmg59Gene[gene] = true
 	}

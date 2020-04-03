@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"log"
 	"strconv"
 	"strings"
@@ -54,7 +55,7 @@ func addCnv2Sheet(
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	// title
-	title := simple_util.File2Array(titleFile)
+	title := textUtil.File2Array(titleFile)
 	titleRow := sheet.Row(0)
 	titleCells := titleRow.Cells
 	for i, v := range title {
@@ -70,7 +71,7 @@ func addCnv2Sheet(
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
-			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			updateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			// 突变频谱
 			updateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
@@ -93,8 +94,8 @@ func addCnv2Sheet(
 				}
 			}
 			row := sheet.AddRow()
-			for _, key := range title {
-				row.AddCell().SetString(item[key])
+			for _, str := range title {
+				row.AddCell().SetString(item[str])
 			}
 		}
 	}
@@ -133,15 +134,15 @@ func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) 
 	}
 }
 
-func updateDiseaseMultiGene(geneList string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
-	genes := strings.Split(geneList, ";")
+func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
+	genes := strings.Split(geneLst, ";")
 	// 基因-疾病
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			geneDb, ok := geneDisDb[gene]
+			singelGeneDb, ok := geneDisDb[gene]
 			if ok {
-				vals = append(vals, geneDb[key])
+				vals = append(vals, singelGeneDb[key])
 			}
 		}
 		if len(vals) > 0 {
@@ -160,7 +161,8 @@ func updateGeneDb(geneList string, item, geneDb map[string]string) {
 	item["突变频谱"] = strings.Join(vals, "\n")
 }
 
-type Variant struct {
+//Variant struct for anno info
+type variant struct {
 	Chr   string                 `json:"Chromosome"`
 	Ref   string                 `json:"Ref"`
 	Alt   string                 `json:"Alt"`
@@ -182,20 +184,20 @@ func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
 	key := strings.Join([]string{"MT", item["Start"], item["Stop"], ref, alt}, "\t")
 	mut, ok := TIPdb[key]
 	if ok {
-		for _, key := range []string{"Mito TIP"} {
-			item[key] = mut.Info[key].(string)
+		for _, str := range []string{"Mito TIP"} {
+			item[str] = mut.Info[str].(string)
 		}
 	}
 	mut, ok = MTdisease[key]
 	if ok {
-		for _, key := range []string{"Disease", "pmid", "title", "Status"} {
-			item[key] = mut.Info[key].(string)
+		for _, str := range []string{"Disease", "pmid", "title", "Status"} {
+			item[str] = mut.Info[str].(string)
 		}
 	}
 	mut, ok = MTAFdb[key]
 	if ok {
-		for _, key := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
-			item[key] = strconv.FormatFloat(mut.Info[key].(float64), 'f', 5, 64)
+		for _, str := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
+			item[str] = strconv.FormatFloat(mut.Info[str].(float64), 'f', 5, 64)
 		}
 
 	}

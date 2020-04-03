@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -17,6 +16,8 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
@@ -353,9 +354,9 @@ var Acmg59Gene = make(map[string]bool)
 
 // WGS
 var WGSxlsx *xlsx.File
-var TIPdb = make(map[string]Variant)
-var MTdisease = make(map[string]Variant)
-var MTAFdb = make(map[string]Variant)
+var TIPdb = make(map[string]variant)
+var MTdisease = make(map[string]variant)
+var MTAFdb = make(map[string]variant)
 var MTTitle []string
 var tier1Db = make(map[string]bool)
 
@@ -517,7 +518,7 @@ func main() {
 	}
 
 	if *wesim {
-		acmg59GeneList := simple_util.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
+		acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
 		for _, gene := range acmg59GeneList {
 			Acmg59Gene[gene] = true
 		}
@@ -600,7 +601,7 @@ func main() {
 	tier3Row := tier3Sheet.AddRow()
 	var tier3Titles []string
 	if !*noTier3 {
-		tier3Titles = simple_util.File2Array(*tier3Title)
+		tier3Titles = textUtil.File2Array(*tier3Title)
 		for _, str := range tier3Titles {
 			tier3Row.AddCell().SetString(str)
 		}
@@ -608,7 +609,7 @@ func main() {
 
 	// update tier1 titles
 	titleRow := tier1.sheet.Row(0)
-	tier1.title = simple_util.File2Array(*filterVariants)
+	tier1.title = textUtil.File2Array(*filterVariants)
 	titleCells := titleRow.Cells
 	for i, v := range tier1.title {
 		if i < len(titleCells) {
@@ -703,7 +704,7 @@ func main() {
 	logTime(ts, step-1, step, "load Gene-Disease DB")
 
 	// 特殊位点库
-	for _, key := range simple_util.File2Array(*specVarList) {
+	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 	ts = append(ts, time.Now())
@@ -1048,7 +1049,7 @@ func main() {
 	if *save {
 		tagStr := ""
 		if *tag != "" {
-			tagStr = simple_util.File2Array(*tag)[0]
+			tagStr = textUtil.File2Array(*tag)[0]
 		}
 		if isSMN1 {
 			tier1.output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"

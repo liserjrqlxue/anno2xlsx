@@ -8,6 +8,7 @@ import (
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 	"log"
@@ -383,7 +384,7 @@ func main() {
 	}
 
 	if *wesim {
-		acmg59GeneList := simple_util.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
+		acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
 		for _, gene := range acmg59GeneList {
 			Acmg59Gene[gene] = true
 		}
@@ -417,7 +418,7 @@ func main() {
 	tier1 := newXlsxTemplate("Tier1")
 	// update tier1 titles
 	titleRow := tier1.sheet.Row(0)
-	tier1.title = simple_util.File2Array(*filterVariants)
+	tier1.title = textUtil.File2Array(*filterVariants)
 	titleCells := titleRow.Cells
 	for i, v := range tier1.title {
 		if i < len(titleCells) {
@@ -459,7 +460,7 @@ func main() {
 	logTime(ts, step-1, step, "load Gene-Disease DB")
 
 	// 特殊位点库
-	for _, key := range simple_util.File2Array(*specVarList) {
+	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 	ts = append(ts, time.Now())
@@ -589,9 +590,9 @@ func main() {
 
 	// Tier1 excel
 	if *save {
-		tagStr := ""
+		var tagStr = ""
 		if *tag != "" {
-			tagStr = simple_util.File2Array(*tag)[0]
+			tagStr = textUtil.File2Array(*tag)[0]
 		}
 		if isSMN1 {
 			tier1.output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
@@ -606,7 +607,7 @@ func main() {
 	}
 
 	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
+		var f, err = os.Create(*memprofile)
 		if err != nil {
 			log.Fatal(err)
 		}

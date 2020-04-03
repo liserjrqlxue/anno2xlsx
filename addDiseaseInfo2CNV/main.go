@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"log"
 	_ "net/http/pprof"
@@ -126,7 +127,7 @@ func main() {
 	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
 
 	cnvDb, _ := simple_util.LongFile2MapArray(*input, "\t", nil)
-	titles := simple_util.File2Array(*title)
+	titles := textUtil.File2Array(*title)
 
 	_, err = fmt.Fprintln(out, strings.Join(titles, "\t"))
 	simple_util.CheckErr(err)

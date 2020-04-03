@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"log"
 	"path/filepath"
 	"regexp"
@@ -90,7 +91,7 @@ func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 	}
 	file := strings.Split(files, ",")
 	for i, in := range file {
-		report := simple_util.File2Array(in)
+		report := textUtil.File2Array(in)
 		for _, line := range report {
 			if isSharp.MatchString(line) {
 				if m := isBamPath.FindStringSubmatch(line); m != nil {
