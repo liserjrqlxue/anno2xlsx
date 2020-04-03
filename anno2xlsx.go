@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -16,7 +17,6 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
-	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
@@ -236,11 +236,6 @@ var (
 		"",
 		"filter.stat files to calculate reads QC, comma as sep",
 	)
-	tier1template = flag.String(
-		"tier1template",
-		"",
-		"tier1 template",
-	)
 )
 
 // family list
@@ -277,36 +272,11 @@ func (xt *xlsxTemplate) save() error {
 	return xt.xlsx.Save(xt.output)
 }
 
-var tierSheet = map[string]string{
-	"Tier1": "filter_variants",
-	"Tier3": "总表",
-}
-
 var tier1GeneList = make(map[string]bool)
 
 // WESIM
 var resultColumn, qualityColumn []string
 var resultFile, qcFile *os.File
-
-func newXlsxTemplate(flag, template string) xlsxTemplate {
-	if template == "" {
-		template = filepath.Join(templatePath, flag+".xlsx")
-	}
-	var tier = xlsxTemplate{
-		flag:      flag,
-		template:  template,
-		sheetName: tierSheet[flag],
-		output:    *prefix + "." + flag + ".xlsx",
-	}
-	var err error
-	tier.xlsx, err = xlsx.OpenFile(tier.template)
-	simple_util.CheckErr(err)
-	tier.sheet = tier.xlsx.Sheet[tier.sheetName]
-	for _, cell := range tier.sheet.Row(0).Cells {
-		tier.title = append(tier.title, cell.String())
-	}
-	return tier
-}
 
 var qualitys []map[string]string
 var qualityKeyMap = make(map[string]string)
@@ -409,7 +379,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		simple_util.CheckErr(pprof.StartCPUProfile(f))
+		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
 	if *snv == "" && *exon == "" && *large == "" && *smn == "" {
@@ -434,8 +404,8 @@ func main() {
 		*logfile = *prefix + ".log"
 	}
 	logFile, err := os.Create(*logfile)
-	simple_util.CheckErr(err)
-	defer simple_util.DeferClose(logFile)
+	simpleUtil.CheckErr(err)
+	defer simpleUtil.DeferClose(logFile)
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
@@ -476,7 +446,7 @@ func main() {
 		simple_util.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
 		simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &PfamDomain)
 		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
-		simple_util.CheckErr(err, "load tabix")
+		simpleUtil.CheckErr(err, "load tabix")
 
 		// PP2
 		simple_util.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &ClinVarPP2GeneList)
@@ -530,16 +500,16 @@ func main() {
 			resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
 		}
 		resultFile, err = os.Create(*prefix + ".result.tsv")
-		simple_util.CheckErr(err)
-		defer simple_util.DeferClose(resultFile)
+		simpleUtil.CheckErr(err)
+		defer simpleUtil.DeferClose(resultFile)
 		_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
-		simple_util.CheckErr(err)
+		simpleUtil.CheckErr(err)
 
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
-		simple_util.CheckErr(err)
-		defer simple_util.DeferClose(qcFile)
+		simpleUtil.CheckErr(err)
+		defer simpleUtil.DeferClose(qcFile)
 		_, err = fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
-		simple_util.CheckErr(err)
+		simpleUtil.CheckErr(err)
 	}
 
 	if *wgs {
@@ -567,7 +537,7 @@ func main() {
 	var karyotypeMap = make(map[string]string)
 	if *karyotype != "" {
 		karyotypeMap, err = simple_util.Files2Map(*karyotype, "\t", true)
-		simple_util.CheckErr(err)
+		simpleUtil.CheckErr(err)
 	}
 	// load coverage.report
 	if *qc != "" {
@@ -583,7 +553,7 @@ func main() {
 					qcArray = append(qcArray, quality[key])
 				}
 				_, err = fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
-				simple_util.CheckErr(err)
+				simpleUtil.CheckErr(err)
 			}
 		}
 
@@ -594,29 +564,18 @@ func main() {
 	loadFilterStat(*filterStat, qualitys[0])
 
 	// load tier template
-	tier1 := newXlsxTemplate("Tier1", *tier1template)
-	tier3Xlsx := xlsx.NewFile()
-	tier3Sheet, err := tier3Xlsx.AddSheet("总表")
-	simpleUtil.CheckErr(err)
-	tier3Row := tier3Sheet.AddRow()
+	var tier1Xlsx = xlsx.NewFile()
+	addSheets(tier1Xlsx, []string{"filter_variants", "exon_cnv", "large_cnv"})
+	filterVariantsTitle := addFile2Row(*filterVariants, tier1Xlsx.Sheet["filter_variants"].AddRow())
+	exonCnvTitle := addFile2Row(*exonCnv, tier1Xlsx.Sheet["exon_cnv"].AddRow())
+	largeCNVTitle := addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
+
+	// create Tier3.xlsx
+	var tier3Xlsx = xlsx.NewFile()
+	var tier3Sheet = addSheet(tier3Xlsx, "总表")
 	var tier3Titles []string
 	if !*noTier3 {
-		tier3Titles = textUtil.File2Array(*tier3Title)
-		for _, str := range tier3Titles {
-			tier3Row.AddCell().SetString(str)
-		}
-	}
-
-	// update tier1 titles
-	titleRow := tier1.sheet.Row(0)
-	tier1.title = textUtil.File2Array(*filterVariants)
-	titleCells := titleRow.Cells
-	for i, v := range tier1.title {
-		if i < len(titleCells) {
-			titleRow.Cells[i].SetString(v)
-		} else {
-			titleRow.AddCell().SetString(v)
-		}
+		tier3Titles = addFile2Row(*tier3Title, tier3Sheet.AddRow())
 	}
 
 	// tier2
@@ -629,9 +588,9 @@ func main() {
 
 	var tier2TemplateInfo templateInfo
 	tier2Template, err := xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))
-	simple_util.CheckErr(err)
+	simpleUtil.CheckErr(err)
 	tier2Infos, err := tier2Template.ToSlice()
-	simple_util.CheckErr(err)
+	simpleUtil.CheckErr(err)
 	for i, item := range tier2Infos[0] {
 		if i > 0 {
 			tier2TemplateInfo.cols = append(tier2TemplateInfo.cols, item[0])
@@ -645,7 +604,7 @@ func main() {
 	}
 
 	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName)
-	simple_util.CheckErr(err)
+	simpleUtil.CheckErr(err)
 	tier2row := tier2.sheet.AddRow()
 	for i, col := range tier2TemplateInfo.cols {
 		tier2.title = append(tier2.title, col)
@@ -667,7 +626,7 @@ func main() {
 		tier2Note = tier2TemplateInfo.note[0]
 	}
 	tier2NoteSheet, err := tier2.xlsx.AddSheet(tier2NoteSheetName)
-	simple_util.CheckErr(err)
+	simpleUtil.CheckErr(err)
 	for _, line := range tier2Note {
 		tier2NoteSheet.AddRow().AddCell().SetString(line)
 	}
@@ -723,7 +682,10 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		addCnv2Sheet(tier1.xlsx.Sheet["exon_cnv"], paths, sampleMap, false, *cnvFilter, stats, "exonCNV", *exonCnv)
+		addCnv2Sheet(
+			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
+			false, *cnvFilter, stats, "exonCNV",
+		)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
@@ -740,7 +702,10 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		addCnv2Sheet(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap, true, *cnvFilter, stats, "largeCNV", *largeCnv)
+		addCnv2Sheet(
+			tier1Xlsx.Sheet["large_cnv"], largeCNVTitle, paths, sampleMap,
+			true, *cnvFilter, stats, "largeCNV",
+		)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add large cnv")
@@ -754,7 +719,7 @@ func main() {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
 		}
-		addSmnResult(tier1.xlsx.Sheet["large_cnv"], paths, sampleMap)
+		addSmnResult(tier1Xlsx.Sheet["large_cnv"], largeCNVTitle, paths, sampleMap)
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add SMN1 result")
@@ -762,7 +727,7 @@ func main() {
 	if *large == "" && *smn == "" {
 		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
 	}
-	addFamInfoSheet(tier1.xlsx, "fam_info", sampleList)
+	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
 
 	// extra sheet
 	if *extra != "" {
@@ -776,7 +741,7 @@ func main() {
 			)
 		} else {
 			for i := range extraArray {
-				addTxt2Sheet(tier1.xlsx, extraSheetArray[i], extraArray[i])
+				addTxt2Sheet(tier1Xlsx, extraSheetArray[i], extraArray[i])
 			}
 		}
 	}
@@ -906,10 +871,7 @@ func main() {
 				anno.FloatFormat(item)
 
 				// Tier1 Sheet
-				tier1Row := tier1.sheet.AddRow()
-				for _, str := range tier1.title {
-					tier1Row.AddCell().SetString(item[str])
-				}
+				addMap2Rwo(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
 
 				if !*wgs {
 					addTier2Row(tier2, item)
@@ -936,7 +898,7 @@ func main() {
 						resultArray = append(resultArray, item[key])
 					}
 					_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
-					simple_util.CheckErr(err)
+					simpleUtil.CheckErr(err)
 				}
 
 				tier1GeneList[item["Gene Symbol"]] = true
@@ -944,10 +906,7 @@ func main() {
 
 			// add to tier3
 			if !*noTier3 {
-				tier3Row = tier3Sheet.AddRow()
-				for _, str := range tier3Titles {
-					tier3Row.AddCell().SetString(item[str])
-				}
+				addMap2Rwo(item, tier3Titles, tier3Sheet.AddRow())
 			}
 		}
 		ts = append(ts, time.Now())
@@ -958,19 +917,11 @@ func main() {
 		if *wgs {
 			WGSxlsx = xlsx.NewFile()
 			// MT sheet
-			MTsheet, err := WGSxlsx.AddSheet("MT")
-			simple_util.CheckErr(err)
-			rowMT := MTsheet.AddRow()
-			for _, key := range MTTitle {
-				rowMT.AddCell().SetString(key)
-			}
+			var MTSheet = addSheet(WGSxlsx, "MT")
+			addArray2Row(MTTitle, MTSheet.AddRow())
 			// intron sheet
-			intronSheet, err := WGSxlsx.AddSheet("intron")
-			simple_util.CheckErr(err)
-			rowIntron := intronSheet.AddRow()
-			for _, key := range tier1.title {
-				rowIntron.AddCell().SetString(key)
-			}
+			var intronSheet = addSheet(WGSxlsx, "intron")
+			addArray2Row(filterVariantsTitle, intronSheet.AddRow())
 
 			TIPdbPath := anno.GetPath("TIPdb", dbPath, defaultConfig)
 			simple_util.JsonFile2Data(TIPdbPath, &TIPdb)
@@ -1005,14 +956,14 @@ func main() {
 					item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 				}
 				if *wgs && isMT.MatchString(item["#Chr"]) {
-					addMTRow(MTsheet, item)
+					addMTRow(MTSheet, item)
 				}
 				if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
 					addTier2Row(tier2, item)
 
 					if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
 						intronRow := intronSheet.AddRow()
-						for _, str := range tier1.title {
+						for _, str := range filterVariantsTitle {
 							intronRow.AddCell().SetString(item[str])
 						}
 					}
@@ -1030,7 +981,7 @@ func main() {
 
 	// QC Sheet
 	updateQC(stats, qualitys[0])
-	addQCSheet(tier1.xlsx, "quality", qualityColumn, qualitys)
+	addQCSheet(tier1Xlsx, "quality", qualityColumn, qualitys)
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "add qc")
@@ -1038,7 +989,7 @@ func main() {
 
 	if *save {
 		if *wgs && *snv != "" {
-			simple_util.CheckErr(WGSxlsx.Save(*prefix + ".WGS.xlsx"))
+			simpleUtil.CheckErr(WGSxlsx.Save(*prefix + ".WGS.xlsx"))
 			ts = append(ts, time.Now())
 			step++
 			logTime(ts, step-1, step, "save WGS")
@@ -1051,27 +1002,27 @@ func main() {
 		if *tag != "" {
 			tagStr = textUtil.File2Array(*tag)[0]
 		}
+		var tier1Output string
 		if isSMN1 {
-			tier1.output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
+			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
 		} else {
-			tier1.output = *prefix + ".Tier1" + tagStr + ".xlsx"
+			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
 		}
-		err = tier1.save()
-		simple_util.CheckErr(err)
+		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier1")
 	}
 
 	if *save {
-		simple_util.CheckErr(tier2.save(), "Tier2 save fail")
+		simpleUtil.CheckErr(tier2.save(), "Tier2 save fail")
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier2")
 	}
 
 	if *save && *snv != "" && !*noTier3 {
-		simple_util.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
+		simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier3")
@@ -1079,11 +1030,9 @@ func main() {
 	logTime(ts, 0, step, "total work")
 
 	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		simple_util.CheckErr(pprof.WriteHeapProfile(f))
-		defer simple_util.DeferClose(f)
+		var f, e = os.Create(*memprofile)
+		defer simpleUtil.DeferClose(f)
+		simpleUtil.CheckErr(e)
+		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
 	}
 }

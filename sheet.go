@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"log"
 	"strconv"
@@ -12,10 +13,39 @@ import (
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
-func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
-	var sheet, err = excel.AddSheet(sheetName)
-	simple_util.CheckErr(err)
+func addSheets(excel *xlsx.File, sheetNames []string) {
+	for _, sheetName := range sheetNames {
+		var _, err = excel.AddSheet(sheetName)
+		simpleUtil.CheckErr(err)
+	}
+}
 
+func addSheet(xlsx *xlsx.File, sheetName string) *xlsx.Sheet {
+	var sheet, err = xlsx.AddSheet(sheetName)
+	simpleUtil.CheckErr(err)
+	return sheet
+}
+
+func addFile2Row(file string, row *xlsx.Row) (rows []string) {
+	rows = textUtil.File2Array(file)
+	addArray2Row(rows, row)
+	return
+}
+
+func addArray2Row(rows []string, row *xlsx.Row) {
+	for _, str := range rows {
+		row.AddCell().SetString(str)
+	}
+}
+
+func addMap2Rwo(item map[string]string, keys []string, row *xlsx.Row) {
+	for _, key := range keys {
+		row.AddCell().SetString(item[key])
+	}
+}
+
+func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
+	var sheet = addSheet(excel, sheetName)
 	sheet.AddRow().AddCell().SetString("SampleID")
 
 	for _, sample := range sampleList {
@@ -37,8 +67,7 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 }
 
 func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
-	sheet, err := excel.AddSheet(sheetName)
-	simple_util.CheckErr(err)
+	var sheet = addSheet(excel, sheetName)
 
 	slice := simple_util.File2Slice(file, "\t")
 	for _, line := range slice {
@@ -50,21 +79,9 @@ func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
 }
 
 func addCnv2Sheet(
-	sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
-	key, titleFile string) {
+	sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
+	key string) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
-
-	// title
-	title := textUtil.File2Array(titleFile)
-	titleRow := sheet.Row(0)
-	titleCells := titleRow.Cells
-	for i, v := range title {
-		if i < len(titleCells) {
-			titleRow.Cells[i].SetString(v)
-		} else {
-			titleRow.AddCell().SetString(v)
-		}
-	}
 
 	for _, item := range cnvDb {
 		sample := item["Sample"]
@@ -101,14 +118,8 @@ func addCnv2Sheet(
 	}
 }
 
-func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) {
+func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool) {
 	smnDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
-
-	// title
-	var title []string
-	for _, cell := range sheet.Row(0).Cells {
-		title = append(title, cell.Value)
-	}
 
 	for _, item := range smnDb {
 		sample := item["SampleID"]
