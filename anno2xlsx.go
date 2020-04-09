@@ -94,6 +94,11 @@ var (
 		false,
 		"if trio mode",
 	)
+	couple = flag.Bool(
+		"couple",
+		false,
+		"if couple mode",
+	)
 	list = flag.String(
 		"list",
 		"proband,father,mother",
@@ -868,6 +873,8 @@ func main() {
 				// familyTag
 				if *trio {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+				} else if *couple {
+					item["familyTag"] = anno.FamilyTag(item, inheritDb, "couple")
 				} else {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "single")
 				}
