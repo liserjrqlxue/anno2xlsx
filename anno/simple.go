@@ -49,8 +49,8 @@ var (
 	isHemi = regexp.MustCompile(`^Hemi`)
 	isNA   = regexp.MustCompile(`^NA`)
 
-	isHetNA = regexp.MustCompile(`^Het:NA`)
-	isNAHet = regexp.MustCompile(`^NA:Het`)
+	isHetNA = regexp.MustCompile(`^Het;NA`)
+	isNAHet = regexp.MustCompile(`^NA;Het`)
 
 	isHomHetHet = regexp.MustCompile(`^Hom;Het;Het`)
 	isHomNANA   = regexp.MustCompile(`^Hom;NA;NA`)
