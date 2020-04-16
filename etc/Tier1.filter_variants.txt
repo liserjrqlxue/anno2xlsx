@@ -67,9 +67,13 @@ Lab-CH
 Onset age
 hpo_cn
 imprinted gene
-MUTATION_TYPE
-LITERATURE
-DISEASE_PHENOTYPE
+SecondaryFinding_Var_证据项
+SecondaryFinding_Var_致病等级
+SecondaryFinding_Var_参考文献
+SecondaryFinding_Var_Phenotype_OMIM_ID
+SecondaryFinding_Var_DiseaseNameEN
+SecondaryFinding_Var_DiseaseNameCH
+SecondaryFinding_Var_updatetime
 mut
 frequency
 sampleMut
