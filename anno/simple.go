@@ -3,6 +3,7 @@ package anno
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -69,7 +70,7 @@ var (
 //UpdateSnvTier1 add other info for tier1 variant
 func UpdateSnvTier1(item map[string]string) {
 
-	item["一键搜索链接"] = googleKey(item)
+	item["一键搜索链接"] = url.QueryEscape(googleKey(item))
 
 	// addition
 	item["烈性突变"] = "否"
