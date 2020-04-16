@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -93,7 +94,7 @@ func main() {
 		*prefix = strings.Split(*snv, ",")[0]
 	}
 
-	title := simpleUtil.File2Array(*columns)
+	title := textUtil.File2Array(*columns)
 	out, err := os.Create(*prefix + ".tier1.tsv")
 	simpleUtil.CheckErr(err)
 	defer simpleUtil.DeferClose(out)
@@ -119,7 +120,7 @@ func main() {
 	}
 
 	// 特殊位点库
-	for _, key := range simpleUtil.File2Array(*specVarList) {
+	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 	// 基因-疾病
@@ -136,7 +137,7 @@ func main() {
 			d, _ := simpleUtil.Gz2MapArray(db, "\t", isComment)
 			data = append(data, d...)
 		} else if isXlsx.MatchString(db) {
-			_, d := simpleUtil.Sheet2MapArray(db,"sheet1")
+			_, d := simpleUtil.Sheet2MapArray(db, "sheet1")
 			data = append(data, d...)
 		} else {
 			d, _ := simpleUtil.File2MapArray(db, "\t", isComment)

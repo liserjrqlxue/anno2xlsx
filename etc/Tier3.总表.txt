@@ -1,0 +1,27 @@
+#Chr
+Start
+Stop
+Ref
+Call
+SampleID
+Gene Symbol
+cHGVS
+pHGVS
+MutationNameLite
+ExIn_ID
+Function
+Zygosity
+A.Depth
+A.Ratio
+Filter
+GnomAD AF
+ExAC AF
+MatEntScan pred
+ClinVar Significance
+HGMD Pred
+DiseaseNameCH
+ModeInheritance
+自动化判断
+变异来源
+引物设计
+Tier

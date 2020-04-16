@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"os"
 	"strings"
@@ -44,8 +46,9 @@ func main() {
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)
 	fmt.Printf("index\tsingleCount\tcumCount\tfile\n")
-	fmt.Fprintf(out, "index\tsingleCount\tcumCount\tfile\n")
-	xlsxList := simple_util.File2Array(*list)
+	_, err = fmt.Fprintf(out, "index\tsingleCount\tcumCount\tfile\n")
+	simpleUtil.CheckErr(err)
+	xlsxList := textUtil.File2Array(*list)
 	var uniqDb = make(map[string]int)
 	var singleCount []int
 	var cumCount []int
@@ -62,9 +65,10 @@ func main() {
 		}
 		cumCount = append(cumCount, len(uniqDb))
 		fmt.Printf("%d\t%d\t%d\t%s\n", i, singleCount[i], cumCount[i], fileName)
-		fmt.Fprintf(out, "%d\t%d\t%d\t%s\n", i, singleCount[i], cumCount[i], fileName)
+		_, err = fmt.Fprintf(out, "%d\t%d\t%d\t%s\n", i, singleCount[i], cumCount[i], fileName)
+		simpleUtil.CheckErr(err)
 	}
-	simple_util.Json2rawFile(*prefix+".singleCount.json", singleCount)
-	simple_util.Json2rawFile(*prefix+".cumCount.json", cumCount)
-	simple_util.Json2rawFile(*prefix+".uniqDb.json", uniqDb)
+	simpleUtil.CheckErr(simple_util.Json2rawFile(*prefix+".singleCount.json", singleCount))
+	simpleUtil.CheckErr(simple_util.Json2rawFile(*prefix+".cumCount.json", cumCount))
+	simpleUtil.CheckErr(simple_util.Json2rawFile(*prefix+".uniqDb.json", uniqDb))
 }

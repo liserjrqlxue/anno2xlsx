@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"os"
 	"path/filepath"
@@ -146,7 +147,7 @@ func main() {
 	logTime(ts, step-1, step, "load 基因-疾病")
 
 	// 特殊位点库
-	for _, key := range simple_util.File2Array(*specVarList) {
+	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 	ts = append(ts, time.Now())
@@ -162,9 +163,14 @@ func main() {
 	var stats = make(map[string]int)
 
 	stats["Total"] = len(data)
-	title = append(title, "突变频谱", "Tier",
-		"pHGVS", "dbscSNV_ADA_pred", "dbscSNV_RF_pred", "GERP++_RS_pred", "PhyloP Vertebrates Pred", "PhyloP Placental Mammals Pred",
-		"烈性突变", "HGMDorClinvar", "GnomAD homo", "GnomAD hemi", "纯合，半合", "MutationNameLite", "历史样本检出个数", "自动化判断")
+	title = append(
+		title,
+		"突变频谱", "Tier", "pHGVS",
+		"dbscSNV_ADA_pred", "dbscSNV_RF_pred", "GERP++_RS_pred",
+		"PhyloP Vertebrates Pred", "PhyloP Placental Mammals Pred",
+		"烈性突变", "HGMDorClinvar", "GnomAD homo", "GnomAD hemi", "纯合，半合",
+		"MutationNameLite", "历史样本检出个数", "自动化判断",
+	)
 	for _, value := range geneDiseaseDbColumn {
 		title = append(title, value)
 	}
@@ -187,7 +193,7 @@ func main() {
 		for _, key := range title {
 			arr = append(arr, item[key])
 		}
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, anno.AFlist)
 
 		if *save {
 			simple_util.CheckErr(w1.Write(arr))
@@ -281,7 +287,7 @@ func loadGeneDb(excelFile, sheetName string, geneDb map[string]string) {
 	return
 }
 
-func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map[string]string, geneList map[string]bool) {
+func loadGeneDiseaseDb(excelFile, sheetName string, geneDisDb map[string]map[string]string, geneList map[string]bool) {
 	xlsxFh, err := excelize.OpenFile(excelFile)
 	simple_util.CheckErr(err)
 	rows, err := xlsxFh.GetRows(sheetName)
@@ -298,11 +304,11 @@ func loadGeneDiseaseDb(excelFile, sheetName string, geneDiseaseDb map[string]map
 			}
 			gene := dataHash["Gene/Locus"]
 			geneList[gene] = true
-			if geneDiseaseDb[gene] == nil {
-				geneDiseaseDb[gene] = dataHash
+			if geneDisDb[gene] == nil {
+				geneDisDb[gene] = dataHash
 			} else {
 				for _, key := range title {
-					geneDiseaseDb[gene][key] = geneDiseaseDb[gene][key] + "\n" + dataHash[key]
+					geneDisDb[gene][key] = geneDisDb[gene][key] + "\n" + dataHash[key]
 				}
 			}
 		}

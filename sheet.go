@@ -5,16 +5,22 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
-func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
-	var sheet, err = excel.AddSheet(sheetName)
-	simple_util.CheckErr(err)
+func addFile2Row(file string, row *xlsx.Row) (rows []string) {
+	rows = textUtil.File2Array(file)
+	xlsxUtil.AddArray2Row(rows, row)
+	return
+}
 
+func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
+	var sheet = xlsxUtil.AddSheet(excel, sheetName)
 	sheet.AddRow().AddCell().SetString("SampleID")
 
 	for _, sample := range sampleList {
@@ -35,42 +41,17 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 	}
 }
 
-func addTxt2Sheet(excel *xlsx.File, sheetName, file string) {
-	sheet, err := excel.AddSheet(sheetName)
-	simple_util.CheckErr(err)
-
-	slice := simple_util.File2Slice(file, "\t")
-	for _, line := range slice {
-		row := sheet.AddRow()
-		for _, val := range line {
-			row.AddCell().SetString(val)
-		}
-	}
-}
-
 func addCnv2Sheet(
-	sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
-	key, titleFile string) {
+	sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
+	key string) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
-
-	// title
-	title := simple_util.File2Array(titleFile)
-	titleRow := sheet.Row(0)
-	titleCells := titleRow.Cells
-	for i, v := range title {
-		if i < len(titleCells) {
-			titleRow.Cells[i].SetString(v)
-		} else {
-			titleRow.AddCell().SetString(v)
-		}
-	}
 
 	for _, item := range cnvDb {
 		sample := item["Sample"]
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
-			updateDiseaseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			updateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
 			// 突变频谱
 			updateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
@@ -92,22 +73,13 @@ func addCnv2Sheet(
 					continue
 				}
 			}
-			row := sheet.AddRow()
-			for _, key := range title {
-				row.AddCell().SetString(item[key])
-			}
+			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
 		}
 	}
 }
 
-func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) {
+func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool) {
 	smnDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
-
-	// title
-	var title []string
-	for _, cell := range sheet.Row(0).Cells {
-		title = append(title, cell.Value)
-	}
 
 	for _, item := range smnDb {
 		sample := item["SampleID"]
@@ -125,23 +97,20 @@ func addSmnResult(sheet *xlsx.Sheet, paths []string, sampleMap map[string]bool) 
 				item["SMN1_result"] = "Hom"
 				isSMN1 = true
 			}
-			row := sheet.AddRow()
-			for _, key := range title {
-				row.AddCell().SetString(item[key])
-			}
+			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
 		}
 	}
 }
 
-func updateDiseaseMultiGene(geneList string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
-	genes := strings.Split(geneList, ";")
+func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
+	genes := strings.Split(geneLst, ";")
 	// 基因-疾病
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			geneDb, ok := geneDisDb[gene]
+			singelGeneDb, ok := geneDisDb[gene]
 			if ok {
-				vals = append(vals, geneDb[key])
+				vals = append(vals, singelGeneDb[key])
 			}
 		}
 		if len(vals) > 0 {
@@ -160,7 +129,8 @@ func updateGeneDb(geneList string, item, geneDb map[string]string) {
 	item["突变频谱"] = strings.Join(vals, "\n")
 }
 
-type Variant struct {
+//Variant struct for anno info
+type variant struct {
 	Chr   string                 `json:"Chromosome"`
 	Ref   string                 `json:"Ref"`
 	Alt   string                 `json:"Alt"`
@@ -170,7 +140,6 @@ type Variant struct {
 }
 
 func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
-	rowMT := sheet.AddRow()
 	ref := item["Ref"]
 	alt := item["Call"]
 	if ref == "." {
@@ -182,26 +151,24 @@ func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
 	key := strings.Join([]string{"MT", item["Start"], item["Stop"], ref, alt}, "\t")
 	mut, ok := TIPdb[key]
 	if ok {
-		for _, key := range []string{"Mito TIP"} {
-			item[key] = mut.Info[key].(string)
+		for _, str := range []string{"Mito TIP"} {
+			item[str] = mut.Info[str].(string)
 		}
 	}
 	mut, ok = MTdisease[key]
 	if ok {
-		for _, key := range []string{"Disease", "pmid", "title", "Status"} {
-			item[key] = mut.Info[key].(string)
+		for _, str := range []string{"Disease", "pmid", "title", "Status"} {
+			item[str] = mut.Info[str].(string)
 		}
 	}
 	mut, ok = MTAFdb[key]
 	if ok {
-		for _, key := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
-			item[key] = strconv.FormatFloat(mut.Info[key].(float64), 'f', 5, 64)
+		for _, str := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
+			item[str] = strconv.FormatFloat(mut.Info[str].(float64), 'f', 5, 64)
 		}
 
 	}
-	for _, str := range MTTitle {
-		rowMT.AddCell().SetString(item[str])
-	}
+	xlsxUtil.AddMap2Row(item, MTTitle, sheet.AddRow())
 }
 
 func addTier2Row(tier2 xlsxTemplate, item map[string]string) {

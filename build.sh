@@ -1,2 +1,7 @@
 #!/usr/bin/env bash
-go build -ldflags "-X main.buildStamp=`date -u '+%Y-%m-%d_%I:%M:%S%p'` -X main.gitHash=`git rev-parse HEAD` -X 'main.goVersion=`go version`'"
+gitHash=$(git rev-parse HEAD)
+gitBranch=$(git branch --show-current)
+gitTag=$(git describe --tags)
+goVersion=$(go version)
+buildStamp=$(date -u '+%Y-%m-%d_%I:%M:%S%p')
+go build -ldflags "-X 'main.buildStamp=$buildStamp' -X 'main.gitHash=$gitBranch:$gitTag:$gitHash' -X 'main.goVersion=$goVersion'"

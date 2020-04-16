@@ -3,13 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/brentp/bix"
-	"github.com/go-redis/redis"
-	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/acmg2015/evidence"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -18,14 +11,25 @@ import (
 	"runtime/pprof"
 	"strings"
 	"time"
+
+	"github.com/brentp/bix"
+	"github.com/go-redis/redis"
+	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/liserjrqlxue/goUtil/xlsxUtil"
+	"github.com/liserjrqlxue/simple-util"
+	"github.com/tealeg/xlsx/v2"
+
+	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
 // os
 var (
-	ex, _        = os.Executable()
-	exPath       = filepath.Dir(ex)
-	dbPath       = filepath.Join(exPath, "..", "db")
-	templatePath = filepath.Join(exPath, "..", "template")
+	ex, _  = os.Executable()
+	exPath = filepath.Dir(ex)
+	dbPath = filepath.Join(exPath, "..", "db")
 )
 
 // flag
@@ -164,48 +168,11 @@ var geneDiseaseDbColumn = make(map[string]string)
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
-type xlsxTemplate struct {
-	flag      string
-	template  string
-	xlsx      *xlsx.File
-	sheetName string
-	sheet     *xlsx.Sheet
-	title     []string
-	output    string
-}
-
-func (xt *xlsxTemplate) save() error {
-	return xt.xlsx.Save(xt.output)
-}
-
-var tierSheet = map[string]string{
-	"Tier1": "filter_variants",
-	"Tier3": "总表",
-}
-
 var tier1GeneList = make(map[string]bool)
-
-var err error
 
 // WESIM
 var resultColumn, qualityColumn []string
 var resultFile, qcFile *os.File
-
-func newXlsxTemplate(flag string) xlsxTemplate {
-	var tier = xlsxTemplate{
-		flag:      flag,
-		template:  filepath.Join(templatePath, flag+".xlsx"),
-		sheetName: tierSheet[flag],
-		output:    *prefix + "." + flag + ".xlsx",
-	}
-	tier.xlsx, err = xlsx.OpenFile(tier.template)
-	simple_util.CheckErr(err)
-	tier.sheet = tier.xlsx.Sheet[tier.sheetName]
-	for _, cell := range tier.sheet.Row(0).Cells {
-		tier.title = append(tier.title, cell.String())
-	}
-	return tier
-}
 
 var codeKey []byte
 
@@ -221,7 +188,7 @@ var isSMN1 bool
 
 var snvs []string
 
-var Acmg59Gene = make(map[string]bool)
+var acmg59Gene = make(map[string]bool)
 
 // ACMG
 // PVS1
@@ -256,8 +223,8 @@ var lateOnsetList map[string]int
 
 // BP1
 var (
-	HgmdBP1GeneList    map[string]float64
-	ClinVarBP1GeneList map[string]float64
+	hgmdBP1GeneList    map[string]float64
+	clinVarBP1GeneList map[string]float64
 )
 
 func main() {
@@ -280,26 +247,8 @@ func main() {
 		os.Exit(0)
 	}
 	if *prefix == "" {
-		if *snv == "" {
-			flag.Usage()
-			fmt.Println("\nshold have -prefix for output")
-			os.Exit(0)
-		} else {
-			snvs = strings.Split(*snv, ",")
-			*prefix = snvs[0]
-		}
-	}
-	if *snv == "" {
-		if *prefix == "" {
-			flag.Usage()
-			fmt.Println("\nshold have -prefix for output")
-			os.Exit(0)
-		}
-	} else {
 		snvs = strings.Split(*snv, ",")
-		if *prefix == "" {
-			*prefix = snvs[0]
-		}
+		*prefix = snvs[0]
 	}
 
 	if *logfile == "" {
@@ -357,8 +306,8 @@ func main() {
 		simple_util.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
 
 		// BP1
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &ClinVarBP1GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &HgmdBP1GeneList)
+		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
+		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -383,9 +332,9 @@ func main() {
 	}
 
 	if *wesim {
-		acmg59GeneList := simple_util.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
+		acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
 		for _, gene := range acmg59GeneList {
-			Acmg59Gene[gene] = true
+			acmg59Gene[gene] = true
 		}
 
 		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
@@ -413,23 +362,10 @@ func main() {
 		sampleMap[sample] = true
 	}
 
-	// load tier template
-	tier1 := newXlsxTemplate("Tier1")
-	// update tier1 titles
-	titleRow := tier1.sheet.Row(0)
-	tier1.title = simple_util.File2Array(*filterVariants)
-	titleCells := titleRow.Cells
-	for i, v := range tier1.title {
-		if i < len(titleCells) {
-			titleRow.Cells[i].SetString(v)
-		} else {
-			titleRow.AddCell().SetString(v)
-		}
-	}
-
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load template")
+	var tier1Xlsx = xlsx.NewFile()
+	var filterVariantsSheet = xlsxUtil.AddSheet(tier1Xlsx, "filter_variants")
+	var filterVariantsTitle = simple_util.File2Array(*filterVariants)
+	xlsxUtil.AddArray2Row(filterVariantsTitle, filterVariantsSheet.AddRow())
 
 	// exonCount
 	exonCount = simple_util.JsonFile2Map(*transInfo)
@@ -459,7 +395,7 @@ func main() {
 	logTime(ts, step-1, step, "load Gene-Disease DB")
 
 	// 特殊位点库
-	for _, key := range simple_util.File2Array(*specVarList) {
+	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 	ts = append(ts, time.Now())
@@ -472,12 +408,12 @@ func main() {
 	if *snv != "" {
 		var step0 = step
 		var data []map[string]string
-		for _, snv := range snvs {
-			if isGz.MatchString(snv) {
-				d, _ := simple_util.Gz2MapArray(snv, "\t", isComment)
+		for _, f := range snvs {
+			if isGz.MatchString(f) {
+				d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
 				data = append(data, d...)
 			} else {
-				d, _ := simple_util.File2MapArray(snv, "\t", isComment)
+				d, _ := simple_util.File2MapArray(f, "\t", isComment)
 				data = append(data, d...)
 			}
 		}
@@ -516,7 +452,7 @@ func main() {
 				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
 				item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
 				item["BS2"] = evidence.CheckBS2(item, lateOnsetList)
-				item["BP1"] = evidence.CheckBP1(item, ClinVarBP1GeneList, HgmdBP1GeneList)
+				item["BP1"] = evidence.CheckBP1(item, clinVarBP1GeneList, hgmdBP1GeneList)
 				item["BP3"] = evidence.CheckBP3(item)
 				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
 				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
@@ -550,13 +486,10 @@ func main() {
 			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 			anno.FloatFormat(item)
 
-			tier1Row := tier1.sheet.AddRow()
-			for _, str := range tier1.title {
-				tier1Row.AddCell().SetString(item[str])
-			}
+			xlsxUtil.AddMap2Row(item, filterVariantsTitle, filterVariantsSheet.AddRow())
 			// WESIM
 			if *wesim {
-				if Acmg59Gene[item["Gene Symbol"]] {
+				if acmg59Gene[item["Gene Symbol"]] {
 					item["IsACMG59"] = "Y"
 				} else {
 					item["IsACMG59"] = "N"
@@ -589,24 +522,24 @@ func main() {
 
 	// Tier1 excel
 	if *save {
-		tagStr := ""
+		var tagStr = ""
 		if *tag != "" {
-			tagStr = simple_util.File2Array(*tag)[0]
+			tagStr = textUtil.File2Array(*tag)[0]
 		}
+		var tier1Output string
 		if isSMN1 {
-			tier1.output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
+			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
 		} else {
-			tier1.output = *prefix + ".Tier1" + tagStr + ".xlsx"
+			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
 		}
-		err = tier1.save()
-		simple_util.CheckErr(err)
+		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier1")
 	}
 
 	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
+		var f, err = os.Create(*memprofile)
 		if err != nil {
 			log.Fatal(err)
 		}
