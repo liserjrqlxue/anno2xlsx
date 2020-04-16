@@ -790,7 +790,7 @@ func main() {
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]
 
-			anno.AnnoSpliceAI(item)
+			//anno.AnnoSpliceAI(item)
 
 			// ues acmg of go
 			if *acmg {

@@ -44,6 +44,10 @@ MutationTaster Pred
 dbscSNV_ADA_pred
 dbscSNV_RF_pred
 MatEntScan pred
+SpliceAI
+SpliceAI Pred
+SpliceAI Interpretation
+SpliceAI Biology
 HGMDorClinvar
 ClinVar Significance
 HGMD ID
