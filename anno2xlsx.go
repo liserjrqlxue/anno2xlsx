@@ -711,7 +711,7 @@ func main() {
 		}
 		addCnv2Sheet(
 			tier1Xlsx.Sheet["large_cnv"], largeCNVTitle, paths, sampleMap,
-			true, *cnvFilter, stats, "largeCNV",
+			*cnvFilter, false, stats, "largeCNV",
 		)
 		ts = append(ts, time.Now())
 		step++
