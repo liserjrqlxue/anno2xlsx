@@ -104,6 +104,7 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 
 func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
 	genes := strings.Split(geneLst, ";")
+	var geneLocus []string
 	// 基因-疾病
 	for key, value := range geneDisDbCol {
 		var vals []string
@@ -111,10 +112,12 @@ func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, g
 			singelGeneDb, ok := geneDisDb[gene]
 			if ok {
 				vals = append(vals, singelGeneDb[key])
+				geneLocus = append(geneLocus, singelGeneDb["Gene/Locus"])
 			}
 		}
 		if len(vals) > 0 {
 			item[value] = strings.Join(vals, "\n")
+			item["Gene/Locus"] = strings.Join(geneLocus, "\n")
 		}
 	}
 }
