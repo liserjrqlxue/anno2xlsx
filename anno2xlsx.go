@@ -342,37 +342,8 @@ var tier1Db = make(map[string]bool)
 var LOFList map[string]int
 var transcriptInfo map[string][]evidence.Region
 
-// PS1 & PM5
-var (
-	HGMDAAPosList    map[string]int
-	ClinVarAAPosList map[string]int
-	HGMDPHGVSlist    map[string]int
-	HGMDMissense     map[string]int
-	ClinVarPHGVSlist map[string]int
-	ClinVarMissense  map[string]int
-)
-
 // PM1
 var tbx *bix.Bix
-var (
-	pfamDomain   map[string]bool
-	dbNSFPDomain map[string]bool
-)
-
-// PP2
-var (
-	hgmdPP2GeneList    map[string]float64
-	clinVarPP2GeneList map[string]float64
-)
-
-// BS2
-var lateOnsetList map[string]int
-
-// BP1
-var (
-	hgmdBP1GeneList    map[string]float64
-	clinVarBP1GeneList map[string]float64
-)
 
 func main() {
 	var ts []time.Time
@@ -437,34 +408,45 @@ func main() {
 	}
 
 	if *acmg {
+		// PS1 PM5
+		evidence.LoadPS1PM5(
+			anno.GetPath("PS1PM5.MutationName.count", dbPath, defaultConfig),
+			anno.GetPath("PS1PM5.pHGVS1.count", dbPath, defaultConfig),
+			anno.GetPath("PS1PM5.AApos.count", dbPath, defaultConfig),
+		)
+		// PM1
+		evidence.LoadPM1(
+			anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig),
+			anno.GetPath("PM1PfamDomain", dbPath, defaultConfig),
+		)
+
 		// PVS1
 		jsonUtil.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
 		jsonUtil.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
 
-		// PS1 & PM5
-		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarPathogenicMissense", dbPath, defaultConfig), &ClinVarMissense)
-		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarPHGVSlist", dbPath, defaultConfig), &ClinVarPHGVSlist)
-		jsonUtil.JsonFile2Data(anno.GetPath("HGMDPathogenicMissense", dbPath, defaultConfig), &HGMDMissense)
-		jsonUtil.JsonFile2Data(anno.GetPath("HGMDPHGVSlist", dbPath, defaultConfig), &HGMDPHGVSlist)
-		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarAAPosList", dbPath, defaultConfig), &ClinVarAAPosList)
-		jsonUtil.JsonFile2Data(anno.GetPath("HGMDAAPosList", dbPath, defaultConfig), &HGMDAAPosList)
-
 		// PM1
-		jsonUtil.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
-		jsonUtil.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &pfamDomain)
 		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
 		simpleUtil.CheckErr(err, "load tabix")
 
 		// PP2
-		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &clinVarPP2GeneList)
-		jsonUtil.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &hgmdPP2GeneList)
+		evidence.LoadPP2(
+			anno.GetPath("PP2GeneList", dbPath, defaultConfig),
+		)
 
 		// BS2
-		jsonUtil.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
+		evidence.LoadBS2(
+			anno.GetPath("LateOnset", dbPath, defaultConfig),
+		)
 
 		// BP1
-		jsonUtil.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
-		jsonUtil.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
+		evidence.LoadBP1(
+			anno.GetPath("BP1GeneList", dbPath, defaultConfig),
+		)
+
+		// BA1
+		evidence.LoadBA1(
+			anno.GetPath("BA1ExceptionList", dbPath, defaultConfig),
+		)
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -795,23 +777,22 @@ func main() {
 			// ues acmg of go
 			if *acmg {
 				item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
-				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
-				item["PM5"] = evidence.CheckPM5(item, ClinVarPHGVSlist, ClinVarAAPosList, HGMDPHGVSlist, HGMDAAPosList)
+				item["PS1"] = evidence.CheckPS1(item)
+				item["PM5"] = evidence.CheckPM5(item)
 				item["PS4"] = evidence.CheckPS4(item)
-				item["PM1"] = evidence.CheckPM1(item, dbNSFPDomain, pfamDomain, tbx)
+				item["PM1"] = evidence.CheckPM1(item, tbx)
 				item["PM2"] = evidence.CheckPM2(item)
 				item["PM4"] = evidence.CheckPM4(item)
-				item["PP2"] = evidence.CheckPP2(item, clinVarPP2GeneList, hgmdPP2GeneList)
+				item["PP2"] = evidence.CheckPP2(item)
 				item["PP3"] = evidence.CheckPP3(item)
 				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
 				item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-				item["BS2"] = evidence.CheckBS2(item, lateOnsetList)
-				item["BP1"] = evidence.CheckBP1(item, clinVarBP1GeneList, hgmdBP1GeneList)
+				item["BS2"] = evidence.CheckBS2(item)
+				item["BP1"] = evidence.CheckBP1(item)
 				item["BP3"] = evidence.CheckBP3(item)
 				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
 				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
 			}
-
 			item["自动化判断"] = acmg2015.PredACMG2015(item)
 
 			anno.UpdateSnv(item, *gender, *debug)
