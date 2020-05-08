@@ -198,6 +198,11 @@ var (
 		false,
 		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
 	)
+	autoPVS1 = flag.Bool(
+		"autoPVS1",
+		false,
+		"if use autoPVS1",
+	)
 	cpuprofile = flag.String(
 		"cpuprofile",
 		"",
@@ -416,13 +421,15 @@ func main() {
 		)
 		// PM1
 		evidence.LoadPM1(
-			anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig),
-			anno.GetPath("PM1PfamDomain", dbPath, defaultConfig),
+			anno.GetPath("PM1InterproDomain", dbPath, defaultConfig),
+			anno.GetPath("PM1PfamIdDomain", dbPath, defaultConfig),
 		)
 
 		// PVS1
-		jsonUtil.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
-		jsonUtil.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
+		if !*autoPVS1 {
+			jsonUtil.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
+			jsonUtil.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
+		}
 
 		// PM1
 		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
@@ -776,7 +783,9 @@ func main() {
 
 			// ues acmg of go
 			if *acmg {
-				item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
+				if !*autoPVS1 {
+					item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
+				}
 				item["PS1"] = evidence.CheckPS1(item)
 				item["PM5"] = evidence.CheckPM5(item)
 				item["PS4"] = evidence.CheckPS4(item)
@@ -793,7 +802,7 @@ func main() {
 				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
 				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
 			}
-			item["自动化判断"] = acmg2015.PredACMG2015(item)
+			item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
 			anno.UpdateSnv(item, *gender, *debug)
 
