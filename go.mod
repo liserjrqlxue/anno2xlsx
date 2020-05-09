@@ -9,7 +9,7 @@ require (
 	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/liserjrqlxue/acmg2015 v1.1.5
+	github.com/liserjrqlxue/acmg2015 v1.1.6
 	github.com/liserjrqlxue/goUtil v0.0.17
 	github.com/liserjrqlxue/simple-util v1.0.1
 	github.com/onsi/ginkgo v1.12.0 // indirect
