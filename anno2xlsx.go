@@ -94,6 +94,11 @@ var (
 		false,
 		"if trio mode",
 	)
+	trio2 = flag.Bool(
+		"trio2",
+		false,
+		"if no standard trio mode but proband-father-mother",
+	)
 	couple = flag.Bool(
 		"couple",
 		false,
@@ -814,6 +819,9 @@ func main() {
 			item["引物设计"] = anno.PrimerDesign(item)
 
 			// 变异来源
+			if *trio2 {
+				item["变异来源"] = anno.InheritFrom2(item, sampleList)
+			}
 			if *trio {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
@@ -863,7 +871,7 @@ func main() {
 					stats["遗传相符"]++
 				}
 				// familyTag
-				if *trio {
+				if *trio || *trio2 {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
 				} else if *couple {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "couple")
