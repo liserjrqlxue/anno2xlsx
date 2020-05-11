@@ -560,7 +560,7 @@ func InheritFrom(item map[string]string, sampleList []string) string {
 	return from
 }
 
-//InheritFrom return 变异来源
+//InheritFrom2 for no strand proband-father-mother return 变异来源
 func InheritFrom2(item map[string]string, sampleList []string) string {
 	if len(sampleList) < 3 {
 		return "NA1"
@@ -1052,11 +1052,11 @@ func UpdateFunction(item map[string]string) {
 	item["Function"] = updateFunction(item["Function"], item["cHGVS"])
 }
 
-var chgvs = regexp.MustCompile(`c\.\d+([+-])(\d+)`)
+var chgvsReg = regexp.MustCompile(`c\.\d+([+-])(\d+)`)
 
 func updateFunction(function, cHGVS string) string {
 	if function == "intron" {
-		var matches = chgvs.FindStringSubmatch(cHGVS)
+		var matches = chgvsReg.FindStringSubmatch(cHGVS)
 		if matches != nil {
 			var strand = matches[1]
 			var distance = stringsUtil.Atoi(matches[2])
