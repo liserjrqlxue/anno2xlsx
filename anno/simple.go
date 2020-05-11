@@ -1049,10 +1049,25 @@ func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) 
 
 //UpdateFunction fix splice+-20, have not implement
 func UpdateFunction(item map[string]string) {
-	function := item["Function"]
-	if function != "intron" {
-		return
+	item["Function"] = updateFunction(item["Function"], item["cHGVS"])
+}
+
+var chgvs = regexp.MustCompile(`c\.\d+([+-])(\d+)`)
+
+func updateFunction(function, cHGVS string) string {
+	if function == "intron" {
+		var matches = chgvs.FindStringSubmatch(cHGVS)
+		if matches != nil {
+			var strand = matches[1]
+			var distance = stringsUtil.Atoi(matches[2])
+			if distance <= 10 {
+				return "splice" + strand + "10"
+			} else if distance <= 20 {
+				return "splice" + strand + "20"
+			}
+		}
 	}
+	return function
 }
 
 var floatFormatArray = []string{
