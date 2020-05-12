@@ -1034,6 +1034,29 @@ func FloatFormat(item map[string]string) {
 	}
 }
 
+var isBR = regexp.MustCompile(`<br/>`)
+var newlineFormatArray = []string{
+	"SecondaryFinding_Var_证据项",
+	"SecondaryFinding_Var_致病等级",
+	"SecondaryFinding_Var_参考文献",
+	"SecondaryFinding_Var_Phenotype_OMIM_ID",
+	"SecondaryFinding_Var_DiseaseNameEN",
+	"SecondaryFinding_Var_DiseaseNameCH",
+	"SecondaryFinding_Var_updatetime",
+}
+
+//NewlineForamt warp strings.Replace
+func NewlineFormat(item map[string]string) {
+	for _, key := range newlineFormatArray {
+		item[key] = isBR.ReplaceAllString(item[key], "\n")
+	}
+}
+
+func Format(item map[string]string) {
+	FloatFormat(item)
+	NewlineFormat(item)
+}
+
 //UpdateDisease add disease info to item
 func UpdateDisease(gene string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
 	// 基因-疾病

@@ -882,7 +882,7 @@ func main() {
 				}
 				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
 
-				anno.FloatFormat(item)
+				anno.Format(item)
 
 				// Tier1 Sheet
 				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
