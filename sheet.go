@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -142,6 +143,7 @@ func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, g
 		}
 	}
 
+	var exonMap = cnvAnnot2Exon(item["CNV_annot"], genes)
 	var cnvAnnots []GeneInfo
 	for _, gene := range genes {
 		singleGeneDb, ok := geneDisDb[gene]
@@ -151,10 +153,10 @@ func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, g
 		var cnvAnnot = GeneInfo{
 			OmimGene:     gene,
 			Transcript:   item["Transcript"],
-			Exon:         "",
+			Exon:         exonMap[gene],
 			EffectType:   item["type"],
-			OmimGeneId:   "",
-			Location:     singleGeneDb["Location"],
+			OmimGeneId:   strings.Split(singleGeneDb["Gene/Locus MIM number"], "\n")[0],
+			Location:     strings.Split(singleGeneDb["Location"], "\n")[0],
 			OmimDiseases: nil,
 		}
 		cnvAnnot.OmimDiseases = singelGeneDb2OmimDiseases(singleGeneDb)
@@ -162,7 +164,22 @@ func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, g
 	}
 	var jsonBytes, err = json.Marshal(cnvAnnots)
 	simpleUtil.CheckErr(err)
-	item["cnvAnnot"] = string(jsonBytes)
+	item["CNV_annot"] = string(jsonBytes)
+}
+
+func cnvAnnot2Exon(cnvAnnot string, genes []string) map[string]string {
+	var exonMap = make(map[string]string)
+	for _, gene := range genes {
+		var exons []string
+		for _, cnv := range strings.Split(cnvAnnot, ";") {
+			var matchs = regexp.MustCompile("^" + gene + `-\S+:(\S+) [DupDel]+$`).FindStringSubmatch(cnv)
+			if len(matchs) > 2 {
+				exons = append(exons, matchs[1])
+			}
+		}
+		exonMap[gene] = strings.Join(exons, ",")
+	}
+	return exonMap
 }
 
 func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisease) {
