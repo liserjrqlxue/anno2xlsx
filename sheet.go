@@ -189,7 +189,7 @@ func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisea
 	var GeneralizationCn = strings.Split(item["GeneralizationCH"], "\n")
 	var GeneralizationEn = strings.Split(item["GeneralizationEN"], "\n")
 	var OmimDiseaseID = strings.Split(item["Phenotype MIM number"], "\n")
-	var OmimGeneID = strings.Split(item["~/pipeline/anno2xlsx"], "\n")
+	var OmimGeneID = strings.Split(item["Gene/Locus MIM number"], "\n")
 	var SystemSort = strings.Split(item["SystemSort"], "\n")
 	var HeredityModel = strings.Split(item["Inheritance"], "\n")
 	for i := 0; i < len(DiseaseCnName); i++ {
