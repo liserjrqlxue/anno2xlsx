@@ -173,7 +173,7 @@ func cnvAnnot2Exon(cnvAnnot string, genes []string) map[string]string {
 		var exons []string
 		for _, cnv := range strings.Split(cnvAnnot, ";") {
 			var matchs = regexp.MustCompile("^" + gene + `-\S+:(\S+) [DupDel]+$`).FindStringSubmatch(cnv)
-			if len(matchs) > 2 {
+			if len(matchs) > 1 {
 				exons = append(exons, matchs[1])
 			}
 		}
