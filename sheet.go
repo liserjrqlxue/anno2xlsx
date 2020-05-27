@@ -120,6 +120,7 @@ type OmimDisease struct {
 	GeneralizationCn string `json:"generalizationCn"`
 	GeneralizationEn string `json:"generalizationEn"`
 	OmimDiseaseId    string `json:"omimDiseaseId"`
+	OmimGeneId       string `json:"omimGeneId"`
 	SystemSort       string `json:"systemSort"`
 	HeredityModel    string `json:"heredityModel"`
 }
@@ -188,6 +189,7 @@ func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisea
 	var GeneralizationCn = strings.Split(item["GeneralizationCH"], "\n")
 	var GeneralizationEn = strings.Split(item["GeneralizationEN"], "\n")
 	var OmimDiseaseID = strings.Split(item["Phenotype MIM number"], "\n")
+	var OmimGeneID = strings.Split(item["~/pipeline/anno2xlsx"], "\n")
 	var SystemSort = strings.Split(item["SystemSort"], "\n")
 	var HeredityModel = strings.Split(item["Inheritance"], "\n")
 	for i := 0; i < len(DiseaseCnName); i++ {
@@ -197,6 +199,7 @@ func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisea
 			GeneralizationCn: GeneralizationCn[i],
 			GeneralizationEn: GeneralizationEn[i],
 			OmimDiseaseId:    OmimDiseaseID[i],
+			OmimGeneId:       OmimGeneID[i],
 			SystemSort:       SystemSort[i],
 			HeredityModel:    HeredityModel[i],
 		}
