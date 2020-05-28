@@ -28,6 +28,10 @@ type GeneInfo struct {
 	Transcript   string        `json:"transcript"`
 	Exon         string        `json:"exon"`
 	EffectType   string        `json:"effecttype"`
+	Chr          string        `json:"chr"`
+	Start        string        `json:"start"`
+	Stop         string        `json:"stop"`
+	Primer       string        `json:"primer"`
 	OmimGeneId   string        `json:"omimGeneId"`
 	Location     string        `json:"location"`
 	OmimDiseases []OmimDisease `json:"omimDiseases"`
@@ -79,6 +83,10 @@ func UpdateCnvAnnot(geneLst string, item map[string]string, geneDisDb map[string
 			Transcript:   item["Transcript"],
 			Exon:         exonMap[gene],
 			EffectType:   item["type"],
+			Chr:          item["chromosome"],
+			Start:        item["start"],
+			Stop:         item["end"],
+			Primer:       item["Primer"],
 			OmimGeneId:   strings.Split(singleGeneDb["Gene/Locus MIM number"], "\n")[0],
 			Location:     strings.Split(singleGeneDb["Location"], "\n")[0],
 			OmimDiseases: nil,
