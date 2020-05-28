@@ -1,13 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
-	"regexp"
 	"strconv"
 	"strings"
 
-	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
@@ -54,7 +51,8 @@ func addCnv2Sheet(
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
-			updateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
 			// 突变频谱
 			updateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
@@ -103,109 +101,6 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
 		}
 	}
-}
-
-type GeneInfo struct {
-	OmimGene     string        `json:"omimGene"`
-	Transcript   string        `json:"transcript"`
-	Exon         string        `json:"exon"`
-	EffectType   string        `json:"effecttype"`
-	OmimGeneId   string        `json:"omimGeneId"`
-	Location     string        `json:"location"`
-	OmimDiseases []OmimDisease `json:"omimDiseases"`
-}
-type OmimDisease struct {
-	DiseaseCnName    string `json:"diseaseNnName"`
-	DiseaseEnName    string `json:"diseaseEnName"`
-	GeneralizationCn string `json:"generalizationCn"`
-	GeneralizationEn string `json:"generalizationEn"`
-	OmimDiseaseId    string `json:"omimDiseaseId"`
-	OmimGeneId       string `json:"omimGeneId"`
-	SystemSort       string `json:"systemSort"`
-	HeredityModel    string `json:"heredityModel"`
-}
-
-func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
-	genes := strings.Split(geneLst, ";")
-	var geneLocus []string
-	// 基因-疾病
-	for key, value := range geneDisDbCol {
-		var vals []string
-		for _, gene := range genes {
-			singelGeneDb, ok := geneDisDb[gene]
-			if ok {
-				vals = append(vals, singelGeneDb[key])
-				geneLocus = append(geneLocus, singelGeneDb["Gene/Locus"])
-			}
-		}
-		if len(vals) > 0 {
-			item[value] = strings.Join(vals, "\n")
-			item["Gene/Locus"] = strings.Join(geneLocus, "\n")
-		}
-	}
-
-	var exonMap = cnvAnnot2Exon(item["CNV_annot"], genes)
-	var cnvAnnots []GeneInfo
-	for _, gene := range genes {
-		singleGeneDb, ok := geneDisDb[gene]
-		if !ok {
-			continue
-		}
-		var cnvAnnot = GeneInfo{
-			OmimGene:     gene,
-			Transcript:   item["Transcript"],
-			Exon:         exonMap[gene],
-			EffectType:   item["type"],
-			OmimGeneId:   strings.Split(singleGeneDb["Gene/Locus MIM number"], "\n")[0],
-			Location:     strings.Split(singleGeneDb["Location"], "\n")[0],
-			OmimDiseases: nil,
-		}
-		cnvAnnot.OmimDiseases = singelGeneDb2OmimDiseases(singleGeneDb)
-		cnvAnnots = append(cnvAnnots, cnvAnnot)
-	}
-	var jsonBytes, err = json.Marshal(cnvAnnots)
-	simpleUtil.CheckErr(err)
-	item["CNV_annot"] = string(jsonBytes)
-}
-
-func cnvAnnot2Exon(cnvAnnot string, genes []string) map[string]string {
-	var exonMap = make(map[string]string)
-	for _, gene := range genes {
-		var exons []string
-		for _, cnv := range strings.Split(cnvAnnot, ";") {
-			var matchs = regexp.MustCompile("^" + gene + `-\S+:(\S+) [DupDel]+$`).FindStringSubmatch(cnv)
-			if len(matchs) > 1 {
-				exons = append(exons, matchs[1])
-			}
-		}
-		exonMap[gene] = strings.Join(exons, ",")
-	}
-	return exonMap
-}
-
-func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisease) {
-	var DiseaseCnName = strings.Split(item["Disease NameCH"], "\n")
-	var DiseaseEnName = strings.Split(item["Disease NameEN"], "\n")
-	var GeneralizationCn = strings.Split(item["GeneralizationCH"], "\n")
-	var GeneralizationEn = strings.Split(item["GeneralizationEN"], "\n")
-	var OmimDiseaseID = strings.Split(item["Phenotype MIM number"], "\n")
-	var OmimGeneID = strings.Split(item["Gene/Locus MIM number"], "\n")
-	var SystemSort = strings.Split(item["SystemSort"], "\n")
-	var HeredityModel = strings.Split(item["Inheritance"], "\n")
-	for i := 0; i < len(DiseaseCnName); i++ {
-		var omimDisease = OmimDisease{
-			DiseaseCnName:    DiseaseCnName[i],
-			DiseaseEnName:    DiseaseEnName[i],
-			GeneralizationCn: GeneralizationCn[i],
-			GeneralizationEn: GeneralizationEn[i],
-			OmimDiseaseId:    OmimDiseaseID[i],
-			OmimGeneId:       OmimGeneID[i],
-			SystemSort:       SystemSort[i],
-			HeredityModel:    HeredityModel[i],
-		}
-		omimDiseases = append(omimDiseases, omimDisease)
-	}
-	return
 }
 
 func updateGeneDb(geneList string, item, geneDb map[string]string) {
