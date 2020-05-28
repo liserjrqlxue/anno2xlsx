@@ -102,12 +102,17 @@ func UpdateCnvAnnot(geneLst string, item map[string]string, geneDisDb map[string
 
 func getExonMap(item map[string]string) map[string]string {
 	var exonMap = make(map[string]string)
+	if item["OMIM_exon"] == "" || item["OMIM_exon"] == "-" {
+		return exonMap
+	}
 	var genes = strings.Split(item["OMIM_Gene"], ";")
 	var exons = strings.Split(item["OMIM_exon"], ";")
 	for i, gene := range genes {
 		var exon, ok = exonMap[gene]
 		if ok {
 			exon = exon + "," + exons[i]
+		} else {
+			exon = exons[i]
 		}
 		exonMap[gene] = exon
 	}
