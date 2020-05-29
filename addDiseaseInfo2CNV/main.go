@@ -137,10 +137,10 @@ func main() {
 		gene := item["OMIM_Gene"]
 		// 基因-疾病
 		anno.UpdateDiseaseMultiGene("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
-		anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
-		item["OMIM"] = item["OMIM_Phenotype_ID"]
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
+		anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
+		item["OMIM"] = item["OMIM_Phenotype_ID"]
 
 		var array []string
 		for _, key := range titles {
