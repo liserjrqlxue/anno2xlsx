@@ -95,7 +95,7 @@ func UpdateCnvAnnot(geneLst string, item map[string]string, geneDisDb map[string
 		cnvAnnots = append(cnvAnnots, cnvAnnot)
 	}
 
-	var jsonBytes, e = json.MarshalIndent(cnvAnnots, "", "  ")
+	var jsonBytes, e = json.Marshal(cnvAnnots)
 	simpleUtil.CheckErr(e)
 	item["CNV_annot"] = string(jsonBytes)
 }
