@@ -34,9 +34,6 @@ var (
 	templatePath = filepath.Join(exPath, "template")
 )
 
-// version
-var buildStamp, gitHash, goVersion string
-
 // flag
 var (
 	productID = flag.String(
@@ -413,9 +410,11 @@ func main() {
 	logFile, err := os.Create(*logfile)
 	simpleUtil.CheckErr(err)
 	defer simpleUtil.DeferClose(logFile)
+	log.Printf("Log file         : %v\n", *logfile)
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
-	log.Printf("Log file:%v \n", *logfile)
+	log.Printf("Log file         : %v\n", *logfile)
+	log.Printf("Git Commit Hash  : %s\n", gitHash)
 	logVersion()
 
 	// parser etc/config.json

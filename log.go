@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/liserjrqlxue/simple-util"
 	"log"
+	"os"
 	"time"
+
+	"github.com/liserjrqlxue/simple-util"
 )
 
 func logTierStats(stats map[string]int) {
@@ -67,10 +69,16 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 	log.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
+// version
+var (
+	buildStamp string
+	gitHash    string
+	goVersion  string
+)
+
 func logVersion() {
-	if gitHash != "" || buildStamp != "" || goVersion != "" {
-		log.Printf("Git Commit Hash: %s\n", gitHash)
-		log.Printf("UTC Build Time : %s\n", buildStamp)
-		log.Printf("Golang Version : %s\n", goVersion)
-	}
+	log.Printf("Git Commit Hash  : %s\n", gitHash)
+	log.Printf("UTC Build Time   : %s\n", buildStamp)
+	log.Printf("Golang Version   : %s\n", goVersion)
+	log.Printf("Runtime hostname : %s\n", os.Hostname())
 }
