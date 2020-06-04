@@ -116,6 +116,16 @@ var (
 		"",
 		"smn result file path, comma as sep, require -large and only write sample in -list",
 	)
+	loh = flag.String(
+		"loh",
+		"",
+		"loh result excel path, comma as sep, use sampleID in -list to create sheetName in order",
+	)
+	lohSheet = flag.String(
+		"lohSheet",
+		"LOH_annotation",
+		"loh sheet name to append",
+	)
 	gender = flag.String(
 		"gender",
 		"NA",
@@ -386,9 +396,9 @@ func main() {
 		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
-	if *snv == "" && *exon == "" && *large == "" && *smn == "" {
+	if *snv == "" && *exon == "" && *large == "" && *smn == "" && *loh == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn")
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn,-loh")
 		os.Exit(0)
 	}
 	if *snv == "" {
@@ -999,6 +1009,9 @@ func main() {
 	step++
 	logTime(ts, step-1, step, "add qc")
 	//qcSheet.Cols[1].Width = 12
+
+	// append loh sheet
+	appendLOHs(&xlsxUtil.File{tier1Xlsx}, *loh, *lohSheet, sampleList)
 
 	if *save {
 		if *wgs && *snv != "" {

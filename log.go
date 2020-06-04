@@ -80,5 +80,6 @@ func logVersion() {
 	log.Printf("Git Commit Hash  : %s\n", gitHash)
 	log.Printf("UTC Build Time   : %s\n", buildStamp)
 	log.Printf("Golang Version   : %s\n", goVersion)
-	log.Printf("Runtime hostname : %s\n", os.Hostname())
+	var hostName, err = os.Hostname()
+	log.Printf("Runtime hostname : %s%v\n", hostName, err)
 }
