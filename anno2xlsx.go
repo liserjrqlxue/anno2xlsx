@@ -1011,7 +1011,9 @@ func main() {
 	//qcSheet.Cols[1].Width = 12
 
 	// append loh sheet
-	appendLOHs(&xlsxUtil.File{tier1Xlsx}, *loh, *lohSheet, sampleList)
+	if *loh != "" {
+		appendLOHs(&xlsxUtil.File{tier1Xlsx}, *loh, *lohSheet, sampleList)
+	}
 
 	if *save {
 		if *wgs && *snv != "" {
