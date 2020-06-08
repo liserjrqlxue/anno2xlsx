@@ -438,10 +438,9 @@ func main() {
 			Addr: *redisAddr,
 		})
 		pong, err := redisDb.Ping().Result()
-		log.Println("connect redis[%s]:%s %+v", redisDb.String(), pong, err)
+		log.Printf("connect [%s]:%s\n", redisDb.String(), pong)
 		if err != nil {
-			*ifRedis = false
-			log.Fatalf("Error connect redis[%+v]\n", err)
+			log.Fatalf("Error connect:[%+v]\n", err)
 		}
 	}
 
