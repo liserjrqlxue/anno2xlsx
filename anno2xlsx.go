@@ -441,7 +441,7 @@ func main() {
 		log.Println("connect redis:", pong, err)
 		if err != nil {
 			*ifRedis = false
-			log.Printf("Error connect redis[%+v], skip\n", err)
+			log.Fatalf("Error connect redis[%+v], skip\n", err)
 		}
 	}
 
