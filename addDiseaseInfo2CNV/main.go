@@ -136,7 +136,7 @@ func main() {
 	for _, item := range cnvDb {
 		gene := item["OMIM_Gene"]
 		// 基因-疾病
-		anno.UpdateDiseaseMultiGene("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
+		anno.UpdateDisGenes("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
 		anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)

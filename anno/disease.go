@@ -7,12 +7,16 @@ import (
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 )
 
-func UpdateDiseaseMultiGene(sep string, genes []string, item, geneDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+//UpdateDisGenes add gene-disease info to item
+func UpdateDisGenes(
+	sep string, genes []string,
+	item, geneDisDbCol map[string]string,
+	geneDisDb map[string]map[string]string) {
 	// 基因-疾病
-	for key, value := range geneDiseaseDbColumn {
+	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			geneDb, ok := geneDiseaseDb[gene]
+			geneDb, ok := geneDisDb[gene]
 			if ok {
 				vals = append(vals, geneDb[key])
 			}
@@ -72,15 +76,20 @@ func UpdateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, g
 func UpdateCnvAnnot(geneLst string, item map[string]string, geneDisDb map[string]map[string]string) {
 	genes := strings.Split(geneLst, ";")
 	var exonMap = getExonMap(item)
+	var transcriptMap = getTransMap(item)
 	var cnvAnnots []GeneInfo
 	for _, gene := range genes {
 		singleGeneDb, ok := geneDisDb[gene]
 		if !ok {
 			continue
 		}
+		var trans, ok1 = transcriptMap[gene]
+		if !ok1 {
+			trans = item["Transcript"]
+		}
 		var cnvAnnot = GeneInfo{
 			OmimGene:     gene,
-			Transcript:   item["Transcript"],
+			Transcript:   trans,
 			Exon:         exonMap[gene],
 			EffectType:   item["type"],
 			Chr:          item["chromosome"],
@@ -98,6 +107,26 @@ func UpdateCnvAnnot(geneLst string, item map[string]string, geneDisDb map[string
 	var jsonBytes, e = json.Marshal(cnvAnnots)
 	simpleUtil.CheckErr(e)
 	item["CNV_annot"] = string(jsonBytes)
+}
+
+func getTransMap(item map[string]string) map[string]string {
+	var transMap = make(map[string]string)
+	if item["Transcript"] == "" || item["Transcript"] == "-" || item["exons.hg19"] == "" || item["exons.hg19"] == "-" {
+		return transMap
+	}
+	var genes = strings.Split(item["exons.hg19"], ",")
+	var trans = strings.Split(item["Transcript"], ",")
+	for i, gene := range genes {
+		gene = strings.Split(gene, "_")[0]
+		var transcript, ok = transMap[gene]
+		if ok {
+			transcript = transcript + "," + trans[i]
+		} else {
+			transcript = trans[i]
+		}
+		transMap[gene] = transcript
+	}
+	return transMap
 }
 
 func getExonMap(item map[string]string) map[string]string {
