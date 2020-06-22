@@ -641,13 +641,6 @@ func PrimerDesign(item map[string]string) string {
 
 //exomePrimer return 引物设计 for exon cnv
 func exomePrimer(item map[string]string) (primer string) {
-	var transMap = make(map[string]string)
-	var trans = strings.Split(item["Transcript"], ",")
-	for i, k := range strings.Split(item["exons.hg19"], ",") {
-		for _, gene := range strings.Split(k, "_") {
-			transMap[gene] = trans[i]
-		}
-	}
 	var genes = strings.Split(item["OMIM_Gene"], ";")
 	var exons = strings.Split(item["OMIM_exon"], ";")
 	var t string
@@ -665,7 +658,7 @@ func exomePrimer(item map[string]string) (primer string) {
 			primers,
 			strings.Join(
 				[]string{
-					gene, transMap[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
+					gene, Gene2trans[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
 				},
 				";",
 			),

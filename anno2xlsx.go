@@ -689,6 +689,7 @@ func main() {
 	var isHom = regexp.MustCompile(`^Hom`)
 
 	if *exon != "" {
+		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 		var paths []string
 		for _, path := range strings.Split(*exon, ",") {
 			if simple_util.FileExists(path) {
@@ -704,8 +705,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
-	} else {
-		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
 	}
 
 	if *large != "" {
@@ -738,9 +737,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add SMN1 result")
-	}
-	if *large == "" && *smn == "" {
-		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
 	}
 	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
 

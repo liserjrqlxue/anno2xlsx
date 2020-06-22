@@ -53,8 +53,8 @@ github.com/liserjrqlxue/acmg2015 v0.0.0-20191022033818-64b61d99398a h1:HYAxvdlgY
 github.com/liserjrqlxue/acmg2015 v0.0.0-20191022033818-64b61d99398a/go.mod h1:PEnyocr4MFAMjUkktQvQi9S1Owl1c1CytYi2RY5Nuhc=
 github.com/liserjrqlxue/crypto v0.0.0-20181031021947-e63cf1f4c48a h1:X426M/nxnJCn+oldhp46t0d32tPbe45nceknkNHJPZw=
 github.com/liserjrqlxue/crypto v0.0.0-20181031021947-e63cf1f4c48a/go.mod h1:qvcMQlmh7T1pUIMd+yApE6UStkSRNMy2XGpYl4/lP7w=
-github.com/liserjrqlxue/goUtil v0.0.20 h1:G9Wt2xEDrVE89oUO0sdRRLY9EsXf417D+dT72zfzB4s=
-github.com/liserjrqlxue/goUtil v0.0.20/go.mod h1:O3DFD05s9EfYyFuevfnRwTWtlnuCM1RoGI5zxR1XrP0=
+github.com/liserjrqlxue/goUtil v0.0.21 h1:XOOQsRsTAB+Q8ftHluq1Va3VhxBPnZ80bG37hZjvFVg=
+github.com/liserjrqlxue/goUtil v0.0.21/go.mod h1:O3DFD05s9EfYyFuevfnRwTWtlnuCM1RoGI5zxR1XrP0=
 github.com/liserjrqlxue/simple-util v1.0.1 h1:ay04pE53DBlEfOZs2hVc9740IWPraENT5K9O3phAERs=
 github.com/liserjrqlxue/simple-util v1.0.1/go.mod h1:ey/p7J5Alkog8G2E6vRIea4DkvJQc1ibRXzNbrYuEUI=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=
