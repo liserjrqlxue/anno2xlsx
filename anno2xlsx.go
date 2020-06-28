@@ -34,9 +34,6 @@ var (
 	templatePath = filepath.Join(exPath, "template")
 )
 
-// version
-var buildStamp, gitHash, goVersion string
-
 // flag
 var (
 	productID = flag.String(
@@ -123,6 +120,16 @@ var (
 		"smn",
 		"",
 		"smn result file path, comma as sep, require -large and only write sample in -list",
+	)
+	loh = flag.String(
+		"loh",
+		"",
+		"loh result excel path, comma as sep, use sampleID in -list to create sheetName in order",
+	)
+	lohSheet = flag.String(
+		"lohSheet",
+		"LOH_annotation",
+		"loh sheet name to append",
 	)
 	gender = flag.String(
 		"gender",
@@ -370,9 +377,9 @@ func main() {
 		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
-	if *snv == "" && *exon == "" && *large == "" && *smn == "" {
+	if *snv == "" && *exon == "" && *large == "" && *smn == "" && *loh == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn")
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn,-loh")
 		os.Exit(0)
 	}
 	if *snv == "" {
@@ -394,9 +401,11 @@ func main() {
 	logFile, err := os.Create(*logfile)
 	simpleUtil.CheckErr(err)
 	defer simpleUtil.DeferClose(logFile)
+	log.Printf("Log file         : %v\n", *logfile)
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
-	log.Printf("Log file:%v \n", *logfile)
+	log.Printf("Log file         : %v\n", *logfile)
+	log.Printf("Git Commit Hash  : %s\n", gitHash)
 	logVersion()
 
 	// parser etc/config.json
@@ -410,10 +419,9 @@ func main() {
 			Addr: *redisAddr,
 		})
 		pong, err := redisDb.Ping().Result()
-		log.Println("connect redis:", pong, err)
+		log.Printf("Connect [%s]:%s\n", redisDb.String(), pong)
 		if err != nil {
-			*ifRedis = false
-			log.Printf("Error connect redis[%+v], skip\n", err)
+			log.Fatalf("Error [%+v]\n", err)
 		}
 	}
 
@@ -675,6 +683,7 @@ func main() {
 	var isHom = regexp.MustCompile(`^Hom`)
 
 	if *exon != "" {
+		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 		var paths []string
 		for _, path := range strings.Split(*exon, ",") {
 			if simple_util.FileExists(path) {
@@ -690,8 +699,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
-	} else {
-		//tiers["Tier1"].xlsx.Sheet["exon_cnv"].Hidden = true
 	}
 
 	if *large != "" {
@@ -724,9 +731,6 @@ func main() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "add SMN1 result")
-	}
-	if *large == "" && *smn == "" {
-		//tiers["Tier1"].xlsx.Sheet["large_cnv"].Hidden = true
 	}
 	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
 
@@ -998,6 +1002,11 @@ func main() {
 	step++
 	logTime(ts, step-1, step, "add qc")
 	//qcSheet.Cols[1].Width = 12
+
+	// append loh sheet
+	if *loh != "" {
+		appendLOHs(&xlsxUtil.File{tier1Xlsx}, *loh, *lohSheet, sampleList)
+	}
 
 	if *save {
 		if *wgs && *snv != "" {

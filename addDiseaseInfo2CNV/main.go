@@ -3,9 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/goUtil/textUtil"
-	"github.com/liserjrqlxue/simple-util"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -14,6 +11,11 @@ import (
 	"runtime/pprof"
 	"strings"
 	"time"
+
+	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/liserjrqlxue/simple-util"
+
+	"github.com/liserjrqlxue/anno2xlsx/anno"
 )
 
 // os
@@ -134,10 +136,11 @@ func main() {
 	for _, item := range cnvDb {
 		gene := item["OMIM_Gene"]
 		// 基因-疾病
-		anno.UpdateDiseaseMultiGene("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
-		item["OMIM"] = item["OMIM_Phenotype_ID"]
+		anno.UpdateDisGenes("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
+		anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
+		item["OMIM"] = item["OMIM_Phenotype_ID"]
 
 		var array []string
 		for _, key := range titles {

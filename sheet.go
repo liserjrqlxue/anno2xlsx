@@ -51,7 +51,8 @@ func addCnv2Sheet(
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
-			updateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
 			// 突变频谱
 			updateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
@@ -98,23 +99,6 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 				isSMN1 = true
 			}
 			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
-		}
-	}
-}
-
-func updateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
-	genes := strings.Split(geneLst, ";")
-	// 基因-疾病
-	for key, value := range geneDisDbCol {
-		var vals []string
-		for _, gene := range genes {
-			singelGeneDb, ok := geneDisDb[gene]
-			if ok {
-				vals = append(vals, singelGeneDb[key])
-			}
-		}
-		if len(vals) > 0 {
-			item[value] = strings.Join(vals, "\n")
 		}
 	}
 }
@@ -201,5 +185,15 @@ func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
 		default:
 			tier2Row.AddCell().SetString(item[str])
 		}
+	}
+}
+
+func appendLOHs(excel *xlsxUtil.File, lohs, lohSheetName string, sampleList []string) {
+	for i, loh := range strings.Split(lohs, ",") {
+		var sampleID = strconv.Itoa(i)
+		if i < len(sampleList) {
+			sampleID = sampleList[i]
+		}
+		excel.AppendSheet(*xlsxUtil.OpenFile(loh).Sheet[lohSheetName], sampleID+"-loh")
 	}
 }

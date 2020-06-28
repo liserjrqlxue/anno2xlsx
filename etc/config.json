@@ -1,9 +1,10 @@
 {
-  "geneDiseaseDbFile": "全外疾病库2020.Q1-20200509.xlsx.更新后全外背景库（5546疾病OMIMID，4253个基因）.json.aes",
+  "geneSymbol.transcript": "geneSymbol.transcript.txt",
+  "geneDiseaseDbFile": "全外疾病库2020.Q1-20200611.xlsx.更新后全外背景库（5546疾病OMIMID，4253个基因）.json.aes",
   "geneDiseaseDbTitle": "基因-疾病数据库.Title.json",
   "geneDbFile": "V4.1 基因库-20200121-增加PVS1备注-表头更新.xlsx.突变谱汇总.json.aes",
   "geneDbKey": "突变谱",
-  "specVarList": "spec.var.list",
+  "specVarList": "spec.var.lite.list",
   "transInfo": "trans.exonCount.json.new.json",
   "TIPdb": "线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db",
   "MTdisease": "线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db",
@@ -271,18 +272,18 @@
     "线粒体基因组区域平均深度>2000X位点所占比例":"chrM dedup coverage >=2000(%)"
   },
   "qualityKeyMapWES":{
-    "样本编号":"样本编号",
-    "原始数据产出（Mb）":"[Total] Raw Data(Mb)",
-    "目标区长度（bp）":"[Target] Len of region",
-    "目标区覆盖度":"[Target] Coverage (>0x)",
-    "目标区平均深度（X）":"[Target] Average depth(rmdup)",
-    "目标区平均深度>4X位点所占比例":"[Target] Coverage (>=4x)",
-    "目标区平均深度>10X位点所占比例":"[Target] Coverage (>=10x)",
-    "目标区平均深度>20X位点所占比例":"[Target] Coverage (>=20x)",
-    "目标区平均深度>30X位点所占比例":"[Target] Coverage (>=30x)",
-    "bam文件路径":"bamPath",
-    "核型预测":"核型预测",
-    "On target 率":"[Target] Fraction of Target Reads in all reads",
+    "样本编号": "样本编号",
+    "原始数据产出（Mb）": "[Total] Raw Data(Mb)",
+    "目标区长度（bp）": "[Target] Len of region",
+    "目标区覆盖度": "[Target] Coverage (>0x)",
+    "目标区平均深度（X）": "[Target] Average depth",
+    "目标区平均深度>4X位点所占比例": "[Target] Coverage (>=4x)",
+    "目标区平均深度>10X位点所占比例": "[Target] Coverage (>=10x)",
+    "目标区平均深度>20X位点所占比例": "[Target] Coverage (>=20x)",
+    "目标区平均深度>30X位点所占比例": "[Target] Coverage (>=30x)",
+    "bam文件路径": "bamPath",
+    "核型预测": "核型预测",
+    "On target 率": "[Target] Fraction of Target Reads in all reads",
     "Duplicate reads 的比例": "[Total] Fraction of PCR duplicate reads"
   }
 }

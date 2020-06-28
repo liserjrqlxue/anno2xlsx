@@ -684,7 +684,8 @@ func PrimerDesign(item map[string]string) string {
 
 //exomePrimer return 引物设计 for exon cnv
 func exomePrimer(item map[string]string) (primer string) {
-	annos := strings.Split(item["CNV_annot"], ";")
+	var genes = strings.Split(item["OMIM_Gene"], ";")
+	var exons = strings.Split(item["OMIM_exon"], ";")
 	var t string
 	if item["type"] == "duplication" {
 		t = "DUP"
@@ -692,16 +693,18 @@ func exomePrimer(item map[string]string) (primer string) {
 		t = "DEL"
 	}
 	var primers []string
-	for _, key := range annos {
-		if key == "" || key == "-" {
+	for i, gene := range genes {
+		if gene == "" || gene == "-" {
 			continue
 		}
-		infos := strings.SplitN(key, ":", 2)
-		gt := strings.SplitN(infos[0], "-", 2)
-		ed := strings.SplitN(infos[1], " ", 2)
 		primers = append(
 			primers,
-			strings.Join([]string{gt[0], gt[1], ed[0] + " " + t, "-", ed[0], "-", "-", "-", "-", "-", "-", "-", "-"}, ";"),
+			strings.Join(
+				[]string{
+					gene, Gene2trans[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
+				},
+				";",
+			),
 		)
 	}
 	primer = strings.Join(primers, "\n")
