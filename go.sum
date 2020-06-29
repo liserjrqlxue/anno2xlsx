@@ -55,8 +55,8 @@ github.com/liserjrqlxue/acmg2015 v1.1.10/go.mod h1:tVlT1jfgxqH2909047AAYy1zUoEph
 github.com/liserjrqlxue/crypto v0.0.0-20181031021947-e63cf1f4c48a h1:X426M/nxnJCn+oldhp46t0d32tPbe45nceknkNHJPZw=
 github.com/liserjrqlxue/crypto v0.0.0-20181031021947-e63cf1f4c48a/go.mod h1:qvcMQlmh7T1pUIMd+yApE6UStkSRNMy2XGpYl4/lP7w=
 github.com/liserjrqlxue/goUtil v0.0.17/go.mod h1:I+ZuTdYWyUfElQfcB8VfnBdr4EN1Z23NxP6Rm62Qetw=
-github.com/liserjrqlxue/goUtil v0.0.21 h1:XOOQsRsTAB+Q8ftHluq1Va3VhxBPnZ80bG37hZjvFVg=
-github.com/liserjrqlxue/goUtil v0.0.21/go.mod h1:O3DFD05s9EfYyFuevfnRwTWtlnuCM1RoGI5zxR1XrP0=
+github.com/liserjrqlxue/goUtil v0.0.22 h1:vnSXGqH1d3UUXHu9UB1irteqHa7oW4hAVGOkbVyAHhQ=
+github.com/liserjrqlxue/goUtil v0.0.22/go.mod h1:O3DFD05s9EfYyFuevfnRwTWtlnuCM1RoGI5zxR1XrP0=
 github.com/liserjrqlxue/parse-gff3 v0.0.0-20190425064232-1e45be11c625/go.mod h1:efSusdcQFEgS0KR9q8YNiwWt7GYOwxLPZDm+pwVgJq0=
 github.com/liserjrqlxue/simple-util v1.0.1 h1:ay04pE53DBlEfOZs2hVc9740IWPraENT5K9O3phAERs=
 github.com/liserjrqlxue/simple-util v1.0.1/go.mod h1:ey/p7J5Alkog8G2E6vRIea4DkvJQc1ibRXzNbrYuEUI=
