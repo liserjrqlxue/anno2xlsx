@@ -10,9 +10,9 @@ require (
 	github.com/brentp/vcfgo v0.0.0-20190824021612-654ed2e5945d // indirect
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/liserjrqlxue/acmg2015 v0.0.0-20191022033818-64b61d99398a
-	github.com/liserjrqlxue/goUtil v0.0.21
+	github.com/liserjrqlxue/goUtil v0.0.22
 	github.com/liserjrqlxue/simple-util v1.0.1
-	github.com/onsi/ginkgo v1.12.2 // indirect
+	github.com/onsi/ginkgo v1.13.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/tealeg/xlsx/v2 v2.0.1
 )
