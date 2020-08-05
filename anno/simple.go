@@ -65,6 +65,8 @@ var (
 	isXLInheritMale   = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;Het;NA|^Het;NA;Het|^Het;NA;NA`)
 	isXLInheritFemale = regexp.MustCompile(`^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA|^Het;NA;NA`)
 	isXLDenovo        = regexp.MustCompile(`^Hom;NA;NA|^Het;NA;NA|^Hemi;NA;NA`)
+	isXLCoSepMale     = regexp.MustCompile(`^Hemi;NA;Het|^Hemi;NA;NA`)
+	isXLCoSepFemale   = regexp.MustCompile(`^Hom;NA;Het`)
 	isYLInherit       = regexp.MustCompile(`^Hemi;NA;NA|^Hemi;Hom;NA|^Hemi;Het;NA|^Hemi;NA;Hom|^Hemi;NA;Het|^Het;Hom;NA|^Het;Het;NA|^Het;NA;Hom|^Het;NA;Het|^Het;NA;NA`)
 )
 
@@ -404,6 +406,9 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 		if isAR.MatchString(inherit) && isHomHetHet.MatchString(zygosity) {
 			return "trio-hom"
 		}
+		if isXL.MatchString(inherit) && (isXLCoSepFemale.MatchString(zygosity) || isXLCoSepMale.MatchString(zygosity)) {
+			return "XL-Hom/Hemi"
+		}
 	} else {
 		if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
 			return "AR-Hom"
@@ -562,6 +567,49 @@ func InheritFrom(item map[string]string, sampleList []string) string {
 		from = "NA3"
 	}
 
+	return from
+}
+
+//InheritFrom2 for no strand proband-father-mother return 变异来源
+func InheritFrom2(item map[string]string, sampleList []string) string {
+	if len(sampleList) < 3 {
+		return "NA1"
+	}
+	zygosity := item["Zygosity"]
+	zygos := strings.Split(zygosity, ";")
+	if len(zygos) < 3 {
+		return "NA2"
+	}
+	zygos3 := strings.Join(zygos[0:3], ";")
+	//fmt.Println(zygos3)
+	var from string
+	switch zygos3 {
+	case "Hom;Hom;NA":
+		from = sampleList[1] + inheritFromMap["Hom"] + "/" + inheritFromMap["Denovo"]
+
+	case "Hom;Het;NA":
+		from = sampleList[1] + inheritFromMap["Het"] + "/" + inheritFromMap["Denovo"]
+
+	case "Hom;Hemi;NA":
+		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + inheritFromMap["Denovo"]
+
+	case "Hom;NA;Hom":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hom"]
+	case "Hom;NA;Het":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Het"]
+	case "Hom;NA;Hemi":
+		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
+	case "Hom;NA;NA":
+		from = inheritFromMap["Denovo"]
+	case "Het;NA;NA":
+		from = inheritFromMap["Denovo"]
+	case "Hemi;NA;Hemi":
+		from = inheritFromMap["Denovo"]
+	case "Hemi;NA;NA":
+		from = inheritFromMap["Denovo"]
+	default:
+		from = "NA3"
+	}
 	return from
 }
 
@@ -1014,10 +1062,25 @@ func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) 
 
 //UpdateFunction fix splice+-20, have not implement
 func UpdateFunction(item map[string]string) {
-	function := item["Function"]
-	if function != "intron" {
-		return
+	item["Function"] = updateFunction(item["Function"], item["cHGVS"])
+}
+
+var chgvsReg = regexp.MustCompile(`c\.\d+([+-])(\d+)`)
+
+func updateFunction(function, cHGVS string) string {
+	if function == "intron" {
+		var matches = chgvsReg.FindStringSubmatch(cHGVS)
+		if matches != nil {
+			var strand = matches[1]
+			var distance = stringsUtil.Atoi(matches[2])
+			if distance <= 10 {
+				return "splice" + strand + "10"
+			} else if distance <= 20 {
+				return "splice" + strand + "20"
+			}
+		}
 	}
+	return function
 }
 
 var floatFormatArray = []string{
