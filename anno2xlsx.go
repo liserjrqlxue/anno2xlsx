@@ -787,6 +787,9 @@ func main() {
 			// update Function
 			anno.UpdateFunction(item)
 
+			// update FuncRegion
+			anno.UpdateFuncRegion(item)
+
 			gene := item["Gene Symbol"]
 			// 基因-疾病
 			anno.UpdateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
