@@ -64,6 +64,7 @@ var (
 	isHomInherit      = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
 	isXLInheritMale   = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;Het;NA|^Het;NA;Het|^Het;NA;NA`)
 	isXLInheritFemale = regexp.MustCompile(`^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA|^Het;NA;NA`)
+	isXLDenovo        = regexp.MustCompile(`^Hom;NA;NA|^Het;NA;NA|^Hemi;NA;NA`)
 	isXLCoSepMale     = regexp.MustCompile(`^Hemi;NA;Het|^Hemi;NA;NA`)
 	isXLCoSepFemale   = regexp.MustCompile(`^Hom;NA;Het`)
 	isYLInherit       = regexp.MustCompile(`^Hemi;NA;NA|^Hemi;Hom;NA|^Hemi;Het;NA|^Hemi;NA;Hom|^Hemi;NA;Het|^Het;Hom;NA|^Het;Het;NA|^Het;NA;Hom|^Het;NA;Het|^Het;NA;NA`)
@@ -376,9 +377,10 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 
 // FamilyTag return familyTag
 func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag string) string {
-	geneSymbol := item["Gene Symbol"]
-	inherit := item["ModeInheritance"]
-	zygosity := item["Zygosity"]
+	var geneSymbol = item["Gene Symbol"]
+	var inherit = item["ModeInheritance"]
+	var zygosity = item["Zygosity"]
+	var chr = item["#Chr"]
 	if tag == "couple" {
 		if isARorXR.MatchString(inherit) {
 			if inheritDb[geneSymbol]["flag10"] > 0 &&
@@ -388,6 +390,9 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 			}
 		}
 	} else if tag == "trio" {
+		if isChrX.MatchString(chr) && isXLDenovo.MatchString(zygosity) {
+			return "trio-AD"
+		}
 		if isAD.MatchString(inherit) && isHetNANA.MatchString(zygosity) {
 			return "trio-AD"
 		}
@@ -1058,6 +1063,16 @@ func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) 
 //UpdateFunction fix splice+-20, have not implement
 func UpdateFunction(item map[string]string) {
 	item["Function"] = updateFunction(item["Function"], item["cHGVS"])
+}
+
+var isCdsReg = regexp.MustCompile(`^C`)
+
+// UpdateFuncRegion Convert C* to CDS*
+func UpdateFuncRegion(item map[string]string) {
+	var funcRegion = item["FuncRegion"]
+	if isCdsReg.MatchString(funcRegion) {
+		item["FuncRegion"] = strings.Replace(funcRegion, "C", "CDS", 1)
+	}
 }
 
 var chgvsReg = regexp.MustCompile(`c\.\d+([+-])(\d+)`)
