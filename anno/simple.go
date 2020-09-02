@@ -64,6 +64,8 @@ var (
 	isHomInherit      = regexp.MustCompile(`^Hom;Het;Het|^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA`)
 	isXLInheritMale   = regexp.MustCompile(`^Hemi;Het;NA|^Hemi;NA;Het|^Hemi;NA;NA|^Het;Het;NA|^Het;NA;Het|^Het;NA;NA`)
 	isXLInheritFemale = regexp.MustCompile(`^Hom;Het;NA|^Hom;NA;Het|^Hom;NA;NA|^Het;NA;NA`)
+	isXLCoSepMale     = regexp.MustCompile(`^Hemi;NA;Het|^Hemi;NA;NA`)
+	isXLCoSepFemale   = regexp.MustCompile(`^Hom;NA;Het`)
 	isYLInherit       = regexp.MustCompile(`^Hemi;NA;NA|^Hemi;Hom;NA|^Hemi;Het;NA|^Hemi;NA;Hom|^Hemi;NA;Het|^Het;Hom;NA|^Het;Het;NA|^Het;NA;Hom|^Het;NA;Het|^Het;NA;NA`)
 )
 
@@ -398,6 +400,9 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 		}
 		if isAR.MatchString(inherit) && isHomHetHet.MatchString(zygosity) {
 			return "trio-hom"
+		}
+		if isXL.MatchString(inherit) && (isXLCoSepFemale.MatchString(zygosity) || isXLCoSepMale.MatchString(zygosity)) {
+			return "XL-Hom/Hemi"
 		}
 	} else {
 		if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
