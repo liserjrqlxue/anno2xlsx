@@ -131,6 +131,8 @@ func main() {
 	cnvDb, _ := simple_util.LongFile2MapArray(*input, "\t", nil)
 	titles := textUtil.File2Array(*title)
 
+	anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
+
 	_, err = fmt.Fprintln(out, strings.Join(titles, "\t"))
 	simple_util.CheckErr(err)
 	for _, item := range cnvDb {
