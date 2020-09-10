@@ -3,9 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/goUtil/textUtil"
-	"github.com/liserjrqlxue/simple-util"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -14,6 +11,11 @@ import (
 	"runtime/pprof"
 	"strings"
 	"time"
+
+	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/liserjrqlxue/simple-util"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os

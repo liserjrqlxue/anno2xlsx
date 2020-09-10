@@ -3,11 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/brentp/bix"
-	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/acmg2015/evidence"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/simple-util"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -16,6 +11,13 @@ import (
 	"runtime/pprof"
 	"strings"
 	"time"
+
+	"github.com/brentp/bix"
+	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/simple-util"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os

@@ -3,16 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/liserjrqlxue/goUtil/textUtil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/textUtil"
+
 	simpleUtil "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
-	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os

@@ -3,16 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/brentp/bix"
-	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/acmg2015/evidence"
-	"github.com/liserjrqlxue/anno2xlsx/anno"
-	"github.com/liserjrqlxue/goUtil/textUtil"
-	simple_util "github.com/liserjrqlxue/simple-util"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/brentp/bix"
+	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/goUtil/textUtil"
+	simple_util "github.com/liserjrqlxue/simple-util"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os

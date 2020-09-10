@@ -10,7 +10,7 @@ import (
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
-	"github.com/liserjrqlxue/anno2xlsx/anno"
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 func addFile2Row(file string, row *xlsx.Row) (rows []string) {
