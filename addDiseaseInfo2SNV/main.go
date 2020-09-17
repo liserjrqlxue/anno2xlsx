@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 
@@ -112,6 +113,8 @@ func main() {
 	out, err := os.Create(*output)
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)
+
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
