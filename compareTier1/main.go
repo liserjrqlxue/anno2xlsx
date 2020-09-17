@@ -260,24 +260,24 @@ func main() {
 		// ues acmg of go
 		if *acmg {
 			item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
-			item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
-			item["PM5"] = evidence.CheckPM5(item, ClinVarPHGVSlist, ClinVarAAPosList, HGMDPHGVSlist, HGMDAAPosList)
+			item["PS1"] = evidence.CheckPS1(item)
+			item["PM5"] = evidence.CheckPM5(item)
 			item["PS4"] = evidence.CheckPS4(item)
-			item["PM1"] = evidence.CheckPM1(item, dbNSFPDomain, PfamDomain, tbx)
+			item["PM1"] = evidence.CheckPM1(item, tbx)
 			item["PM2"] = evidence.CheckPM2(item)
 			item["PM4"] = evidence.CheckPM4(item)
-			item["PP2"] = evidence.CheckPP2(item, ClinVarPP2GeneList, HgmdPP2GeneList)
-			item["PP3"] = evidence.CheckPP3(item)
+			item["PP2"] = evidence.CheckPP2(item)
+			item["PP3"] = evidence.CheckPP3(item, false)
 			item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
 			item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-			item["BS2"] = evidence.CheckBS2(item, lateOnsetList)
-			item["BP1"] = evidence.CheckBP1(item, ClinVarBP1GeneList, HgmdBP1GeneList)
+			item["BS2"] = evidence.CheckBS2(item)
+			item["BP1"] = evidence.CheckBP1(item)
 			item["BP3"] = evidence.CheckBP3(item)
 			item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
 			item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
 		}
 
-		item["自动化判断"] = acmg2015.PredACMG2015(item)
+		item["自动化判断"] = acmg2015.PredACMG2015(item, false)
 
 		anno.UpdateSnv(item, *gender, false)
 
