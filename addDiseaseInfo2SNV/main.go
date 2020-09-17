@@ -42,6 +42,11 @@ var (
 		filepath.Join(exPath, "addition.list"),
 		"output addition title",
 	)
+	geneId = flag.String(
+		"geneId",
+		filepath.Join(dbPath, "gene.id.txt"),
+		"gene symbol and ncbi id list",
+	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
 		"",
@@ -68,6 +73,8 @@ var (
 		"mem profile",
 	)
 )
+
+var gene2id = make(map[string]string)
 
 // 基因-疾病
 var geneDiseaseDb = make(map[string]map[string]string)
@@ -132,7 +139,7 @@ func main() {
 	for _, item := range data {
 		gene := item["Gene Symbol"]
 		// 基因-疾病
-		gDiseaseDb := geneDiseaseDb[gene]
+		gDiseaseDb := geneDiseaseDb[gene2id[gene]]
 		for key, value := range geneDiseaseDbColumn {
 			item[value] = gDiseaseDb[key]
 		}
