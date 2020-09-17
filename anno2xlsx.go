@@ -56,6 +56,11 @@ var (
 		"",
 		"output log to log.log, default is prefix.log",
 	)
+	geneId = flag.String(
+		"geneId",
+		filepath.Join(dbPath, "gene.id.txt"),
+		"gene symbol and ncbi id list",
+	)
 	geneDbFile = flag.String(
 		"geneDb",
 		"",
@@ -262,6 +267,8 @@ var (
 	)
 )
 
+var gene2id = make(map[string]string)
+
 // family list
 var sampleList []string
 
@@ -407,6 +414,8 @@ func main() {
 	log.Printf("Log file         : %v\n", *logfile)
 	log.Printf("Git Commit Hash  : %s\n", gitHash)
 	logVersion()
+
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
 	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
@@ -786,7 +795,7 @@ func main() {
 
 			gene := item["Gene Symbol"]
 			// 基因-疾病
-			anno.UpdateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateDisease(gene2id[gene], item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]

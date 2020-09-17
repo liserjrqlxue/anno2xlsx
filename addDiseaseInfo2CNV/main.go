@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
 
@@ -47,6 +48,11 @@ var (
 		filepath.Join(exPath, "title.list"),
 		"output title",
 	)
+	geneId = flag.String(
+		"geneId",
+		filepath.Join(dbPath, "gene.id.txt"),
+		"gene symbol and ncbi id list",
+	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
 		"",
@@ -73,6 +79,8 @@ var (
 		"mem profile",
 	)
 )
+
+var gene2id = make(map[string]string)
 
 // 基因-疾病
 var geneDiseaseDb = make(map[string]map[string]string)
@@ -111,6 +119,8 @@ func main() {
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)
 
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
+
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 	if *geneDiseaseDbFile == "" {
@@ -138,10 +148,10 @@ func main() {
 	for _, item := range cnvDb {
 		gene := item["OMIM_Gene"]
 		// 基因-疾病
-		anno.UpdateDisGenes("<br/>", strings.Split(gene, ";"), item, geneDiseaseDbColumn, geneDiseaseDb)
+		anno.UpdateDisGenes("<br/>", strings.Split(gene, ";"), item, gene2id, geneDiseaseDbColumn, geneDiseaseDb)
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
-		anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
+		anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
 		item["OMIM"] = item["OMIM_Phenotype_ID"]
 
 		var array []string

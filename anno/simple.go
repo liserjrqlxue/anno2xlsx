@@ -1139,9 +1139,9 @@ func Format(item map[string]string) {
 }
 
 //UpdateDisease add disease info to item
-func UpdateDisease(gene string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+func UpdateDisease(geneId string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
 	// 基因-疾病
-	gDiseaseDb := geneDiseaseDb[gene]
+	gDiseaseDb := geneDiseaseDb[geneId]
 	for key, value := range gDiseaseDbColumn {
 		item[value] = gDiseaseDb[key]
 	}

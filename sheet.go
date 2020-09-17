@@ -51,8 +51,8 @@ func addCnv2Sheet(
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
 			gene := item["OMIM_Gene"]
-			anno.UpdateDiseMultiGene(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
-			anno.UpdateCnvAnnot(gene, item, geneDiseaseDb)
+			anno.UpdateDiseMultiGene(gene, item, gene2id, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
 			// 突变频谱
 			updateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
