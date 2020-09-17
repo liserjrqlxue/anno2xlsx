@@ -10,13 +10,13 @@ import (
 //UpdateDisGenes add gene-disease info to item
 func UpdateDisGenes(
 	sep string, genes []string,
-	item, geneDisDbCol map[string]string,
+	item, gene2id, geneDisDbCol map[string]string,
 	geneDisDb map[string]map[string]string) {
 	// 基因-疾病
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			geneDb, ok := geneDisDb[gene]
+			geneDb, ok := geneDisDb[gene2id[gene]]
 			if ok {
 				vals = append(vals, geneDb[key])
 			}
@@ -52,14 +52,15 @@ type OmimDisease struct {
 }
 
 //UpdateDiseMultiGene anno disease info for multil gene
-func UpdateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
-	genes := strings.Split(geneLst, ";")
+func UpdateDiseMultiGene(geneLst string, item, gene2id, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
+	var genes = strings.Split(geneLst, ";")
 	var geneLocus []string
 	// 基因-疾病
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			singelGeneDb, ok := geneDisDb[gene]
+			var geneId = gene2id[gene]
+			singelGeneDb, ok := geneDisDb[geneId]
 			if ok {
 				vals = append(vals, singelGeneDb[key])
 				geneLocus = append(geneLocus, singelGeneDb["Gene/Locus"])
@@ -73,12 +74,12 @@ func UpdateDiseMultiGene(geneLst string, item, geneDisDbCol map[string]string, g
 
 }
 
-func UpdateCnvAnnot(geneLst string, item map[string]string, geneDisDb map[string]map[string]string) {
-	genes := strings.Split(geneLst, ";")
+func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb map[string]map[string]string) {
+	var genes = strings.Split(geneLst, ";")
 	var exonMap = getExonMap(item)
 	var cnvAnnots []GeneInfo
 	for _, gene := range genes {
-		singleGeneDb, ok := geneDisDb[gene]
+		singleGeneDb, ok := geneDisDb[gene2id[gene]]
 		if !ok {
 			continue
 		}
