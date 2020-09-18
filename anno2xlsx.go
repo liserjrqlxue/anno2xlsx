@@ -676,6 +676,11 @@ func main() {
 	for key := range geneDiseaseDb {
 		geneList[key] = true
 	}
+	for k, v := range gene2id {
+		if geneList[v] {
+			geneList[k] = true
+		}
+	}
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load Gene-Disease DB")
