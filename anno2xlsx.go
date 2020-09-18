@@ -828,7 +828,7 @@ func main() {
 			anno.UpdateSnv(item, *gender, *debug)
 
 			// 突变频谱
-			item["突变频谱"] = geneDb[gene]
+			item["突变频谱"] = geneDb[gene2id[gene]]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
