@@ -21,7 +21,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	simple_util "github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )

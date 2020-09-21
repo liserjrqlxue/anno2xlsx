@@ -8,7 +8,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
@@ -194,6 +194,6 @@ func appendLOHs(excel *xlsxUtil.File, lohs, lohSheetName string, sampleList []st
 		if i < len(sampleList) {
 			sampleID = sampleList[i]
 		}
-		excel.AppendSheet(*xlsxUtil.OpenFile(loh).Sheet[lohSheetName], sampleID+"-loh")
+		excel.AppendSheet(*xlsxUtil.OpenFile(loh).File.Sheet[lohSheetName], sampleID+"-loh")
 	}
 }
