@@ -12,10 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brentp/bix"
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -220,7 +218,12 @@ var (
 	autoPVS1 = flag.Bool(
 		"autoPVS1",
 		false,
-		"if use autoPVS1",
+		"if use autoPVS1 for acmg",
+	)
+	acmgDb = flag.String(
+		"acmgDb",
+		filepath.Join(etcPath, "acmg.db.list.txt"),
+		"acmg db list",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -363,14 +366,6 @@ var MTAFdb = make(map[string]variant)
 var MTTitle []string
 var tier1Db = make(map[string]bool)
 
-// ACMG
-// PVS1
-var LOFList map[string]int
-var transcriptInfo map[string][]evidence.Region
-
-// PM1
-var tbx *bix.Bix
-
 func main() {
 	var ts []time.Time
 	var step = 0
@@ -437,47 +432,12 @@ func main() {
 	}
 
 	if *acmg {
-		// PS1 PM5
-		evidence.LoadPS1PM5(
-			anno.GetPath("PS1PM5.MutationName.count", dbPath, defaultConfig),
-			anno.GetPath("PS1PM5.pHGVS1.count", dbPath, defaultConfig),
-			anno.GetPath("PS1PM5.AApos.count", dbPath, defaultConfig),
-		)
-		// PM1
-		evidence.LoadPM1(
-			anno.GetPath("PM1InterproDomain", dbPath, defaultConfig),
-			anno.GetPath("PM1PfamIdDomain", dbPath, defaultConfig),
-		)
-
-		// PVS1
-		if !*autoPVS1 {
-			jsonUtil.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
-			jsonUtil.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
+		acmg2015.AutoPVS1 = *autoPVS1
+		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
+		for k, v := range acmgCfg {
+			acmgCfg[k] = anno.GuessPath(v, dbPath)
 		}
-
-		// PM1
-		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
-		simpleUtil.CheckErr(err, "load tabix")
-
-		// PP2
-		evidence.LoadPP2(
-			anno.GetPath("PP2GeneList", dbPath, defaultConfig),
-		)
-
-		// BS2
-		evidence.LoadBS2(
-			anno.GetPath("LateOnset", dbPath, defaultConfig),
-		)
-
-		// BP1
-		evidence.LoadBP1(
-			anno.GetPath("BP1GeneList", dbPath, defaultConfig),
-		)
-
-		// BA1
-		evidence.LoadBA1(
-			anno.GetPath("BA1ExceptionList", dbPath, defaultConfig),
-		)
+		acmg2015.Init(acmgCfg)
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -811,24 +771,7 @@ func main() {
 
 			// ues acmg of go
 			if *acmg {
-				if !*autoPVS1 {
-					item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
-				}
-				item["PS1"] = evidence.CheckPS1(item)
-				item["PM5"] = evidence.CheckPM5(item)
-				item["PS4"] = evidence.CheckPS4(item)
-				item["PM1"] = evidence.CheckPM1(item, tbx)
-				item["PM2"] = evidence.CheckPM2(item)
-				item["PM4"] = evidence.CheckPM4(item)
-				item["PP2"] = evidence.CheckPP2(item)
-				item["PP3"] = evidence.CheckPP3(item, *autoPVS1)
-				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
-				item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-				item["BS2"] = evidence.CheckBS2(item)
-				item["BP1"] = evidence.CheckBP1(item)
-				item["BP3"] = evidence.CheckBP3(item)
-				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
-				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
+				acmg2015.AddEvidences(item)
 			}
 			item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 

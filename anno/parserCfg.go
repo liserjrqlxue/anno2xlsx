@@ -1,21 +1,26 @@
 package anno
 
 import (
-	"github.com/liserjrqlxue/simple-util"
 	"log"
 	"path/filepath"
+
+	"github.com/liserjrqlxue/goUtil/osUtil"
 )
 
 func GetPath(key, dbPath string, config map[string]interface{}) (path string) {
-	path = GetStrVal(key, config)
+	path = GuessPath(GetStrVal(key, config), dbPath)
+	return
+}
 
-	if !simple_util.FileExists(path) {
+//GuessPath guess path as abs path or relative path in dbPath
+func GuessPath(path, dbPath string) string {
+	if !osUtil.FileExists(path) {
 		path = filepath.Join(dbPath, path)
 	}
-	if !simple_util.FileExists(path) {
-		log.Fatalf("can not find %s in config[%v]\n", key, path)
+	if !osUtil.FileExists(path) {
+		log.Fatalf("can not find %s\n", path)
 	}
-	return
+	return path
 }
 
 func GetStrVal(key string, config map[string]interface{}) (val string) {

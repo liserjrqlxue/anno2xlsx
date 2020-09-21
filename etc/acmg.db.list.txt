@@ -1,0 +1,12 @@
+PS1PM5.MutationName.count	PS1PM5.MutationName.count
+PS1PM5.pHGVS1.count	PS1PM5.pHGVS1.count
+PS1PM5.AApos.count	PS1PM5.AApos.count
+PM1InterproDomain	PM1.InterproDomain.count
+PM1PfamIdDomain	PM1.pfamId.count
+LOFList	PVS1GeneList.json
+transcriptInfo	transcript.info.json
+PathogenicLite	PathogenicLite.bed.gz
+PP2GeneList	PP2.gene.list
+LateOnset	BS2.gene.list
+BP1GeneList	BP1.gene.list
+BA1ExceptionList	BA1.exception.list
