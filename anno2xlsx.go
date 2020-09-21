@@ -17,6 +17,7 @@ import (
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/acmg2015/evidence"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
+	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
@@ -555,7 +556,7 @@ func main() {
 
 	var karyotypeMap = make(map[string]string)
 	if *karyotype != "" {
-		karyotypeMap, err = simple_util.Files2Map(*karyotype, "\t", true)
+		karyotypeMap, err = textUtil.Files2Map(*karyotype, "\t", true)
 		simpleUtil.CheckErr(err)
 	}
 	// load coverage.report
@@ -701,7 +702,7 @@ func main() {
 		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 		var paths []string
 		for _, path := range strings.Split(*exon, ",") {
-			if simple_util.FileExists(path) {
+			if osUtil.FileExists(path) {
 				paths = append(paths, path)
 			} else {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
@@ -719,7 +720,7 @@ func main() {
 	if *large != "" {
 		var paths []string
 		for _, path := range strings.Split(*large, ",") {
-			if simple_util.FileExists(path) {
+			if osUtil.FileExists(path) {
 				paths = append(paths, path)
 			} else {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
@@ -736,7 +737,7 @@ func main() {
 	if *smn != "" {
 		var paths []string
 		for _, path := range strings.Split(*smn, ",") {
-			if simple_util.FileExists(path) {
+			if osUtil.FileExists(path) {
 				paths = append(paths, path)
 			} else {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
@@ -762,7 +763,7 @@ func main() {
 		} else {
 			for i := range extraArray {
 				xlsxUtil.AddSlice2Sheet(
-					simple_util.File2Slice(extraArray[i], "\t"),
+					textUtil.File2Slice(extraArray[i], "\t"),
 					xlsxUtil.AddSheet(tier1Xlsx, extraSheetArray[i]),
 				)
 			}
