@@ -31,6 +31,7 @@ var (
 	ex, _        = os.Executable()
 	exPath       = filepath.Dir(ex)
 	dbPath       = filepath.Join(exPath, "db")
+	etcPath      = filepath.Join(exPath, "etc")
 	templatePath = filepath.Join(exPath, "template")
 )
 
@@ -182,27 +183,27 @@ var (
 	)
 	config = flag.String(
 		"config",
-		filepath.Join(exPath, "etc", "config.json"),
+		filepath.Join(etcPath, "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
 	filterVariants = flag.String(
 		"filter_variants",
-		filepath.Join(exPath, "etc", "Tier1.filter_variants.txt"),
+		filepath.Join(etcPath, "Tier1.filter_variants.txt"),
 		"overwrite template/tier1.xlsx filter_variants sheet columns' title",
 	)
 	exonCnv = flag.String(
 		"exon_cnv",
-		filepath.Join(exPath, "etc", "Tier1.exon_cnv.txt"),
+		filepath.Join(etcPath, "Tier1.exon_cnv.txt"),
 		"overwrite template/tier1.xlsx exon_cnv sheet columns' title",
 	)
 	largeCnv = flag.String(
 		"large_cnv",
-		filepath.Join(exPath, "etc", "Tier1.large_cnv.txt"),
+		filepath.Join(etcPath, "Tier1.large_cnv.txt"),
 		"overwrite template/tier1.xlsx large_cnv sheet columns' title",
 	)
 	tier3Title = flag.String(
 		"tier3Title",
-		filepath.Join(exPath, "etc", "Tier3.总表.txt"),
+		filepath.Join(etcPath, "Tier3.总表.txt"),
 		"overwrite template/tier3.xlsx 总表 sheet columns' title",
 	)
 	wesim = flag.Bool(
