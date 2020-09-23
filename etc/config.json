@@ -1,6 +1,6 @@
 {
   "geneSymbol.transcript": "geneSymbol.transcript.txt",
-  "geneDiseaseDbFile": "全外疾病库2020.Q2-0904.xlsx.更新后全外背景库（5619疾病OMIMID，4286个基因）.json.aes",
+  "geneDiseaseDbFile": "全外疾病库2020.Q2-0922.xlsx.更新后全外背景库（5619疾病OMIMID，4286个基因）.json.aes",
   "geneDiseaseDbTitle": "基因-疾病数据库.Title.json",
   "geneDbFile": "V4.2 基因库-20200917-更新动态基因描述、自动化规则基因集更新.xlsx.突变谱汇总.json.aes",
   "geneDbKey": "突变谱",
