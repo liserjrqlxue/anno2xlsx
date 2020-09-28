@@ -33,7 +33,6 @@ var (
 	inBrackets = regexp.MustCompile(`\(\S+\)`)
 
 	rmChr = regexp.MustCompile(`^chr`)
-	cds   = regexp.MustCompile(`^C`)
 	ratio = regexp.MustCompile(`^[01](.\d+)?$`)
 	reInt = regexp.MustCompile(`^\d+$`)
 
@@ -653,7 +652,6 @@ func PrimerDesign(item map[string]string) string {
 	if item["Strand"] == "-" {
 		flank = reverseComplement(flank)
 	}
-	funcRegion := cds.ReplaceAllString(item["FuncRegion"], "CDS")
 
 	var Adepth int
 	adepth := strings.Split(item["A.Depth"], ";")[0]
@@ -680,7 +678,7 @@ func PrimerDesign(item map[string]string) string {
 			item["cHGVS"],
 			item["pHGVS3"],
 			item["ExIn_ID"],
-			funcRegion,
+			item["FuncRegion"],
 			strings.Split(item["Zygosity"], ";")[0],
 			flank,
 			item["exonCount"],
