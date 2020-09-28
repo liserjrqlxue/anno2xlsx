@@ -2,6 +2,7 @@ package anno
 
 import (
 	"encoding/json"
+	"log"
 	"strings"
 
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -16,7 +17,11 @@ func UpdateDisGenes(
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			geneDb, ok := geneDisDb[gene2id[gene]]
+			var geneId, ok1 = gene2id[gene]
+			if !ok1 {
+				log.Fatalf("can not find gene id of [%s]\n", gene)
+			}
+			geneDb, ok := geneDisDb[geneId]
 			if ok {
 				vals = append(vals, geneDb[key])
 			}
@@ -59,7 +64,10 @@ func UpdateDiseMultiGene(geneLst string, item, gene2id, geneDisDbCol map[string]
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			var geneId = gene2id[gene]
+			var geneId, ok1 = gene2id[gene]
+			if !ok1 {
+				log.Fatalf("can not find gene id of [%s]\n", gene)
+			}
 			singelGeneDb, ok := geneDisDb[geneId]
 			if ok {
 				vals = append(vals, singelGeneDb[key])
@@ -79,7 +87,11 @@ func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb m
 	var exonMap = getExonMap(item)
 	var cnvAnnots []GeneInfo
 	for _, gene := range genes {
-		singleGeneDb, ok := geneDisDb[gene2id[gene]]
+		var geneId, ok0 = gene2id[gene]
+		if !ok0 {
+			log.Fatalf("can not find gene id of [%s]\n", gene)
+		}
+		singleGeneDb, ok := geneDisDb[geneId]
 		if !ok {
 			continue
 		}

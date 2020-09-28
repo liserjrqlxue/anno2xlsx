@@ -140,9 +140,13 @@ func main() {
 	_, err = fmt.Fprintln(out, strings.Join(titles, "\t"))
 	simple_util.CheckErr(err)
 	for _, item := range data {
-		gene := item["Gene Symbol"]
+		var gene = item["Gene Symbol"]
+		var geneId, ok = gene2id[gene]
+		if !ok {
+			log.Fatalf("can not find gene id of [%s]\n", gene)
+		}
 		// 基因-疾病
-		gDiseaseDb := geneDiseaseDb[gene2id[gene]]
+		gDiseaseDb := geneDiseaseDb[geneId]
 		for key, value := range geneDiseaseDbColumn {
 			item[value] = gDiseaseDb[key]
 		}

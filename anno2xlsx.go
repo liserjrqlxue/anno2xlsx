@@ -760,9 +760,14 @@ func main() {
 			// update FuncRegion
 			anno.UpdateFuncRegion(item)
 
-			gene := item["Gene Symbol"]
+			var gene = item["Gene Symbol"]
+			var geneId, ok = gene2id[gene]
+			if !ok {
+				log.Fatalf("can not find gene id of [%s]\n", gene)
+			}
 			// 基因-疾病
-			anno.UpdateDisease(gene2id[gene], item, geneDiseaseDbColumn, geneDiseaseDb)
+
+			anno.UpdateDisease(geneId, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]
@@ -778,7 +783,7 @@ func main() {
 			anno.UpdateSnv(item, *gender, *debug)
 
 			// 突变频谱
-			item["突变频谱"] = geneDb[gene2id[gene]]
+			item["突变频谱"] = geneDb[geneId]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
