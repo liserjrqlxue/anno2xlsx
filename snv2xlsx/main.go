@@ -18,6 +18,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
+	"github.com/liserjrqlxue/version"
 	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -189,6 +190,7 @@ var redisDb *redis.Client
 var snvs []string
 
 func main() {
+	version.LogVersion()
 	var ts []time.Time
 	var step = 0
 	ts = append(ts, time.Now())

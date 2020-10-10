@@ -9,6 +9,7 @@ require (
 	github.com/liserjrqlxue/acmg2015 v1.1.11
 	github.com/liserjrqlxue/goUtil v0.0.30
 	github.com/liserjrqlxue/simple-util v1.0.1
+	github.com/liserjrqlxue/version v1.0.1
 	github.com/onsi/ginkgo v1.14.1 // indirect
 	github.com/onsi/gomega v1.10.2 // indirect
 	github.com/tealeg/xlsx/v2 v2.0.1

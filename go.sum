@@ -67,6 +67,8 @@ github.com/liserjrqlxue/goUtil v0.0.30/go.mod h1:rxhQWtOnbopNW69w6pASO7MQ3pDXdDK
 github.com/liserjrqlxue/parse-gff3 v0.0.0-20190425064232-1e45be11c625/go.mod h1:efSusdcQFEgS0KR9q8YNiwWt7GYOwxLPZDm+pwVgJq0=
 github.com/liserjrqlxue/simple-util v1.0.1 h1:ay04pE53DBlEfOZs2hVc9740IWPraENT5K9O3phAERs=
 github.com/liserjrqlxue/simple-util v1.0.1/go.mod h1:ey/p7J5Alkog8G2E6vRIea4DkvJQc1ibRXzNbrYuEUI=
+github.com/liserjrqlxue/version v1.0.1 h1:2j1+oyK1nPLHlxnBC0PTzxjydimuoAzrogh2BkGVWFY=
+github.com/liserjrqlxue/version v1.0.1/go.mod h1:8HKdYCXeG5iBSqcqgV77IP68cLV8ycnd+/PUZN3Aq/k=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwdSHYgviHp1DAtfrULt5eUgsSMsZf+YrPgl8=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
