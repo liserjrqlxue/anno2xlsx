@@ -8,28 +8,27 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime/pprof"
 	"strings"
 	"time"
 
-	"github.com/brentp/bix"
 	"github.com/go-redis/redis"
 	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/acmg2015/evidence"
+	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os
 var (
-	ex, _  = os.Executable()
-	exPath = filepath.Dir(ex)
-	dbPath = filepath.Join(exPath, "..", "db")
+	ex, _   = os.Executable()
+	exPath  = filepath.Dir(ex)
+	etcPath = filepath.Join(exPath, "..", "etc")
+	dbPath  = filepath.Join(exPath, "..", "db")
 )
 
 // flag
@@ -48,6 +47,11 @@ var (
 		"log",
 		"",
 		"output log to log.log, default is prefix.log",
+	)
+	geneId = flag.String(
+		"geneId",
+		filepath.Join(dbPath, "gene.id.txt"),
+		"gene symbol and ncbi id list",
 	)
 	geneDbFile = flag.String(
 		"geneDb",
@@ -84,6 +88,11 @@ var (
 		false,
 		"if trio mode",
 	)
+	trio2 = flag.Bool(
+		"trio2",
+		false,
+		"if no standard trio mode but proband-father-mother",
+	)
 	list = flag.String(
 		"list",
 		"proband,father,mother",
@@ -111,28 +120,23 @@ var (
 	)
 	config = flag.String(
 		"config",
-		filepath.Join(exPath, "..", "etc", "config.json"),
+		filepath.Join(etcPath, "config.json"),
 		"default config file, config will be overwrite by flag",
-	)
-	wesim = flag.Bool(
-		"wesim",
-		false,
-		"if wesim, output result.tsv",
 	)
 	acmg = flag.Bool(
 		"acmg",
 		false,
 		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
 	)
-	cpuprofile = flag.String(
-		"cpuprofile",
-		"",
-		"cpu profile",
+	autoPVS1 = flag.Bool(
+		"autoPVS1",
+		false,
+		"if use autoPVS1 for acmg",
 	)
-	memprofile = flag.String(
-		"memprofile",
-		"",
-		"mem profile",
+	acmgDb = flag.String(
+		"acmgDb",
+		filepath.Join(etcPath, "acmg.db.list.txt"),
+		"acmg db list",
 	)
 	debug = flag.Bool(
 		"debug",
@@ -146,10 +150,12 @@ var (
 	)
 	filterVariants = flag.String(
 		"filter_variants",
-		filepath.Join(exPath, "..", "etc", "Tier1.filter_variants.txt"),
+		filepath.Join(etcPath, "Tier1.filter_variants.txt"),
 		"overwrite template/tier1.xlsx filter_variants sheet columns' title",
 	)
 )
+
+var gene2id = make(map[string]string)
 
 // family list
 var sampleList []string
@@ -170,10 +176,6 @@ var specVarDb = make(map[string]bool)
 
 var tier1GeneList = make(map[string]bool)
 
-// WESIM
-var resultColumn, qualityColumn []string
-var resultFile, qcFile *os.File
-
 var codeKey []byte
 
 // regexp
@@ -184,48 +186,7 @@ var (
 
 var redisDb *redis.Client
 
-var isSMN1 bool
-
 var snvs []string
-
-var acmg59Gene = make(map[string]bool)
-
-// ACMG
-// PVS1
-var LOFList map[string]int
-var transcriptInfo map[string][]evidence.Region
-
-// PS1 & PM5
-var (
-	HGMDAAPosList    map[string]int
-	ClinVarAAPosList map[string]int
-	HGMDPHGVSlist    map[string]int
-	HGMDMissense     map[string]int
-	ClinVarPHGVSlist map[string]int
-	ClinVarMissense  map[string]int
-)
-
-// PM1
-var tbx *bix.Bix
-var (
-	PfamDomain   map[string]bool
-	dbNSFPDomain map[string]bool
-)
-
-// PP2
-var (
-	HgmdPP2GeneList    map[string]float64
-	ClinVarPP2GeneList map[string]float64
-)
-
-// BS2
-var lateOnsetList map[string]int
-
-// BP1
-var (
-	hgmdBP1GeneList    map[string]float64
-	clinVarBP1GeneList map[string]float64
-)
 
 func main() {
 	var ts []time.Time
@@ -233,14 +194,6 @@ func main() {
 	ts = append(ts, time.Now())
 
 	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		simple_util.CheckErr(pprof.StartCPUProfile(f))
-		defer pprof.StopCPUProfile()
-	}
 	if *snv == "" {
 		flag.Usage()
 		fmt.Println("\nshold have input -snv")
@@ -261,8 +214,10 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
 
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
+
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *ifRedis {
 		if *redisAddr == "" {
@@ -271,43 +226,20 @@ func main() {
 		redisDb = redis.NewClient(&redis.Options{
 			Addr: *redisAddr,
 		})
-		pong, err := redisDb.Ping().Result()
-		log.Println("connect redis:", pong, err)
-		if err != nil {
-			*ifRedis = false
-			log.Printf("Error connect redis[%+v], skip\n", err)
+		pong, e := redisDb.Ping().Result()
+		log.Println("connect redis:", pong, e)
+		if e != nil {
+			log.Fatalf("Error connect redis[%+v]\n", e)
 		}
 	}
 
 	if *acmg {
-		// PVS1
-		simple_util.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
-		simple_util.JsonFile2Data(anno.GetPath("transcriptInfo", dbPath, defaultConfig), &transcriptInfo)
-
-		// PS1 & PM5
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPathogenicMissense", dbPath, defaultConfig), &ClinVarMissense)
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPHGVSlist", dbPath, defaultConfig), &ClinVarPHGVSlist)
-		simple_util.JsonFile2Data(anno.GetPath("HGMDPathogenicMissense", dbPath, defaultConfig), &HGMDMissense)
-		simple_util.JsonFile2Data(anno.GetPath("HGMDPHGVSlist", dbPath, defaultConfig), &HGMDPHGVSlist)
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarAAPosList", dbPath, defaultConfig), &ClinVarAAPosList)
-		simple_util.JsonFile2Data(anno.GetPath("HGMDAAPosList", dbPath, defaultConfig), &HGMDAAPosList)
-
-		// PM1
-		simple_util.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
-		simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &PfamDomain)
-		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
-		simple_util.CheckErr(err, "load tabix")
-
-		// PP2
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &ClinVarPP2GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &HgmdPP2GeneList)
-
-		// BS2
-		simple_util.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
-
-		// BP1
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
+		acmg2015.AutoPVS1 = *autoPVS1
+		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
+		for k, v := range acmgCfg {
+			acmgCfg[k] = anno.GuessPath(v, dbPath)
+		}
+		acmg2015.Init(acmgCfg)
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -327,35 +259,6 @@ func main() {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
 	}
 
-	for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
-		qualityColumn = append(qualityColumn, key.(string))
-	}
-
-	if *wesim {
-		acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
-		for _, gene := range acmg59GeneList {
-			acmg59Gene[gene] = true
-		}
-
-		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
-			resultColumn = append(resultColumn, key.(string))
-		}
-		if *trio {
-			resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
-		}
-		resultFile, err = os.Create(*prefix + ".result.tsv")
-		simple_util.CheckErr(err)
-		defer simple_util.DeferClose(resultFile)
-		_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
-		simple_util.CheckErr(err)
-
-		qcFile, err = os.Create(*prefix + ".qc.tsv")
-		simple_util.CheckErr(err)
-		defer simple_util.DeferClose(qcFile)
-		_, err = fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
-		simple_util.CheckErr(err)
-	}
-
 	sampleList = strings.Split(*list, ",")
 	var sampleMap = make(map[string]bool)
 	for _, sample := range sampleList {
@@ -364,15 +267,14 @@ func main() {
 
 	var tier1Xlsx = xlsx.NewFile()
 	var filterVariantsSheet = xlsxUtil.AddSheet(tier1Xlsx, "filter_variants")
-	var filterVariantsTitle = simple_util.File2Array(*filterVariants)
-	xlsxUtil.AddArray2Row(filterVariantsTitle, filterVariantsSheet.AddRow())
+	var filterVariantsTitle = addFile2Row(*filterVariants, filterVariantsSheet.AddRow())
 
 	// exonCount
-	exonCount = simple_util.JsonFile2Map(*transInfo)
+	exonCount = jsonUtil.JsonFile2Map(*transInfo)
 
 	// 突变频谱
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDbExt := simple_util.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
 	for k := range geneDbExt {
 		geneDb[k] = geneDbExt[k][geneDbKey]
 	}
@@ -381,14 +283,19 @@ func main() {
 	logTime(ts, step-1, step, "load mutation spectrum")
 
 	// 基因-疾病
-	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
+	var geneDiseaseDbTitleInfo = jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
 	for key, item := range geneDiseaseDbTitleInfo {
 		geneDiseaseDbColumn[key] = item["Key"]
 	}
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
+	geneDiseaseDb = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
 	for key := range geneDiseaseDb {
 		geneList[key] = true
+	}
+	for k, v := range gene2id {
+		if geneList[v] {
+			geneList[k] = true
+		}
 	}
 	ts = append(ts, time.Now())
 	step++
@@ -431,45 +338,40 @@ func main() {
 			// update Function
 			anno.UpdateFunction(item)
 
-			gene := item["Gene Symbol"]
+			// update FuncRegion
+			anno.UpdateFuncRegion(item)
+
+			var gene = item["Gene Symbol"]
+			var id, ok = gene2id[gene]
+			if !ok {
+				log.Fatalf("can not find gene id of [%s]\n", gene)
+			}
 			// 基因-疾病
-			updateDisease(gene, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]
 
 			// ues acmg of go
 			if *acmg {
-				item["PVS1"] = evidence.CheckPVS1(item, LOFList, transcriptInfo, tbx)
-				item["PS1"] = evidence.CheckPS1(item, ClinVarMissense, ClinVarPHGVSlist, HGMDMissense, HGMDPHGVSlist)
-				item["PM5"] = evidence.CheckPM5(item, ClinVarPHGVSlist, ClinVarAAPosList, HGMDPHGVSlist, HGMDAAPosList)
-				item["PS4"] = evidence.CheckPS4(item)
-				item["PM1"] = evidence.CheckPM1(item, dbNSFPDomain, PfamDomain, tbx)
-				item["PM2"] = evidence.CheckPM2(item)
-				item["PM4"] = evidence.CheckPM4(item)
-				item["PP2"] = evidence.CheckPP2(item, ClinVarPP2GeneList, HgmdPP2GeneList)
-				item["PP3"] = evidence.CheckPP3(item)
-				item["BA1"] = evidence.CheckBA1(item) // BA1 更改条件，去除PVFD，新增ESP6500
-				item["BS1"] = evidence.CheckBS1(item) // BS1 更改条件，去除PVFD，也没有对阈值1%进行修正
-				item["BS2"] = evidence.CheckBS2(item, lateOnsetList)
-				item["BP1"] = evidence.CheckBP1(item, clinVarBP1GeneList, hgmdBP1GeneList)
-				item["BP3"] = evidence.CheckBP3(item)
-				item["BP4"] = evidence.CheckBP4(item) // BP4 更改条件，更严格了，非splice未考虑保守性
-				item["BP7"] = evidence.CheckBP7(item) // BP 更改条件，更严格了，考虑PhyloP,以及无记录预测按不满足条件来做
+				acmg2015.AddEvidences(item)
 			}
 
-			item["自动化判断"] = acmg2015.PredACMG2015(item)
+			item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
 			anno.UpdateSnv(item, *gender, *debug)
 
 			// 突变频谱
-			item["突变频谱"] = geneDb[gene]
+			item["突变频谱"] = geneDb[id]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
 			item["引物设计"] = anno.PrimerDesign(item)
 
 			// 变异来源
+			if *trio2 {
+				item["变异来源"] = anno.InheritFrom2(item, sampleList)
+			}
 			if *trio {
 				item["变异来源"] = anno.InheritFrom(item, sampleList)
 			}
@@ -484,31 +386,9 @@ func main() {
 			anno.UpdateAutoRule(item)
 			anno.UpdateManualRule(item)
 			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
-			anno.FloatFormat(item)
+			anno.Format(item)
 
 			xlsxUtil.AddMap2Row(item, filterVariantsTitle, filterVariantsSheet.AddRow())
-			// WESIM
-			if *wesim {
-				if acmg59Gene[item["Gene Symbol"]] {
-					item["IsACMG59"] = "Y"
-				} else {
-					item["IsACMG59"] = "N"
-				}
-				if *trio {
-					zygosity := strings.Split(item["Zygosity"], ";")
-					zygosity = append(zygosity, "NA", "NA")
-					item["Zygosity"] = zygosity[0]
-					item["Genotype of Family Member 1"] = zygosity[1]
-					item["Genotype of Family Member 2"] = zygosity[2]
-				}
-				var resultArray []string
-				for _, key := range resultColumn {
-					resultArray = append(resultArray, item[key])
-				}
-				_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
-				simple_util.CheckErr(err)
-			}
-
 			tier1GeneList[item["Gene Symbol"]] = true
 		}
 		ts = append(ts, time.Now())
@@ -526,25 +406,10 @@ func main() {
 		if *tag != "" {
 			tagStr = textUtil.File2Array(*tag)[0]
 		}
-		var tier1Output string
-		if isSMN1 {
-			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
-		} else {
-			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
-		}
-		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
+		simpleUtil.CheckErr(tier1Xlsx.Save(*prefix + ".Tier1" + tagStr + ".xlsx"))
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "save Tier1")
-	}
-
-	if *memprofile != "" {
-		var f, err = os.Create(*memprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		simple_util.CheckErr(pprof.WriteHeapProfile(f))
-		defer simple_util.DeferClose(f)
 	}
 }
 
@@ -554,10 +419,8 @@ func logTime(timeList []time.Time, step1, step2 int, message string) {
 	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
-func updateDisease(gene string, item, geneDisDbColumn map[string]string, geneDisDb map[string]map[string]string) {
-	// 基因-疾病
-	gDiseaseDb := geneDisDb[gene]
-	for key, value := range geneDisDbColumn {
-		item[value] = gDiseaseDb[key]
-	}
+func addFile2Row(file string, row *xlsx.Row) (rows []string) {
+	rows = textUtil.File2Array(file)
+	xlsxUtil.AddArray2Row(rows, row)
+	return
 }

@@ -311,8 +311,10 @@ func (xt *xlsxTemplate) save() error {
 var tier1GeneList = make(map[string]bool)
 
 // WESIM
-var resultColumn, qualityColumn []string
-var resultFile, qcFile *os.File
+var (
+	resultColumn, qualityColumn []string
+	resultFile, qcFile          *os.File
+)
 
 var qualitys []map[string]string
 var qualityKeyMap = make(map[string]string)
@@ -359,12 +361,14 @@ var snvs []string
 var acmg59Gene = make(map[string]bool)
 
 // WGS
-var wgsXlsx *xlsx.File
-var TIPdb = make(map[string]variant)
-var MTdisease = make(map[string]variant)
-var MTAFdb = make(map[string]variant)
-var MTTitle []string
-var tier1Db = make(map[string]bool)
+var (
+	wgsXlsx   *xlsx.File
+	TIPdb     = make(map[string]variant)
+	MTdisease = make(map[string]variant)
+	MTAFdb    = make(map[string]variant)
+	MTTitle   []string
+	tier1Db   = make(map[string]bool)
+)
 
 func main() {
 	var ts []time.Time
@@ -546,9 +550,9 @@ func main() {
 	// load tier template
 	var tier1Xlsx = xlsx.NewFile()
 	xlsxUtil.AddSheets(tier1Xlsx, []string{"filter_variants", "exon_cnv", "large_cnv"})
-	filterVariantsTitle := addFile2Row(*filterVariants, tier1Xlsx.Sheet["filter_variants"].AddRow())
-	exonCnvTitle := addFile2Row(*exonCnv, tier1Xlsx.Sheet["exon_cnv"].AddRow())
-	largeCNVTitle := addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
+	var filterVariantsTitle = addFile2Row(*filterVariants, tier1Xlsx.Sheet["filter_variants"].AddRow())
+	var exonCnvTitle = addFile2Row(*exonCnv, tier1Xlsx.Sheet["exon_cnv"].AddRow())
+	var largeCNVTitle = addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
 
 	// create Tier3.xlsx
 	var tier3Xlsx = xlsx.NewFile()
@@ -620,7 +624,7 @@ func main() {
 
 	// 突变频谱
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDbExt := jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
 	for k := range geneDbExt {
 		geneDb[k] = geneDbExt[k][geneDbKey]
 	}
@@ -629,7 +633,7 @@ func main() {
 	logTime(ts, step-1, step, "load mutation spectrum")
 
 	// 基因-疾病
-	geneDiseaseDbTitleInfo := jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
+	var geneDiseaseDbTitleInfo = jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
 	for key, item := range geneDiseaseDbTitleInfo {
 		geneDiseaseDbColumn[key] = item["Key"]
 	}
@@ -761,13 +765,13 @@ func main() {
 			anno.UpdateFuncRegion(item)
 
 			var gene = item["Gene Symbol"]
-			var geneId, ok = gene2id[gene]
+			var id, ok = gene2id[gene]
 			if !ok {
 				log.Fatalf("can not find gene id of [%s]\n", gene)
 			}
 			// 基因-疾病
 
-			anno.UpdateDisease(geneId, item, geneDiseaseDbColumn, geneDiseaseDb)
+			anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
 			item["Gene"] = item["Omim Gene"]
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]
@@ -783,7 +787,7 @@ func main() {
 			anno.UpdateSnv(item, *gender, *debug)
 
 			// 突变频谱
-			item["突变频谱"] = geneDb[geneId]
+			item["突变频谱"] = geneDb[id]
 
 			// 引物设计
 			item["exonCount"] = exonCount[item["Transcript"]]
