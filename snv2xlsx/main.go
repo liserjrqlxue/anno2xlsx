@@ -201,8 +201,8 @@ func main() {
 		fmt.Println("\nshold have input -snv")
 		os.Exit(0)
 	}
+	snvs = strings.Split(*snv, ",")
 	if *prefix == "" {
-		snvs = strings.Split(*snv, ",")
 		*prefix = snvs[0]
 	}
 
