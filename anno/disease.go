@@ -18,8 +18,10 @@ func UpdateDisGenes(
 		var vals []string
 		for _, gene := range genes {
 			var geneId, ok1 = gene2id[gene]
-			if !ok1 && gene != "-" {
-				log.Fatalf("can not find gene id of [%s]\n", gene)
+			if !ok1 {
+				if gene != "-" && gene != "." {
+					log.Fatalf("can not find gene id of [%s]\n", gene)
+				}
 			}
 			geneDb, ok := geneDisDb[geneId]
 			if ok {
@@ -65,8 +67,10 @@ func UpdateDiseMultiGene(geneLst string, item, gene2id, geneDisDbCol map[string]
 		var vals []string
 		for _, gene := range genes {
 			var geneId, ok1 = gene2id[gene]
-			if !ok1 && gene != "-" {
-				log.Fatalf("can not find gene id of [%s]\n", gene)
+			if !ok1 {
+				if gene != "-" && gene != "." {
+					log.Fatalf("can not find gene id of [%s]\n", gene)
+				}
 			}
 			singelGeneDb, ok := geneDisDb[geneId]
 			if ok {
@@ -88,8 +92,10 @@ func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb m
 	var cnvAnnots []GeneInfo
 	for _, gene := range genes {
 		var geneId, ok0 = gene2id[gene]
-		if !ok0 && gene != "-" {
-			log.Fatalf("can not find gene id of [%s]\n", gene)
+		if !ok0 {
+			if gene != "-" && gene != "." {
+				log.Fatalf("can not find gene id of [%s]\n", gene)
+			}
 		}
 		singleGeneDb, ok := geneDisDb[geneId]
 		if !ok {
