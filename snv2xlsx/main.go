@@ -345,7 +345,7 @@ func main() {
 
 			var gene = item["Gene Symbol"]
 			var id, ok = gene2id[gene]
-			if !ok {
+			if !ok && gene != "-" {
 				log.Fatalf("can not find gene id of [%s]\n", gene)
 			}
 			// 基因-疾病

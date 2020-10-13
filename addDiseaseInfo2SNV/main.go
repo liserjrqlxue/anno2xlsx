@@ -142,7 +142,7 @@ func main() {
 	for _, item := range data {
 		var gene = item["Gene Symbol"]
 		var geneId, ok = gene2id[gene]
-		if !ok {
+		if !ok && gene != "-" {
 			log.Fatalf("can not find gene id of [%s]\n", gene)
 		}
 		// 基因-疾病
