@@ -270,6 +270,11 @@ var (
 		"",
 		"filter.stat files to calculate reads QC, comma as sep",
 	)
+	mt = flag.Bool(
+		"mt",
+		false,
+		"force all MT variant to Tier1",
+	)
 )
 
 var gene2id = make(map[string]string)
@@ -802,6 +807,9 @@ func main() {
 			}
 
 			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
+			if *mt && isMT.MatchString(item["#Chr"]) {
+				item["Tier"] = "Tier1"
+			}
 
 			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 				anno.UpdateSnvTier1(item)
