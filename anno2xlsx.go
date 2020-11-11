@@ -94,7 +94,7 @@ var (
 	trio = flag.Bool(
 		"trio",
 		false,
-		"if trio mode",
+		"if standard trio mode",
 	)
 	trio2 = flag.Bool(
 		"trio2",
@@ -863,7 +863,7 @@ func main() {
 				} else {
 					item["familyTag"] = anno.FamilyTag(item, inheritDb, "single")
 				}
-				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
+				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 
 				anno.Format(item)
 
@@ -943,6 +943,8 @@ func main() {
 				if item["Tier"] == "Tier1" {
 					// 遗传相符
 					item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+					item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
+					item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
 					if item["遗传相符"] == "相符" {
 						stats["遗传相符"]++
 					}
@@ -950,7 +952,7 @@ func main() {
 					if *trio {
 						item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
 					}
-					item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
+					item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 				}
 				if *wgs && isMT.MatchString(item["#Chr"]) {
 					addMTRow(MTSheet, item)

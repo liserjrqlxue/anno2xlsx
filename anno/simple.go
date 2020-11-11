@@ -918,8 +918,7 @@ var keys = []string{
 	"Panel AlleleFreq",
 }
 
-func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string {
-	var flag1, flag2 bool
+func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) (tag string) {
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
 		frequency = "0"
@@ -929,25 +928,20 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string
 		log.Printf("%s ParseFloat error:%v", frequency, e)
 		freq = 0
 	}
-	if freq <= 0.01 {
-		flag1 = true
+
+	if freq <= 0.01 || specVarDb[item["MutationName"]] || isHgmdDMplus.MatchString(item["HGMD Pred"]) || isClinVarPLP.MatchString(item["ClinVar Significance"]) {
+	} else {
+		return
 	}
-	if specVarDb[item["MutationName"]] {
-		flag1 = true
-	}
-	if isHgmdDMplus.MatchString(item["HGMD Pred"]) {
-		flag1 = true
-	}
-	if isClinVarPLP.MatchString(item["ClinVar Significance"]) {
-		flag1 = true
-	}
-	if item["遗传相符"] == "相符" {
-		if isTrio {
-			flag2 = true
-		} else {
+
+	if isTrio || isTrio2 {
+		if item["遗传相符-經典trio"] == "相符" {
+			tag += "T1"
+		}
+		if item["遗传相符-非經典trio"] == "相符" {
 			inherit := item["ModeInheritance"]
 			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
-				flag2 = true
+				tag += "1"
 			} else if isAD.MatchString(inherit) {
 				var flag = true
 				for _, key := range keys {
@@ -956,15 +950,29 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio bool) string
 					}
 				}
 				if flag {
-					flag2 = true
+					tag += "1"
+				}
+			}
+		}
+	} else {
+		if item["遗传相符"] == "相符" {
+			inherit := item["ModeInheritance"]
+			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
+				tag += "1"
+			} else if isAD.MatchString(inherit) {
+				var flag = true
+				for _, key := range keys {
+					if !isZero.MatchString(item[key]) {
+						flag = false
+					}
+				}
+				if flag {
+					tag += "1"
 				}
 			}
 		}
 	}
-	if flag1 && flag2 {
-		return "1"
-	}
-	return ""
+	return
 }
 
 func tag2(item map[string]string, specVarDb map[string]bool) string {
@@ -1049,8 +1057,8 @@ func tag5(item map[string]string) string {
 }
 
 //UpdateTags return 筛选标签
-func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) string {
-	Tag1 := tag1(item, specVarDb, isTrio)
+func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) string {
+	Tag1 := tag1(item, specVarDb, isTrio, isTrio2)
 	Tag2 := tag2(item, specVarDb)
 	Tag3 := tag3(item)
 	Tag4 := tag4(item)
@@ -1058,7 +1066,7 @@ func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio bool) 
 	return strings.Join([]string{Tag1, Tag2, Tag3, Tag4, Tag5}, "")
 }
 
-//UpdateFunction fix splice+-20, have not implement
+// UpdateFunction convert intron to [splice+10,splice-10,splice+20,splice-20]
 func UpdateFunction(item map[string]string) {
 	item["Function"] = updateFunction(item["Function"], item["cHGVS"])
 }

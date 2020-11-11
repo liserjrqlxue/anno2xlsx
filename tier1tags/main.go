@@ -42,7 +42,12 @@ var (
 	trio = flag.Bool(
 		"trio",
 		false,
-		"if trio mode",
+		"if standard trio mode",
+	)
+	trio2 = flag.Bool(
+		"trio2",
+		false,
+		"if no standard trio mode but proband-father-mother",
 	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
@@ -162,10 +167,12 @@ func main() {
 		if item["Tier"] == "Tier1" && tier1GeneList[item["Gene Symbol"]] {
 			// 遗传相符
 			item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+			item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
+			item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
 			if item["遗传相符"] == "相符" {
 				stats["遗传相符"]++
 			}
-			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
+			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 			var array []string
 			row = sheet.AddRow()
 			for _, key := range title {
