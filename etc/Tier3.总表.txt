@@ -7,7 +7,7 @@ SampleID
 Gene Symbol
 cHGVS
 pHGVS
-MutationNameLite
+MutationName
 ExIn_ID
 Function
 Zygosity
