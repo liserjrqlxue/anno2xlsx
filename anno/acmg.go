@@ -14,15 +14,12 @@ var ManualRuleKey = []string{
 
 func UpdateAutoRule(item map[string]string) {
 	var autoRuleName, autoIsChecked []string
-	for _, key := range AutoRuleKey {
-		if item[key] != "" && item[key] != "0" {
-			autoRuleName = append(autoRuleName, key)
-			autoIsChecked = append(autoIsChecked, "1")
-		}
+	if item["AutoPVS1 Adjusted Strength"] != "" {
+		item["PVS1"] = ""
 	}
 	switch item["AutoPVS1 Adjusted Strength"] {
 	case "VeryStrong":
-		autoRuleName = append(autoRuleName, "PVS1_VeryStrong")
+		autoRuleName = append(autoRuleName, "PVS1")
 		autoIsChecked = append(autoIsChecked, "1")
 	case "Strong":
 		autoRuleName = append(autoRuleName, "PVS1_Strong")
@@ -33,6 +30,12 @@ func UpdateAutoRule(item map[string]string) {
 	case "Supporting":
 		autoRuleName = append(autoRuleName, "PVS1_Supporting")
 		autoIsChecked = append(autoIsChecked, "1")
+	}
+	for _, key := range AutoRuleKey {
+		if item[key] != "" && item[key] != "0" {
+			autoRuleName = append(autoRuleName, key)
+			autoIsChecked = append(autoIsChecked, "1")
+		}
 	}
 	item["autoRuleName"] = strings.Join(autoRuleName, "\n")
 	item["autoIsChecked"] = strings.Join(autoIsChecked, "\n")
