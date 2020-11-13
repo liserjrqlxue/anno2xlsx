@@ -389,7 +389,7 @@ func main() {
 
 			anno.UpdateAutoRule(item)
 			anno.UpdateManualRule(item)
-			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio)
+			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 			anno.Format(item)
 
 			xlsxUtil.AddMap2Row(item, filterVariantsTitle, filterVariantsSheet.AddRow())
