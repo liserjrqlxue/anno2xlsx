@@ -20,6 +20,20 @@ func UpdateAutoRule(item map[string]string) {
 			autoIsChecked = append(autoIsChecked, "1")
 		}
 	}
+	switch item["AutoPVS1 Adjusted Strength"] {
+	case "VeryStrong":
+		autoRuleName = append(autoRuleName, "PVS1_VeryStrong")
+		autoIsChecked = append(autoIsChecked, "1")
+	case "Strong":
+		autoRuleName = append(autoRuleName, "PVS1_Strong")
+		autoIsChecked = append(autoIsChecked, "1")
+	case "Moderate":
+		autoRuleName = append(autoRuleName, "PVS1_Moderate")
+		autoIsChecked = append(autoIsChecked, "1")
+	case "Supporting":
+		autoRuleName = append(autoRuleName, "PVS1_Supporting")
+		autoIsChecked = append(autoIsChecked, "1")
+	}
 	item["autoRuleName"] = strings.Join(autoRuleName, "\n")
 	item["autoIsChecked"] = strings.Join(autoIsChecked, "\n")
 }
