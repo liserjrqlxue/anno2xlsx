@@ -852,6 +852,8 @@ func main() {
 			if item["Tier"] == "Tier1" {
 				// 遗传相符
 				item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+				item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
+				item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
 				if item["遗传相符"] == "相符" {
 					stats["遗传相符"]++
 				}
