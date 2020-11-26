@@ -935,10 +935,10 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 boo
 	}
 
 	if isTrio || isTrio2 {
-		if item["遗传相符-經典trio"] == "相符" {
+		if item["遗传相符-经典trio"] == "相符" {
 			tag += "T1"
 		}
-		if item["遗传相符-非經典trio"] == "相符" {
+		if item["遗传相符-非经典trio"] == "相符" {
 			inherit := item["ModeInheritance"]
 			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
 				tag += "1"
