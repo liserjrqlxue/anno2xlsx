@@ -918,7 +918,7 @@ var keys = []string{
 	"Panel AlleleFreq",
 }
 
-func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) (tag string) {
+func tag1(tagMap map[string]bool, item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) {
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
 		frequency = "0"
@@ -936,12 +936,12 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 boo
 
 	if isTrio || isTrio2 {
 		if item["遗传相符-经典trio"] == "相符" {
-			tag += "T1"
+			tagMap["T1"] = true
 		}
 		if item["遗传相符-非经典trio"] == "相符" {
 			inherit := item["ModeInheritance"]
 			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
-				tag += "1"
+				tagMap["1"] = true
 			} else if isAD.MatchString(inherit) {
 				var flag = true
 				for _, key := range keys {
@@ -950,7 +950,7 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 boo
 					}
 				}
 				if flag {
-					tag += "1"
+					tagMap["1"] = true
 				}
 			}
 		}
@@ -958,7 +958,7 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 boo
 		if item["遗传相符"] == "相符" {
 			inherit := item["ModeInheritance"]
 			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
-				tag += "1"
+				tagMap["1"] = true
 			} else if isAD.MatchString(inherit) {
 				var flag = true
 				for _, key := range keys {
@@ -967,15 +967,14 @@ func tag1(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 boo
 					}
 				}
 				if flag {
-					tag += "1"
+					tagMap["1"] = true
 				}
 			}
 		}
 	}
-	return
 }
 
-func tag2(item map[string]string, specVarDb map[string]bool) string {
+func tag2(tagMap map[string]bool, item map[string]string, specVarDb map[string]bool) {
 	var flag1 bool
 	if specVarDb[item["MutationName"]] {
 		flag1 = true
@@ -987,12 +986,11 @@ func tag2(item map[string]string, specVarDb map[string]bool) string {
 		flag1 = true
 	}
 	if flag1 {
-		return "2"
+		tagMap["2"] = true
 	}
-	return ""
 }
 
-func tag3(item map[string]string) string {
+func tag3(tagMap map[string]bool, item map[string]string) {
 	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
@@ -1010,9 +1008,8 @@ func tag3(item map[string]string) string {
 		flag2 = true
 	}
 	if flag1 && flag2 {
-		return "3"
+		tagMap["3"] = true
 	}
-	return ""
 }
 
 var tag4Func = map[string]bool{
@@ -1022,7 +1019,7 @@ var tag4Func = map[string]bool{
 	"cds-ins":   true,
 }
 
-func tag4(item map[string]string) string {
+func tag4(tagMap map[string]bool, item map[string]string) {
 	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
@@ -1044,26 +1041,41 @@ func tag4(item map[string]string) string {
 	}
 
 	if flag1 && flag2 {
-		return "4"
+		tagMap["4"] = true
 	}
-	return ""
 }
 
-func tag5(item map[string]string) string {
+func tag5(tagMap map[string]bool, item map[string]string) {
 	if item["SecondaryFinding_Var_致病等级"] != "" {
-		return "5"
+		tagMap["5"] = true
 	}
-	return ""
 }
 
 //UpdateTags return 筛选标签
+var supportTag = []string{
+	"T1",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+}
+
+//UpdateTags get Tags of item
 func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) string {
-	Tag1 := tag1(item, specVarDb, isTrio, isTrio2)
-	Tag2 := tag2(item, specVarDb)
-	Tag3 := tag3(item)
-	Tag4 := tag4(item)
-	Tag5 := tag5(item)
-	return strings.Join([]string{Tag1, Tag2, Tag3, Tag4, Tag5}, "")
+	var tagMap = make(map[string]bool)
+	tag1(tagMap, item, specVarDb, isTrio, isTrio2)
+	tag2(tagMap, item, specVarDb)
+	tag3(tagMap, item)
+	tag4(tagMap, item)
+	tag5(tagMap, item)
+	var tags []string
+	for _, t := range supportTag {
+		if tagMap[t] {
+			tags = append(tags, t)
+		}
+	}
+	return strings.Join(tags, ";")
 }
 
 // UpdateFunction convert intron to [splice+10,splice-10,splice+20,splice-20]
