@@ -2,7 +2,19 @@
 
 # anno2xlsx
 
-
+## AES加密数据库
+### 例子
+```
+PS C:\Users\wangyaoshen\go\src\liser.jrqlxue\anno2xlsx\buildDb> .\buildDb.exe -input ..\db\全外疾病库2020.Q3-12.3.xlsx -sheet '更新后全外背景库（5654疾病OMIMID，4319个基因）' -key 'entry ID' -rowCount 6457 -keyCount 4319
+encode sheet:[更新后全外背景库（5654疾病OMIMID，4319个基因）]
+rows:   6457    true
+2020/12/07 11:33:09 Skip merge warn of []
+keys:   4319    true
+write 17863038 byte to ..\db\全外疾病库2020.Q3-12.3.xlsx.更新后全外背景库（5654疾病OMIMID，4319个基因）.json.aes
+[更新后全外背景库（5654疾病OMIMID，4319个基因）] checked:true
+skip sheet:[基因+表型OMIM号+遗传模式校对情况统计]
+skip sheet:[Sheet1]
+```
 
 # 注意
 ## 基因-疾病数据库
