@@ -1,6 +1,6 @@
 {
   "geneSymbol.transcript": "geneSymbol.transcript.txt",
-  "geneDiseaseDbFile": "全外疾病库2020.Q3-11.19.xlsx.更新后全外背景库（5655疾病OMIMID，4320个基因）.new.json.aes",
+  "geneDiseaseDbFile": "全外疾病库2020.Q3-12.3.xlsx.更新后全外背景库（5654疾病OMIMID，4319个基因）.json.aes",
   "geneDiseaseDbTitle": "基因-疾病数据库.Title.json",
   "geneDbFile": "V4.3 基因库-20200917-添加双基因遗传、更新PVS1PP2BP1基因集说明.xlsx.突变谱汇总.json.aes",
   "geneDbKey": "突变谱",
