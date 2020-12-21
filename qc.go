@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/liserjrqlxue/goUtil/textUtil"
 	"log"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/liserjrqlxue/goUtil/osUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 
 	simple_util "github.com/liserjrqlxue/simple-util"
 )
@@ -95,7 +97,9 @@ func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 		for _, line := range report {
 			if isSharp.MatchString(line) {
 				if m := isBamPath.FindStringSubmatch(line); m != nil {
-					quality[i]["bamPath"] = m[1]
+					if osUtil.FileExists(m[1]) {
+						quality[i]["bamPath"] = m[1]
+					}
 				}
 			} else {
 				m := strings.Split(line, sep)
