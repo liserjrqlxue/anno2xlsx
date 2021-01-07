@@ -144,8 +144,106 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 	}
 }
 
+func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
+	var gene = item["Gene Symbol"]
+	stats["isDenovo noB/LB"]++
+	if checkAF(item, AFlist, 0.01) {
+		stats["low AF"]++
+		stats["Denovo AF"]++
+		if geneList[gene] || allGene {
+			stats["OMIM Gene"]++
+			stats["Denovo Gene"]++
+			if FuncInfo[item["Function"]] > 1 {
+				item["Tier"] = "Tier1"
+				stats["Function"]++
+				stats["Denovo Function"]++
+			} else if FuncInfo[item["Function"]] > 0 {
+				//pp3,err:=strconv.Atoi(item["PP3"])
+				//if err==nil && pp3>0{
+				item["Tier"] = "Tier1"
+				stats["Function"]++
+				stats["Denovo Function"]++
+			} else if isWGS && item["Function"] == "intron" {
+				if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+					item["Tier"] = "Tier1"
+					stats["Function"]++
+					stats["Denovo Function"]++
+				} else {
+					item["Tier"] = "Tier2"
+					stats["noFunction"]++
+					stats["Denovo noFunction"]++
+				}
+			} else {
+				item["Tier"] = "Tier2"
+				stats["noFunction"]++
+				stats["Denovo noFunction"]++
+			}
+		} else {
+			item["Tier"] = "Tier2"
+			stats["noB/LB AF noGene"]++
+			stats["Denovo noGene"]++
+		}
+	} else {
+		item["Tier"] = "Tier2"
+		stats["noB/LB noAF"]++
+		stats["Denovo noAF"]++
+	}
+	if item["Tier"] == "Tier1" {
+		stats["Denovo Tier1"]++
+	} else {
+		stats["Denovo Tier2"]++
+	}
+}
+
+func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
+	var gene = item["Gene Symbol"]
+	stats["noDenovo noB/LB"]++
+	if checkAF(item, AFlist, 0.01) {
+		stats["low AF"]++
+		stats["noDenovo AF"]++
+		if geneList[gene] || allGene {
+			stats["OMIM Gene"]++
+			stats["noDenovo Gene"]++
+			if FuncInfo[item["Function"]] > 1 {
+				item["Tier"] = "Tier1"
+				stats["Function"]++
+				stats["noDenovo Function"]++
+			} else if FuncInfo[item["Function"]] > 0 {
+				//pp3,err:=strconv.Atoi(item["PP3"])
+				//if err==nil && pp3>0{
+				item["Tier"] = "Tier1"
+				stats["Function"]++
+				stats["noDenovo Function"]++
+				//}
+			} else if isWGS && item["Function"] == "intron" {
+				if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+					item["Tier"] = "Tier1"
+					stats["Function"]++
+					stats["noDenovo Function"]++
+				} else {
+					item["Tier"] = "Tier3"
+					stats["noFunction"]++
+					stats["noDenovo noFunction"]++
+				}
+			} else {
+				item["Tier"] = "Tier3"
+				stats["noFunction"]++
+				stats["noDenovo noFunction"]++
+			}
+		} else {
+			item["Tier"] = "Tier3"
+			stats["noB/LB AF noGene"]++
+			stats["noDenovo noGene"]++
+		}
+	} else {
+		item["Tier"] = "Tier3"
+		stats["noB/LB noAF"]++
+		stats["noDenovo noAF"]++
+	}
+
+}
+
 func checkTierTrio(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
-	gene := item["Gene Symbol"]
 	// Tier
 	if noProband.MatchString(item["Zygosity"]) {
 		stats["noProband"]++
@@ -157,97 +255,9 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 	if item["自动化判断"] != "B" && item["自动化判断"] != "LB" {
 		stats["noB/LB"]++
 		if isDenovo.MatchString(item["Zygosity"]) {
-			stats["isDenovo noB/LB"]++
-			if checkAF(item, AFlist, 0.01) {
-				stats["low AF"]++
-				stats["Denovo AF"]++
-				if geneList[gene] || allGene {
-					stats["OMIM Gene"]++
-					stats["Denovo Gene"]++
-					if FuncInfo[item["Function"]] > 1 {
-						item["Tier"] = "Tier1"
-						stats["Function"]++
-						stats["Denovo Function"]++
-					} else if FuncInfo[item["Function"]] > 0 {
-						//pp3,err:=strconv.Atoi(item["PP3"])
-						//if err==nil && pp3>0{
-						item["Tier"] = "Tier1"
-						stats["Function"]++
-						stats["Denovo Function"]++
-					} else if isWGS && item["Function"] == "intron" {
-						if checkAF(item, []string{"inhouse_AF"}, 0.1) {
-							item["Tier"] = "Tier1"
-							stats["Function"]++
-							stats["Denovo Function"]++
-						} else {
-							item["Tier"] = "Tier2"
-							stats["noFunction"]++
-							stats["Denovo noFunction"]++
-						}
-					} else {
-						item["Tier"] = "Tier2"
-						stats["noFunction"]++
-						stats["Denovo noFunction"]++
-					}
-				} else {
-					item["Tier"] = "Tier2"
-					stats["noB/LB AF noGene"]++
-					stats["Denovo noGene"]++
-				}
-			} else {
-				item["Tier"] = "Tier2"
-				stats["noB/LB noAF"]++
-				stats["Denovo noAF"]++
-			}
-			if item["Tier"] == "Tier1" {
-				stats["Denovo Tier1"]++
-			} else {
-				stats["Denovo Tier2"]++
-			}
+			checkTierTrioDenovo(item, stats, geneList, isWGS, allGene, AFlist)
 		} else {
-			stats["noDenovo noB/LB"]++
-			if checkAF(item, AFlist, 0.01) {
-				stats["low AF"]++
-				stats["noDenovo AF"]++
-				if geneList[gene] || allGene {
-					stats["OMIM Gene"]++
-					stats["noDenovo Gene"]++
-					if FuncInfo[item["Function"]] > 1 {
-						item["Tier"] = "Tier1"
-						stats["Function"]++
-						stats["noDenovo Function"]++
-					} else if FuncInfo[item["Function"]] > 0 {
-						//pp3,err:=strconv.Atoi(item["PP3"])
-						//if err==nil && pp3>0{
-						item["Tier"] = "Tier1"
-						stats["Function"]++
-						stats["noDenovo Function"]++
-						//}
-					} else if isWGS && item["Function"] == "intron" {
-						if checkAF(item, []string{"inhouse_AF"}, 0.1) {
-							item["Tier"] = "Tier1"
-							stats["Function"]++
-							stats["noDenovo Function"]++
-						} else {
-							item["Tier"] = "Tier3"
-							stats["noFunction"]++
-							stats["noDenovo noFunction"]++
-						}
-					} else {
-						item["Tier"] = "Tier3"
-						stats["noFunction"]++
-						stats["noDenovo noFunction"]++
-					}
-				} else {
-					item["Tier"] = "Tier3"
-					stats["noB/LB AF noGene"]++
-					stats["noDenovo noGene"]++
-				}
-			} else {
-				item["Tier"] = "Tier3"
-				stats["noB/LB noAF"]++
-				stats["noDenovo noAF"]++
-			}
+			checkTierTrioNoDenovo(item, stats, geneList, isWGS, allGene, AFlist)
 		}
 	} else if isDenovo.MatchString(item["Zygosity"]) {
 		stats["Denovo B/LB"]++

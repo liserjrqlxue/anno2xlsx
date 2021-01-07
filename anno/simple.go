@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -196,10 +195,8 @@ func inPAR(chr string, start, end int) bool {
 	return false
 }
 
-//UpdateSnv add info for all variant
-func UpdateSnv(item map[string]string, gender string, debug bool) {
-
-	// #Chr+Stop
+// #Chr+Stop
+func updatePos(item map[string]string) {
 	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
 	if item["VarType"] == "snv" {
 		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Stop"]
@@ -212,30 +209,32 @@ func UpdateSnv(item map[string]string, gender string, debug bool) {
 			item["chr-show"] = item["#Chr"] + ":" + item["Start"] + ".." + stringsUtil.StringPlus(item["Stop"], 1)
 		}
 	}
+}
 
-	// pHGVS= pHGVS1+"|"+pHGVS3
+// pHGVS= pHGVS1+"|"+pHGVS3
+func getPhgvs(item map[string]string) string {
 	if item["pHGVS1"] != "" && item["pHGVS3"] != "" && item["pHGVS1"] != "." && item["pHGVS3"] != "." {
-		item["pHGVS"] = item["pHGVS1"] + " | " + item["pHGVS3"]
+		return item["pHGVS1"] + " | " + item["pHGVS3"]
 	}
+	return ""
+}
 
-	MutationNameArray := strings.Split(item["MutationName"], ":")
+func getMNlite(item map[string]string) string {
+	var MutationNameArray = strings.Split(item["MutationName"], ":")
 	if len(MutationNameArray) > 1 {
-		item["MutationNameLite"] = inBrackets.ReplaceAllString(MutationNameArray[0], "") + ":" + MutationNameArray[1]
-		//item["MutationNameLite"] = item["Transcript"] + ":" + strings.Split(item["MutationName"], ":")[1]
-	} else {
-		item["MutationNameLite"] = item["MutationName"]
+		return inBrackets.ReplaceAllString(MutationNameArray[0], "") + ":" + MutationNameArray[1]
 	}
+	return item["MutationName"]
+}
 
-	// Zygosity format
-	item["Zygosity"] = zygosityFormat(item["Zygosity"])
-
-	chr := item["#Chr"]
-	if isChrXY.MatchString(chr) && isMale.MatchString(gender) {
+func hemiPAR(item map[string]string, gender string) {
+	var chromosome = item["#Chr"]
+	if isChrXY.MatchString(chromosome) && isMale.MatchString(gender) {
 		start, e := strconv.Atoi(item["Start"])
 		simpleUtil.CheckErr(e)
 		stop, e := strconv.Atoi(item["Stop"])
 		simpleUtil.CheckErr(e)
-		if !inPAR(chr, start, stop) && withHom.MatchString(item["Zygosity"]) {
+		if !inPAR(chromosome, start, stop) && withHom.MatchString(item["Zygosity"]) {
 			zygosity := strings.Split(item["Zygosity"], ";")
 			genders := strings.Split(gender, ",")
 			if len(genders) <= len(zygosity) {
@@ -250,16 +249,16 @@ func UpdateSnv(item map[string]string, gender string, debug bool) {
 			}
 		}
 	}
+}
 
-	if debug && item["自动化判断"] != long2short[item["ACMG"]] {
-		_, err = fmt.Fprintf(
-			os.Stderr,
-			"acmg conflict:[%s=>%s]:%s\n",
-			long2short[item["ACMG"]], item["自动化判断"], item["MutationName"],
-		)
-		simpleUtil.CheckErr(err)
-	}
-	return
+//UpdateSnv add info for all variant
+func UpdateSnv(item map[string]string, gender string, debug bool) {
+	updatePos(item)
+	item["pHGVS"] = getPhgvs(item)
+	item["MutationNameLite"] = getMNlite(item)
+	// Zygosity format
+	item["Zygosity"] = zygosityFormat(item["Zygosity"])
+	hemiPAR(item, gender)
 }
 
 //InheritCheck count variants of gene
@@ -293,61 +292,91 @@ func InheritCheck(item map[string]string, inheritDb map[string]map[string]int) {
 	}
 }
 
-//InheritCoincide calculate 遗传相符
-func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int, isTrio bool) string {
+func isCoincideTrioARCP(item map[string]string, inheritDb map[string]map[string]int) bool {
+	geneSymbol := item["Gene Symbol"]
+	zygosity := item["Zygosity"]
+	if inheritDb[geneSymbol]["flag110"] > 0 &&
+		inheritDb[geneSymbol]["flag101"] > 0 &&
+		(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
+		return true
+	}
+	return false
+}
+
+func isCoincideTrioAR(item map[string]string, inheritDb map[string]map[string]int) bool {
+	geneSymbol := item["Gene Symbol"]
+	zygosity := item["Zygosity"]
+	if isHomInherit.MatchString(zygosity) {
+		return true
+	}
+	if inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity) {
+		return true
+	}
+	if isCoincideTrioARCP(item, inheritDb) {
+		return true
+	}
+	if inheritDb[geneSymbol]["flag110"] > 0 &&
+		inheritDb[geneSymbol]["flag100"] > 0 &&
+		(isHetHetNA.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
+		return true
+	}
+	if inheritDb[geneSymbol]["flag101"] > 0 &&
+		inheritDb[geneSymbol]["flag100"] > 0 &&
+		(isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
+		return true
+	}
+	return false
+}
+
+func isCoincideTrio(item map[string]string, inheritDb map[string]map[string]int) bool {
+	zygosity := item["Zygosity"]
+	inherit := item["ModeInheritance"]
+	if isAD.MatchString(inherit) &&
+		(isHetNANA.MatchString(zygosity) || isHomNANA.MatchString(zygosity)) {
+		return true
+	}
+	if isXL.MatchString(inherit) && (isXLInheritMale.MatchString(zygosity) || isXLInheritFemale.MatchString(zygosity)) {
+		return true
+	}
+	if isYL.MatchString(inherit) && isYLInherit.MatchString(zygosity) {
+		return true
+	}
+	if isAR.MatchString(inherit) {
+		if isCoincideTrioAR(item, inheritDb) {
+			return true
+		}
+	}
+	return false
+}
+
+func inheritCoincideTrio(item map[string]string, inheritDb map[string]map[string]int) string {
+	inherit := item["ModeInheritance"]
+	zygosity := item["Zygosity"]
+	if isNA.MatchString(zygosity) {
+		return "NA"
+	}
+	if isCoincideTrio(item, inheritDb) {
+		return "相符"
+	}
+
+	if isAD.MatchString(inherit) {
+		if isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) {
+			return "不确定"
+		}
+	}
+	if isAR.MatchString(inherit) {
+		if isHetHetHet.MatchString(zygosity) || isHetHetNA.MatchString(zygosity) ||
+			isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity) {
+			return "不确定"
+		}
+	}
+	return "不相符"
+}
+
+func inheritCoincideSingle(item map[string]string, inheritDb map[string]map[string]int) string {
 	geneSymbol := item["Gene Symbol"]
 	inherit := item["ModeInheritance"]
 	zygosity := item["Zygosity"]
-	if isTrio {
-		if isNA.MatchString(zygosity) {
-			return "NA"
-		}
-		if isAD.MatchString(inherit) &&
-			(isHetNANA.MatchString(zygosity) || isHomNANA.MatchString(zygosity)) {
-			return "相符"
-		}
-		if isXL.MatchString(inherit) && (isXLInheritMale.MatchString(zygosity) || isXLInheritFemale.MatchString(zygosity)) {
-			return "相符"
-		}
-		if isYL.MatchString(inherit) && isYLInherit.MatchString(zygosity) {
-			return "相符"
-		}
-		if isAR.MatchString(inherit) {
-			if isHomInherit.MatchString(zygosity) {
-				return "相符"
-			}
-			if inheritDb[geneSymbol]["flag110"] > 0 &&
-				inheritDb[geneSymbol]["flag101"] > 0 &&
-				(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
-				return "相符"
-			}
-			if inheritDb[geneSymbol]["flag110"] > 0 &&
-				inheritDb[geneSymbol]["flag100"] > 0 &&
-				(isHetHetNA.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
-				return "相符"
-			}
-			if inheritDb[geneSymbol]["flag101"] > 0 &&
-				inheritDb[geneSymbol]["flag100"] > 0 &&
-				(isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
-				return "相符"
-			}
-			if inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity) {
-				return "相符"
-			}
-		}
-		if isAD.MatchString(inherit) {
-			if isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity) {
-				return "不确定"
-			}
-		}
-		if isAR.MatchString(inherit) {
-			if isHetHetHet.MatchString(zygosity) || isHetHetNA.MatchString(zygosity) ||
-				isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity) {
-				return "不确定"
-			}
-		}
-		return "不相符"
-	}
 	if isXL.MatchString(inherit) || isYL.MatchString(inherit) {
 		if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) || isHemi.MatchString(zygosity) {
 			return "相符"
@@ -372,52 +401,79 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 	return "不相符"
 }
 
-// FamilyTag return familyTag
-func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag string) string {
+//InheritCoincide calculate 遗传相符
+func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int, isTrio bool) string {
+	if isTrio {
+		return inheritCoincideTrio(item, inheritDb)
+	}
+	return inheritCoincideSingle(item, inheritDb)
+}
+
+func familyTagCouple(item map[string]string, inheritDb map[string]map[string]int) string {
+	var geneSymbol = item["Gene Symbol"]
+	var inherit = item["ModeInheritance"]
+	var zygosity = item["Zygosity"]
+	if isARorXR.MatchString(inherit) {
+		if inheritDb[geneSymbol]["flag10"] > 0 &&
+			inheritDb[geneSymbol]["flag01"] > 0 &&
+			(isHetNA.MatchString(zygosity) || isNAHet.MatchString(zygosity)) {
+			return "couple-CP"
+		}
+	}
+	return ""
+}
+func familyTagTrio(item map[string]string, inheritDb map[string]map[string]int) string {
 	var geneSymbol = item["Gene Symbol"]
 	var inherit = item["ModeInheritance"]
 	var zygosity = item["Zygosity"]
 	var chr = item["#Chr"]
-	if tag == "couple" {
-		if isARorXR.MatchString(inherit) {
-			if inheritDb[geneSymbol]["flag10"] > 0 &&
-				inheritDb[geneSymbol]["flag01"] > 0 &&
-				(isHetNA.MatchString(zygosity) || isNAHet.MatchString(zygosity)) {
-				return "couple-CP"
-			}
-		}
-	} else if tag == "trio" {
-		if isChrX.MatchString(chr) && isXLDenovo.MatchString(zygosity) {
-			return "trio-AD"
-		}
-		if isAD.MatchString(inherit) && isHetNANA.MatchString(zygosity) {
-			return "trio-AD"
-		}
-		if isARorXR.MatchString(inherit) {
-			if inheritDb[geneSymbol]["flag110"] > 0 &&
-				inheritDb[geneSymbol]["flag101"] > 0 &&
-				(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
-				return "trio-CP"
-			}
-		}
-		if isAR.MatchString(inherit) && isHomHetHet.MatchString(zygosity) {
-			return "trio-hom"
-		}
-		if isXL.MatchString(inherit) && (isXLCoSepFemale.MatchString(zygosity) || isXLCoSepMale.MatchString(zygosity)) {
-			return "XL-Hom/Hemi"
-		}
-	} else {
-		if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
-			return "AR-Hom"
-		}
-		if isAR.MatchString(inherit) && inheritDb[geneSymbol]["flag1"] > 1 && isHet.MatchString(zygosity) {
-			return "AR-CP"
-		}
-		if isXL.MatchString(inherit) && (isHom.MatchString(zygosity) || isHemi.MatchString(zygosity)) {
-			return "XL-Hom/Hemi"
+	if isChrX.MatchString(chr) && isXLDenovo.MatchString(zygosity) {
+		return "trio-AD"
+	}
+	if isAD.MatchString(inherit) && isHetNANA.MatchString(zygosity) {
+		return "trio-AD"
+	}
+	if isARorXR.MatchString(inherit) {
+		if inheritDb[geneSymbol]["flag110"] > 0 &&
+			inheritDb[geneSymbol]["flag101"] > 0 &&
+			(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
+			return "trio-CP"
 		}
 	}
+	if isAR.MatchString(inherit) && isHomHetHet.MatchString(zygosity) {
+		return "trio-hom"
+	}
+	if isXL.MatchString(inherit) && (isXLCoSepFemale.MatchString(zygosity) || isXLCoSepMale.MatchString(zygosity)) {
+		return "XL-Hom/Hemi"
+	}
 	return ""
+}
+func familyTagSingle(item map[string]string, inheritDb map[string]map[string]int) string {
+	var geneSymbol = item["Gene Symbol"]
+	var inherit = item["ModeInheritance"]
+	var zygosity = item["Zygosity"]
+	if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
+		return "AR-Hom"
+	}
+	if isAR.MatchString(inherit) && inheritDb[geneSymbol]["flag1"] > 1 && isHet.MatchString(zygosity) {
+		return "AR-CP"
+	}
+	if isXL.MatchString(inherit) && (isHom.MatchString(zygosity) || isHemi.MatchString(zygosity)) {
+		return "XL-Hom/Hemi"
+	}
+	return ""
+}
+
+// FamilyTag return familyTag
+func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag string) string {
+	switch tag {
+	case "couple":
+		return familyTagCouple(item, inheritDb)
+	case "trio":
+		return familyTagTrio(item, inheritDb)
+	default:
+		return familyTagSingle(item, inheritDb)
+	}
 }
 
 func zygosityFormat(zygosity string) string {
@@ -451,119 +507,48 @@ func InheritFrom(item map[string]string, sampleList []string) string {
 	zygos3 := strings.Join(zygos[0:3], ";")
 	//fmt.Println(zygos3)
 	var from string
+	var left = sampleList[1] + inheritFromMap[zygos[1]]
+	var right = sampleList[2] + inheritFromMap[zygos[2]]
+	if zygos[1] == "NA" {
+		left = "Denovo"
+	}
+	if zygos[2] == "NA" {
+		right = "Denovo"
+	}
 	switch zygos3 {
-	case "Hom;Hom;Hom":
-		from = sampleList[1] + inheritFromMap["Hom"] + "/" + sampleList[2] + inheritFromMap["Hom"]
-	case "Hom;Hom;Het":
-		from = sampleList[1] + inheritFromMap["Hom"] + "/" + sampleList[2] + inheritFromMap["Het"]
-	case "Hom;Hom;Hemi":
-		from = sampleList[1] + inheritFromMap["Hom"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
-	case "Hom;Hom;NA":
-		from = sampleList[1] + inheritFromMap["Hom"] + "/" + inheritFromMap["Denovo"]
+	case "Hom;Hom;Hom", "Hom;Hom;Het", "Hom;Hom;Hemi", "Hom;Hom;NA",
+		"Hom;Het;Hom", "Hom;Het;Het", "Hom;Het;Hemi", "Hom;Het;NA",
+		"Hom;Hemi;Hom", "Hom;Hemi;Het", "Hom;Hemi;NA",
+		"Hom;NA;Hom", "Hom;NA;Het", "Hom;NA;Hemi":
+		from = left + "/" + right
 
-	case "Hom;Het;Hom":
-		from = sampleList[1] + inheritFromMap["Het"] + "/" + sampleList[2] + inheritFromMap["Hom"]
-	case "Hom;Het;Het":
-		from = sampleList[1] + inheritFromMap["Het"] + "/" + sampleList[2] + inheritFromMap["Het"]
-	case "Hom;Het;Hemi":
-		from = sampleList[1] + inheritFromMap["Het"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
-	case "Hom;Het;NA":
-		from = sampleList[1] + inheritFromMap["Het"] + "/" + inheritFromMap["Denovo"]
-
-	case "Hom;Hemi;Hom":
-		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + sampleList[2] + inheritFromMap["Hom"]
-	case "Hom;Hemi;Het":
-		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + sampleList[2] + inheritFromMap["Het"]
-	case "Hom;Hemi;Hemi":
+	case "Hom;Hemi;Hemi", "Het;Hemi;Hemi", "Hemi;Hemi;Hemi":
 		from = inheritFromMap["NA"]
-	case "Hom;Hemi;NA":
-		from = sampleList[1] + inheritFromMap["Hemi"] + "/" + inheritFromMap["Denovo"]
 
-	case "Hom;NA;Hom":
-		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hom"]
-	case "Hom;NA;Het":
-		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Het"]
-	case "Hom;NA;Hemi":
-		from = inheritFromMap["Denovo"] + "/" + sampleList[2] + inheritFromMap["Hemi"]
-	case "Hom;NA;NA":
+	case "Hom;NA;NA",
+		"Het;NA;NA",
+		"Hemi;Hemi;NA", "Hemi;NA;Hemi", "Hemi;NA;NA":
+		from = inheritFromMap["Denovo"]
 		from = inheritFromMap["Denovo"]
 
-	case "Het;Hom;Hom":
+	case "Het;Hom;Hom", "Het;Hom;Het", "Het;Hom;Hemi",
+		"Het;Het;Hom", "Het;Het;Het", "Het;Het;Hemi",
+		"Het;Hemi;Hom", "Het;Hemi;Het",
+		"Hemi;Hom;Hom", "Hemi;Hom;Het", "Hemi;Het;Hom", "Hemi;Het;Het":
 		from = inheritFromMap["UC"]
-	case "Het;Hom;Het":
-		from = inheritFromMap["UC"]
-	case "Het;Hom;Hemi":
-		from = inheritFromMap["UC"]
-	case "Het;Hom;NA":
-		from = sampleList[1] + inheritFromMap["Hom"]
 
-	case "Het;Het;Hom":
-		from = inheritFromMap["UC"]
-	case "Het;Het;Het":
-		from = inheritFromMap["UC"]
-	case "Het;Het;Hemi":
-		from = inheritFromMap["UC"]
-	case "Het;Het;NA":
-		from = sampleList[1] + inheritFromMap["Het"]
+	case "Het;Hom;NA", "Het;Het;NA", "Het;Hemi;NA",
+		"Hemi;Hom;Hemi", "Hemi;Hom;NA", "Hemi;Het;Hemi", "Hemi;Het;NA":
+		from = left
 
-	case "Het;Hemi;Hom":
-		from = inheritFromMap["UC"]
-	case "Het;Hemi;Het":
-		from = inheritFromMap["UC"]
-	case "Het;Hemi;Hemi":
-		from = inheritFromMap["NA"]
-	case "Het;Hemi;NA":
-		from = sampleList[1] + inheritFromMap["Hemi"]
-
-	case "Het;NA;Hom":
-		from = sampleList[2] + inheritFromMap["Hom"]
-	case "Het;NA;Het":
-		from = sampleList[2] + inheritFromMap["Het"]
-	case "Het;NA;Hemi":
-		from = sampleList[2] + inheritFromMap["Hemi"]
-	case "Het;NA;NA":
-		from = inheritFromMap["Denovo"]
-
-	case "Hemi;Hom;Hom":
-		from = inheritFromMap["UC"]
-	case "Hemi;Hom;Het":
-		from = inheritFromMap["UC"]
-	case "Hemi;Hom;Hemi":
-		from = sampleList[1] + inheritFromMap["Hom"]
-	case "Hemi;Hom;NA":
-		from = sampleList[1] + inheritFromMap["Hom"]
-
-	case "Hemi;Het;Hom":
-		from = inheritFromMap["UC"]
-	case "Hemi;Het;Het":
-		from = inheritFromMap["UC"]
-	case "Hemi;Het;Hemi":
-		from = sampleList[1] + inheritFromMap["Het"]
-	case "Hemi;Het;NA":
-		from = sampleList[1] + inheritFromMap["Het"]
-
-	case "Hemi;Hemi;Hom":
-		from = sampleList[2] + inheritFromMap["Hom"]
-	case "Hemi;Hemi;Het":
-		from = sampleList[2] + inheritFromMap["Het"]
-	case "Hemi;Hemi;Hemi":
-		from = inheritFromMap["NA"]
-	case "Hemi;Hemi;NA":
-		from = inheritFromMap["Denovo"]
-
-	case "Hemi;NA;Hom":
-		from = sampleList[2] + inheritFromMap["Hom"]
-	case "Hemi;NA;Het":
-		from = sampleList[2] + inheritFromMap["Het"]
-	case "Hemi;NA;Hemi":
-		from = inheritFromMap["Denovo"]
-	case "Hemi;NA;NA":
-		from = inheritFromMap["Denovo"]
+	case "Het;NA;Hom", "Het;NA;Het", "Het;NA;Hemi",
+		"Hemi;Hemi;Hom", "Hemi;Hemi;Het",
+		"Hemi;NA;Hom", "Hemi;NA;Het":
+		from = right
 
 	default:
 		from = "NA3"
 	}
-
 	return from
 }
 
@@ -762,15 +747,7 @@ func cHgvsAlt(cHgvs string) string {
 	return cHgvs
 }
 
-func googleKey(item map[string]string) string {
-	gene, chgvs, phgvs := item["Gene Symbol"], item["cHGVS"], item["pHGVS"]
-	var searchKey []string
-
-	// cHGVS
-	var m []string
-	if m = cHGVSalt.FindStringSubmatch(chgvs); m != nil {
-		chgvs = m[1]
-	}
+func googleKeyChgvs(chgvs string, m []string) (searchKey []string) {
 	if m = cHGVS1.FindStringSubmatch(chgvs); m != nil {
 		searchKey =
 			append(
@@ -810,7 +787,10 @@ func googleKey(item map[string]string) string {
 				fmt.Sprintf("%s", m[1]),
 			)
 	}
+	return
+}
 
+func googleKeyPhgvs(chgvs, phgvs, exInID string, m []string) (searchKey []string) {
 	// pHGVS
 	if m = pHGVS1.FindStringSubmatch(phgvs); m != nil {
 		searchKey =
@@ -850,8 +830,8 @@ func googleKey(item map[string]string) string {
 					strings.Replace(m[2], "*", "Ter", 1),
 				)
 		}
-	} else if strings.Contains(item["ExIn_ID"], "IVS") {
-		intr := strings.Replace(item["ExIn_ID"], "IVS", "", 1)
+	} else if strings.Contains(exInID, "IVS") {
+		intr := strings.Replace(exInID, "IVS", "", 1)
 		if m = ivs3.FindStringSubmatch(chgvs); m != nil {
 			searchKey =
 				append(
@@ -883,12 +863,24 @@ func googleKey(item map[string]string) string {
 		}
 
 	}
+	return
+}
 
-	if rsID.MatchString(item["rsID"]) {
-		searchKey = append(searchKey, item["rsID"])
+func googleKey(item map[string]string) string {
+	var gene, chgvs, phgvs, exInID, rs = item["Gene Symbol"], item["cHGVS"], item["pHGVS"], item["ExIn_ID"], item["rsID"]
+
+	// cHGVS
+	var m = cHGVSalt.FindStringSubmatch(chgvs)
+	if m != nil {
+		chgvs = m[1]
 	}
-	altKey := strings.Join(searchKey, "\" | \"")
-	return gene + " (\"" + altKey + "\")"
+	var searchKey = googleKeyChgvs(chgvs, m)
+	searchKey = googleKeyPhgvs(chgvs, phgvs, exInID, m)
+
+	if rsID.MatchString(rs) {
+		searchKey = append(searchKey, rs)
+	}
+	return gene + " (\"" + strings.Join(searchKey, "\" | \"") + "\")"
 }
 
 //UpdateTags return 筛选标签

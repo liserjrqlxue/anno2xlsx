@@ -32,6 +32,47 @@ var keys = []string{
 	"Panel AlleleFreq",
 }
 
+func tag1Trio(tagMap map[string]bool, item map[string]string) {
+	if item["遗传相符-经典trio"] == "相符" {
+		tagMap["T1"] = true
+	}
+	if item["遗传相符-非经典trio"] == "相符" {
+		inherit := item["ModeInheritance"]
+		if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
+			tagMap["1"] = true
+		} else if isAD.MatchString(inherit) {
+			var flag = true
+			for _, key := range keys {
+				if !isZero.MatchString(item[key]) {
+					flag = false
+				}
+			}
+			if flag {
+				tagMap["1"] = true
+			}
+		}
+	}
+}
+
+func tag1Single(tagMap map[string]bool, item map[string]string) {
+	if item["遗传相符"] == "相符" {
+		inherit := item["ModeInheritance"]
+		if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
+			tagMap["1"] = true
+		} else if isAD.MatchString(inherit) {
+			var flag = true
+			for _, key := range keys {
+				if !isZero.MatchString(item[key]) {
+					flag = false
+				}
+			}
+			if flag {
+				tagMap["1"] = true
+			}
+		}
+	}
+}
+
 func tag1(tagMap map[string]bool, item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) {
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
@@ -52,42 +93,9 @@ func tag1(tagMap map[string]bool, item map[string]string, specVarDb map[string]b
 	}
 
 	if isTrio || isTrio2 {
-		if item["遗传相符-经典trio"] == "相符" {
-			tagMap["T1"] = true
-		}
-		if item["遗传相符-非经典trio"] == "相符" {
-			inherit := item["ModeInheritance"]
-			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
-				tagMap["1"] = true
-			} else if isAD.MatchString(inherit) {
-				var flag = true
-				for _, key := range keys {
-					if !isZero.MatchString(item[key]) {
-						flag = false
-					}
-				}
-				if flag {
-					tagMap["1"] = true
-				}
-			}
-		}
+		tag1Trio(tagMap, item)
 	} else {
-		if item["遗传相符"] == "相符" {
-			inherit := item["ModeInheritance"]
-			if isAR.MatchString(inherit) || isXL.MatchString(inherit) || isYL.MatchString(inherit) {
-				tagMap["1"] = true
-			} else if isAD.MatchString(inherit) {
-				var flag = true
-				for _, key := range keys {
-					if !isZero.MatchString(item[key]) {
-						flag = false
-					}
-				}
-				if flag {
-					tagMap["1"] = true
-				}
-			}
-		}
+		tag1Single(tagMap, item)
 	}
 }
 
