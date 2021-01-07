@@ -43,7 +43,7 @@ var (
 		filepath.Join(exPath, "addition.list"),
 		"output addition title",
 	)
-	geneId = flag.String(
+	geneID = flag.String(
 		"geneId",
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
@@ -114,7 +114,7 @@ func main() {
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)
 
-	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
@@ -141,14 +141,14 @@ func main() {
 	simple_util.CheckErr(err)
 	for _, item := range data {
 		var gene = item["Gene Symbol"]
-		var geneId, ok = gene2id[gene]
+		var geneID, ok = gene2id[gene]
 		if !ok {
 			if gene != "-" && gene != "." {
 				log.Fatalf("can not find gene id of [%s]\n", gene)
 			}
 		}
 		// 基因-疾病
-		gDiseaseDb := geneDiseaseDb[geneId]
+		gDiseaseDb := geneDiseaseDb[geneID]
 		for key, value := range geneDiseaseDbColumn {
 			item[value] = gDiseaseDb[key]
 		}

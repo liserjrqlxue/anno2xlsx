@@ -101,6 +101,8 @@ var snvs []string
 
 // ACMG
 // PVS1
+
+//LOFList lost-of-function list
 var LOFList map[string]int
 var transcriptInfo map[string][]evidence.Region
 
@@ -117,14 +119,14 @@ var (
 // PM1
 var tbx *bix.Bix
 var (
-	PfamDomain   map[string]bool
+	pfamDomain   map[string]bool
 	dbNSFPDomain map[string]bool
 )
 
 // PP2
 var (
-	HgmdPP2GeneList    map[string]float64
-	ClinVarPP2GeneList map[string]float64
+	hgmdPP2GeneList    map[string]float64
+	clinVarPP2GeneList map[string]float64
 )
 
 // BS2
@@ -132,8 +134,8 @@ var lateOnsetList map[string]int
 
 // BP1
 var (
-	HgmdBP1GeneList    map[string]float64
-	ClinVarBP1GeneList map[string]float64
+	hgmdBP1GeneList    map[string]float64
+	clinVarBP1GeneList map[string]float64
 )
 
 var err error
@@ -176,20 +178,20 @@ func main() {
 
 		// PM1
 		simple_util.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
-		simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &PfamDomain)
+		simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &pfamDomain)
 		tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
 		simple_util.CheckErr(err, "load tabix")
 
 		// PP2
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &ClinVarPP2GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &HgmdPP2GeneList)
+		simple_util.JsonFile2Data(anno.GetPath("ClinVarPP2GeneList", dbPath, defaultConfig), &clinVarPP2GeneList)
+		simple_util.JsonFile2Data(anno.GetPath("HgmdPP2GeneList", dbPath, defaultConfig), &hgmdPP2GeneList)
 
 		// BS2
 		simple_util.JsonFile2Data(anno.GetPath("LateOnset", dbPath, defaultConfig), &lateOnsetList)
 
 		// BP1
-		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &ClinVarBP1GeneList)
-		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &HgmdBP1GeneList)
+		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
+		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
 	}
 
 	if *geneDiseaseDbFile == "" {
@@ -284,11 +286,11 @@ func main() {
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]
 
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, AFlist1)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, afList1)
 		if item["Tier"] == "Tier1" {
 			tier1Count++
 		}
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, AFlist2)
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, afList2)
 		if item["Tier"] == "Tier1" {
 			tier1Count2++
 		}
@@ -296,7 +298,7 @@ func main() {
 	fmt.Printf("Tier1:\t%d\t%d\n", tier1Count, tier1Count2)
 }
 
-var AFlist1 = []string{
+var afList1 = []string{
 	"GnomAD EAS AF",
 	"GnomAD AF",
 	"1000G AF",
@@ -307,7 +309,7 @@ var AFlist1 = []string{
 	"Panel AlleleFreq",
 }
 
-var AFlist2 = []string{
+var afList2 = []string{
 	"GnomAD AF",
 	"1000G AF",
 	"ESP6500 AF",

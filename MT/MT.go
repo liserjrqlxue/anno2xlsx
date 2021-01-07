@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/liserjrqlxue/simple-util"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/liserjrqlxue/simple-util"
 )
 
 // regexp
@@ -36,6 +37,7 @@ var (
 	)
 )
 
+//Variant struct of var
 type Variant struct {
 	Chr   string                 `json:"Chromosome"`
 	Ref   string                 `json:"Ref"`
@@ -129,6 +131,7 @@ func main() {
 	simple_util.CheckErr(simple_util.Json2rawFile(*db+".db", outputDb))
 }
 
+//MTAllele2Variant convert MT allele to var info
 func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 	var err error
 	switch {
@@ -224,6 +227,7 @@ func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 	return
 }
 
+//MTPosRefAlt2Variant convert MT pos ref alt to var info
 func MTPosRefAlt2Variant(Pos, Ref, Alt string) (ref, alt string, start, end int) {
 	var err error
 	if Alt == ":" {
@@ -243,21 +247,21 @@ func MTPosRefAlt2Variant(Pos, Ref, Alt string) (ref, alt string, start, end int)
 		start--
 		end = start + len(Ref)
 		return
-	} else {
-		altChr := strings.Split(Alt, "")
-		if altChr[0] == Ref {
-			ref = ""
-			alt = strings.Join(altChr[1:], "")
-			start, err = strconv.Atoi(Pos)
-			simple_util.CheckErr(err)
-			end = start + len(Ref)
-			return
-		}
+	}
+	altChr := strings.Split(Alt, "")
+	if altChr[0] == Ref {
+		ref = ""
+		alt = strings.Join(altChr[1:], "")
+		start, err = strconv.Atoi(Pos)
+		simple_util.CheckErr(err)
+		end = start + len(Ref)
+		return
 	}
 	log.Fatalf("can not parser:%s:%s>%s\n", Pos, Ref, Alt)
 	return
 }
 
+//MTPosNC2Variant convert MT pos nc to var info
 func MTPosNC2Variant(pos, nc string) (ref, alt string, start, end int) {
 	var err error
 	switch {

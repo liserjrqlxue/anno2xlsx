@@ -2,18 +2,19 @@ package anno
 
 import (
 	"encoding/json"
-	"github.com/go-redis/redis"
-	"github.com/liserjrqlxue/simple-util"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/go-redis/redis"
+	"github.com/liserjrqlxue/simple-util"
 )
 
 var (
 	isIndel = regexp.MustCompile(`ins|del`)
 )
 
-func Nm2Ensp(item map[string]string, db *redis.Client) error {
+func nm2Ensp(item map[string]string, db *redis.Client) error {
 	nm := item["Transcript"]
 	var v = db.HGet("nm2ensp", nm)
 	ensp, err := v.Result()
@@ -24,7 +25,7 @@ func Nm2Ensp(item map[string]string, db *redis.Client) error {
 	return err
 }
 
-func GetNativeSnpField(item map[string]string) string {
+func getNativeSnpField(item map[string]string) string {
 	return strings.Join(
 		[]string{
 			item["#Chr"],
@@ -36,7 +37,7 @@ func GetNativeSnpField(item map[string]string) string {
 	)
 }
 
-func GetNativeIndelField(item map[string]string) string {
+func getNativeIndelField(item map[string]string) string {
 	zygo := strings.Split(item["Zygosity"], ";")[0]
 	if zygo == "Hemi" {
 		zygo = "Hom"
@@ -66,17 +67,16 @@ func GetNativeIndelField(item map[string]string) string {
 				},
 				"_",
 			)
-		} else {
-			return strings.Join(
-				[]string{
-					item["#Chr"],
-					strconv.Itoa(start+1) + ".." + item["Stop"],
-					"del" + item["Ref"],
-					zygo,
-				},
-				"_",
-			)
 		}
+		return strings.Join(
+			[]string{
+				item["#Chr"],
+				strconv.Itoa(start+1) + ".." + item["Stop"],
+				"del" + item["Ref"],
+				zygo,
+			},
+			"_",
+		)
 	}
 	/*
 		fmt.Printf("[%s] can not get native indel field\n",item["MutationName"])
@@ -87,7 +87,7 @@ func GetNativeIndelField(item map[string]string) string {
 	return ""
 }
 
-func RedisNativeSnpAF(item map[string]string, db *redis.Client, key, field string) error {
+func redisNativeSnpAF(item map[string]string, db *redis.Client, key, field string) error {
 	item["mut"] = field
 	var v = db.HGet(key, field)
 	r, err := v.Result()
@@ -104,7 +104,7 @@ func RedisNativeSnpAF(item map[string]string, db *redis.Client, key, field strin
 	return err
 }
 
-func RedisNativeIndelAF(item map[string]string, db *redis.Client, key, field string) error {
+func redisNativeIndelAF(item map[string]string, db *redis.Client, key, field string) error {
 	item["mut"] = field
 	var v = db.HGet(key, field)
 	r, err := v.Result()
@@ -121,16 +121,17 @@ func RedisNativeIndelAF(item map[string]string, db *redis.Client, key, field str
 	return err
 }
 
+// UpdateRedis update item from redis
 func UpdateRedis(item map[string]string, db *redis.Client, keyPrefix string) {
-	Nm2Ensp(item, db)
+	nm2Ensp(item, db)
 
 	if item["VarType"] == "snv" {
 		key := keyPrefix + "_all_native_snp"
-		field := GetNativeSnpField(item)
-		RedisNativeSnpAF(item, db, key, field)
+		field := getNativeSnpField(item)
+		redisNativeSnpAF(item, db, key, field)
 	} else if isIndel.MatchString(item["VarType"]) {
 		key := keyPrefix + "_all_native_indel"
-		field := GetNativeIndelField(item)
-		RedisNativeIndelAF(item, db, key, field)
+		field := getNativeIndelField(item)
+		redisNativeIndelAF(item, db, key, field)
 	}
 }

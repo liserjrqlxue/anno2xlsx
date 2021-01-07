@@ -48,7 +48,7 @@ var (
 		filepath.Join(exPath, "title.list"),
 		"output title",
 	)
-	geneId = flag.String(
+	geneID = flag.String(
 		"geneId",
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
@@ -119,7 +119,7 @@ func main() {
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)
 
-	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})

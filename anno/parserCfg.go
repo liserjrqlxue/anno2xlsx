@@ -7,6 +7,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/osUtil"
 )
 
+//GetPath get path of key from config
 func GetPath(key, dbPath string, config map[string]interface{}) (path string) {
 	path = GuessPath(GetStrVal(key, config), dbPath)
 	return
@@ -23,6 +24,7 @@ func GuessPath(path, dbPath string) string {
 	return path
 }
 
+//GetStrVal get value ofkey from config
 func GetStrVal(key string, config map[string]interface{}) (val string) {
 	val, ok := config[key].(string)
 	if !ok {

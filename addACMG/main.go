@@ -80,6 +80,8 @@ var (
 
 // ACMG
 // PVS1
+
+// LOFList lost-of-function list
 var LOFList map[string]int
 var transcriptInfo map[string][]evidence.Region
 
@@ -96,7 +98,7 @@ var (
 // PM1
 var tbx *bix.Bix
 var (
-	PfamDomain   map[string]bool
+	pfamDomain   map[string]bool
 	dbNSFPDomain map[string]bool
 )
 
@@ -160,7 +162,7 @@ func main() {
 
 	// PM1
 	simple_util.JsonFile2Data(anno.GetPath("PM1dbNSFPDomain", dbPath, defaultConfig), &dbNSFPDomain)
-	simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &PfamDomain)
+	simple_util.JsonFile2Data(anno.GetPath("PM1PfamDomain", dbPath, defaultConfig), &pfamDomain)
 	tbx, err = bix.New(anno.GetPath("PathogenicLite", dbPath, defaultConfig))
 	simple_util.CheckErr(err, "load tabix")
 

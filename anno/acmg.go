@@ -2,16 +2,17 @@ package anno
 
 import "strings"
 
-var AutoRuleKey = []string{
+var autoRuleKey = []string{
 	"PVS1", "PS1", "PS4", "PM1", "PM2", "PM4", "PM5", "PP2", "PP3", "PP5", "BA1",
 	"BS1", "BS2", "BP1", "BP3", "BP4", "BP6", "BP7",
 }
 
-var ManualRuleKey = []string{
+var manualRuleKey = []string{
 	"PVS1", "PS1", "PM5", "PS2", "PS3", "PM3", "PM6", "PP1",
 	"PP4", "BS3", "BS4", "BP2", "BP5",
 }
 
+//UpdateAutoRule update auto rules of acmg2015
 func UpdateAutoRule(item map[string]string) {
 	var autoRuleName, autoIsChecked []string
 	if item["AutoPVS1 Adjusted Strength"] != "" {
@@ -31,7 +32,7 @@ func UpdateAutoRule(item map[string]string) {
 		autoRuleName = append(autoRuleName, "PVS1_Supporting")
 		autoIsChecked = append(autoIsChecked, "1")
 	}
-	for _, key := range AutoRuleKey {
+	for _, key := range autoRuleKey {
 		if item[key] != "" && item[key] != "0" {
 			autoRuleName = append(autoRuleName, key)
 			autoIsChecked = append(autoIsChecked, "1")
@@ -41,9 +42,10 @@ func UpdateAutoRule(item map[string]string) {
 	item["autoIsChecked"] = strings.Join(autoIsChecked, "\n")
 }
 
+//UpdateManualRule update manualRuleName and manualExplaination
 func UpdateManualRule(item map[string]string) {
 	var manualRuleName, manualExplaination []string
-	for _, key := range ManualRuleKey {
+	for _, key := range manualRuleKey {
 		if item[key] != "" && item[key] != "0" {
 			manualRuleName = append(manualRuleName, key)
 			manualExplaination = append(manualExplaination, item[key])

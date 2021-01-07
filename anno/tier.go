@@ -2,12 +2,14 @@ package anno
 
 // map[string]string update
 import (
-	"github.com/liserjrqlxue/simple-util"
 	"regexp"
 	//"github.com/liserjrqlxue/acmg2015"
 	"strconv"
+
+	"github.com/liserjrqlxue/simple-util"
 )
 
+// FuncInfo classify function
 // Tier1 >1
 // LoF 3
 var FuncInfo = map[string]int{
@@ -41,7 +43,7 @@ var (
 	isChrAXY  = regexp.MustCompile(`[0-9XY]+$`)
 )
 
-// add Tier to item
+// AddTier add tier to item
 func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio, isWGS, allGene bool, AFlist []string) {
 	if isTrio {
 		if noProband.MatchString(item["Zygosity"]) {
@@ -270,7 +272,6 @@ func checkAF(item map[string]string, AFlist []string, threshold float64) bool {
 func isSpecVar(db map[string]bool, key string) bool {
 	if db[key] {
 		return db[key]
-	} else {
-		return false
 	}
+	return false
 }

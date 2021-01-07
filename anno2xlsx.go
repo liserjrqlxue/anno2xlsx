@@ -56,7 +56,7 @@ var (
 		"",
 		"output log to log.log, default is prefix.log",
 	)
-	geneId = flag.String(
+	geneID = flag.String(
 		"geneId",
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
@@ -421,7 +421,7 @@ func main() {
 	log.Printf("Git Commit Hash  : %s\n", gitHash)
 	logVersion()
 
-	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneId, "\t", false)).(map[string]string)
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
 	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
@@ -783,7 +783,7 @@ func main() {
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			item["death age"] = item["hpo_cn"]
 
-			//anno.AnnoSpliceAI(item)
+			//anno.ParseSpliceAI(item)
 
 			// ues acmg of go
 			if *acmg {

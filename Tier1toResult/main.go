@@ -54,7 +54,7 @@ var (
 	)
 )
 
-var Acmg59Gene = make(map[string]bool)
+var acmg59Gene = make(map[string]bool)
 var resultColumn []string
 
 func main() {
@@ -71,7 +71,7 @@ func main() {
 
 	acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
 	for _, gene := range acmg59GeneList {
-		Acmg59Gene[gene] = true
+		acmg59Gene[gene] = true
 	}
 	for _, key := range defaultConfig["resultColumn"].([]interface{}) {
 		resultColumn = append(resultColumn, key.(string))
@@ -104,7 +104,7 @@ func main() {
 				}
 			}
 			item["IsACMG59"] = "N"
-			if Acmg59Gene[item["Gene Symbol"]] {
+			if acmg59Gene[item["Gene Symbol"]] {
 				item["IsACMG59"] = "Y"
 			} else {
 				item["IsACMG59"] = "N"

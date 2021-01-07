@@ -17,13 +17,13 @@ func UpdateDisGenes(
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			var geneId, ok1 = gene2id[gene]
+			var geneID, ok1 = gene2id[gene]
 			if !ok1 {
 				if gene != "-" && gene != "." {
 					log.Fatalf("can not find gene id of [%s]\n", gene)
 				}
 			}
-			geneDb, ok := geneDisDb[geneId]
+			geneDb, ok := geneDisDb[geneID]
 			if ok {
 				vals = append(vals, geneDb[key])
 			}
@@ -34,7 +34,7 @@ func UpdateDisGenes(
 	}
 }
 
-type GeneInfo struct {
+type geneInfo struct {
 	OmimGene     string        `json:"omimGene"`
 	Transcript   string        `json:"transcript"`
 	Exon         string        `json:"exon"`
@@ -43,17 +43,17 @@ type GeneInfo struct {
 	Start        string        `json:"start"`
 	Stop         string        `json:"stop"`
 	Primer       string        `json:"primer"`
-	OmimGeneId   string        `json:"omimGeneId"`
+	OmimGeneID   string        `json:"omimGeneId"`
 	Location     string        `json:"location"`
-	OmimDiseases []OmimDisease `json:"omimDiseases"`
+	OmimDiseases []omimDisease `json:"omimDiseases"`
 }
-type OmimDisease struct {
+type omimDisease struct {
 	DiseaseCnName    string `json:"diseaseCnName"`
 	DiseaseEnName    string `json:"diseaseEnName"`
 	GeneralizationCn string `json:"generalizationCn"`
 	GeneralizationEn string `json:"generalizationEn"`
-	OmimDiseaseId    string `json:"omimDiseaseId"`
-	OmimGeneId       string `json:"omimGeneId"`
+	OmimDiseaseID    string `json:"omimDiseaseId"`
+	OmimGeneID       string `json:"omimGeneId"`
 	SystemSort       string `json:"systemSort"`
 	HeredityModel    string `json:"heredityModel"`
 }
@@ -66,13 +66,13 @@ func UpdateDiseMultiGene(geneLst string, item, gene2id, geneDisDbCol map[string]
 	for key, value := range geneDisDbCol {
 		var vals []string
 		for _, gene := range genes {
-			var geneId, ok1 = gene2id[gene]
+			var geneID, ok1 = gene2id[gene]
 			if !ok1 {
 				if gene != "-" && gene != "." {
 					log.Fatalf("can not find gene id of [%s]\n", gene)
 				}
 			}
-			singelGeneDb, ok := geneDisDb[geneId]
+			singelGeneDb, ok := geneDisDb[geneID]
 			if ok {
 				vals = append(vals, singelGeneDb[key])
 				geneLocus = append(geneLocus, singelGeneDb["Gene/Locus"])
@@ -86,26 +86,27 @@ func UpdateDiseMultiGene(geneLst string, item, gene2id, geneDisDbCol map[string]
 
 }
 
+//UpdateCnvAnnot update annot of cnv
 func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb map[string]map[string]string) {
 	var genes = strings.Split(geneLst, ";")
 	var exonMap = getExonMap(item)
-	var cnvAnnots []GeneInfo
+	var cnvAnnots []geneInfo
 	for _, gene := range genes {
-		var geneId, ok0 = gene2id[gene]
+		var geneID, ok0 = gene2id[gene]
 		if !ok0 {
 			if gene != "-" && gene != "." {
 				log.Fatalf("can not find gene id of [%s]\n", gene)
 			}
 		}
-		singleGeneDb, ok := geneDisDb[geneId]
+		singleGeneDb, ok := geneDisDb[geneID]
 		if !ok {
 			continue
 		}
-		var trans, ok1 = Gene2trans[gene]
+		var trans, ok1 = gene2trans[gene]
 		if !ok1 {
 			trans = item["Transcript"]
 		}
-		var cnvAnnot = GeneInfo{
+		var cnvAnnot = geneInfo{
 			OmimGene:     gene,
 			Transcript:   trans,
 			Exon:         exonMap[gene],
@@ -114,7 +115,7 @@ func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb m
 			Start:        item["start"],
 			Stop:         item["end"],
 			Primer:       item["Primer"],
-			OmimGeneId:   strings.Split(singleGeneDb["Gene/Locus MIM number"], "\n")[0],
+			OmimGeneID:   strings.Split(singleGeneDb["Gene/Locus MIM number"], "\n")[0],
 			Location:     strings.Split(singleGeneDb["Location"], "\n")[0],
 			OmimDiseases: nil,
 		}
@@ -146,7 +147,7 @@ func getExonMap(item map[string]string) map[string]string {
 	return exonMap
 }
 
-func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisease) {
+func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []omimDisease) {
 	var DiseaseCnName = strings.Split(item["Disease NameCH"], "\n")
 	var DiseaseEnName = strings.Split(item["Disease NameEN"], "\n")
 	var GeneralizationCn = strings.Split(item["GeneralizationCH"], "\n")
@@ -156,13 +157,13 @@ func singelGeneDb2OmimDiseases(item map[string]string) (omimDiseases []OmimDisea
 	var SystemSort = strings.Split(item["SystemSort"], "\n")
 	var HeredityModel = strings.Split(item["Inheritance"], "\n")
 	for i := 0; i < len(DiseaseCnName); i++ {
-		var omimDisease = OmimDisease{
+		var omimDisease = omimDisease{
 			DiseaseCnName:    DiseaseCnName[i],
 			DiseaseEnName:    DiseaseEnName[i],
 			GeneralizationCn: GeneralizationCn[i],
 			GeneralizationEn: GeneralizationEn[i],
-			OmimDiseaseId:    OmimDiseaseID[i],
-			OmimGeneId:       OmimGeneID[i],
+			OmimDiseaseID:    OmimDiseaseID[i],
+			OmimGeneID:       OmimGeneID[i],
 			SystemSort:       SystemSort[i],
 			HeredityModel:    HeredityModel[i],
 		}

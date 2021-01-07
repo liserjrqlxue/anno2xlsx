@@ -347,31 +347,29 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 			}
 		}
 		return "不相符"
-	} else {
-		if isXL.MatchString(inherit) || isYL.MatchString(inherit) {
-			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) || isHemi.MatchString(zygosity) {
-				return "相符"
-			}
-		}
-		if isAD.MatchString(inherit) {
-			if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
-				return "相符"
-			}
-		}
-		if isAR.MatchString(inherit) {
-			if isHom.MatchString(zygosity) {
-				return "相符"
-			}
-			if isHet.MatchString(zygosity) {
-				if inheritDb[geneSymbol]["flag1"] >= 2 {
-					return "相符"
-				} else {
-					return "不确定"
-				}
-			}
-		}
-		return "不相符"
 	}
+	if isXL.MatchString(inherit) || isYL.MatchString(inherit) {
+		if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) || isHemi.MatchString(zygosity) {
+			return "相符"
+		}
+	}
+	if isAD.MatchString(inherit) {
+		if isHet.MatchString(zygosity) || isHom.MatchString(zygosity) {
+			return "相符"
+		}
+	}
+	if isAR.MatchString(inherit) {
+		if isHom.MatchString(zygosity) {
+			return "相符"
+		}
+		if isHet.MatchString(zygosity) {
+			if inheritDb[geneSymbol]["flag1"] >= 2 {
+				return "相符"
+			}
+			return "不确定"
+		}
+	}
+	return "不相符"
 }
 
 // FamilyTag return familyTag
@@ -709,7 +707,7 @@ func exomePrimer(item map[string]string) (primer string) {
 			primers,
 			strings.Join(
 				[]string{
-					gene, Gene2trans[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
+					gene, gene2trans[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
 				},
 				";",
 			),
@@ -969,22 +967,23 @@ var newlineFormatArray = []string{
 	"SecondaryFinding_Var_updatetime",
 }
 
-//NewlineForamt warp strings.Replace
+//NewlineFormat warp strings.Replace
 func NewlineFormat(item map[string]string) {
 	for _, key := range newlineFormatArray {
 		item[key] = isBR.ReplaceAllString(item[key], "\n")
 	}
 }
 
+//Format format float and newline
 func Format(item map[string]string) {
 	FloatFormat(item)
 	NewlineFormat(item)
 }
 
 //UpdateDisease add disease info to item
-func UpdateDisease(geneId string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+func UpdateDisease(geneID string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
 	// 基因-疾病
-	gDiseaseDb := geneDiseaseDb[geneId]
+	gDiseaseDb := geneDiseaseDb[geneID]
 	for key, value := range gDiseaseDbColumn {
 		item[value] = gDiseaseDb[key]
 	}
