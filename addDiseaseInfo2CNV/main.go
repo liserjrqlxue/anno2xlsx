@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"runtime/pprof"
 	"strings"
-	"time"
 
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
@@ -94,9 +93,6 @@ var codeKey []byte
 var isLF = regexp.MustCompile(`\n`)
 
 func main() {
-	var ts []time.Time
-	ts = append(ts, time.Now())
-
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)

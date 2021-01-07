@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"runtime/pprof"
 	"strings"
-	"time"
 
 	"github.com/brentp/bix"
 	"github.com/liserjrqlxue/acmg2015"
@@ -120,9 +119,6 @@ var (
 //var err error
 
 func main() {
-	var ts []time.Time
-	ts = append(ts, time.Now())
-
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
