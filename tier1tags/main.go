@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
-
-	simpleUtil "github.com/liserjrqlxue/simple-util"
+	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -64,7 +64,14 @@ var (
 		filepath.Join(exPath, "..", "etc", "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
+	geneID = flag.String(
+		"geneId",
+		filepath.Join(dbPath, "gene.id.txt"),
+		"gene symbol and ncbi id list",
+	)
 )
+
+var gene2id = make(map[string]string)
 
 // regexp
 var (
@@ -102,21 +109,23 @@ func main() {
 
 	title := textUtil.File2Array(*columns)
 	out, err := os.Create(*prefix + ".tier1.tsv")
-	simpleUtil.CheckErr(err)
-	defer simpleUtil.DeferClose(out)
+	simple_util.CheckErr(err)
+	defer simple_util.DeferClose(out)
 	_, err = fmt.Fprintln(out, strings.Join(title, "\t"))
-	simpleUtil.CheckErr(err)
+	simple_util.CheckErr(err)
 
 	outExcel := xlsx.NewFile()
 	sheet, err := outExcel.AddSheet("filter_variants")
-	simpleUtil.CheckErr(err)
+	simple_util.CheckErr(err)
 	row := sheet.AddRow()
 	for _, key := range title {
 		row.AddCell().SetString(key)
 	}
 
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
+
 	// parser etc/config.json
-	defaultConfig := simpleUtil.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
@@ -131,22 +140,27 @@ func main() {
 	}
 	// 基因-疾病
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simpleUtil.Json2MapMap(simpleUtil.File2Decode(*geneDiseaseDbFile, codeKey))
+	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
 	for key := range geneDiseaseDb {
 		geneList[key] = true
+	}
+	for k, v := range gene2id {
+		if geneList[v] {
+			geneList[k] = true
+		}
 	}
 
 	// tier1 filter
 	var data []map[string]string
 	for _, db := range strings.Split(*snv, ",") {
 		if isGz.MatchString(db) {
-			d, _ := simpleUtil.Gz2MapArray(db, "\t", isComment)
+			d, _ := simple_util.Gz2MapArray(db, "\t", isComment)
 			data = append(data, d...)
 		} else if isXlsx.MatchString(db) {
-			_, d := simpleUtil.Sheet2MapArray(db, "sheet1")
+			_, d := simple_util.Sheet2MapArray(db, "sheet1")
 			data = append(data, d...)
 		} else {
-			d, _ := simpleUtil.File2MapArray(db, "\t", isComment)
+			d, _ := simple_util.File2MapArray(db, "\t", isComment)
 			data = append(data, d...)
 		}
 	}
@@ -180,9 +194,9 @@ func main() {
 				array = append(array, item[key])
 			}
 			_, err = fmt.Fprintln(out, strings.Join(array, "\t"))
-			simpleUtil.CheckErr(err)
+			simple_util.CheckErr(err)
 		}
 	}
 	err = outExcel.Save(*prefix + ".tier1.xlsx")
-	simpleUtil.CheckErr(err)
+	simple_util.CheckErr(err)
 }
