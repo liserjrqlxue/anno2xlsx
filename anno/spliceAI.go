@@ -68,14 +68,14 @@ func (ai *spliceAI) Parse() (err error) {
 }
 
 //Interpreatation calculate value of spliceAI.interpretation
-func (ai *spliceAI) Interpreatation(chromesome string, position int) (err error) {
+func (ai *spliceAI) Interpreatation(chromosome string, position int) (err error) {
 	var interpreation []string
 	if ai.dsAG >= 0.1 {
 		interpreation = append(
 			interpreation,
 			fmt.Sprintf(
 				"%s:%d (=%d%d) acceptor gain %f",
-				chromesome, position+ai.dpAG, position, ai.dpAG, ai.dsAG,
+				chromosome, position+ai.dpAG, position, ai.dpAG, ai.dsAG,
 			),
 		)
 	}
@@ -84,7 +84,7 @@ func (ai *spliceAI) Interpreatation(chromesome string, position int) (err error)
 			interpreation,
 			fmt.Sprintf(
 				"%s:%d (=%d%d) acceptor loss %f",
-				chromesome, position+ai.dpAL, position, ai.dpAL, ai.dsAL,
+				chromosome, position+ai.dpAL, position, ai.dpAL, ai.dsAL,
 			),
 		)
 	}
@@ -93,7 +93,7 @@ func (ai *spliceAI) Interpreatation(chromesome string, position int) (err error)
 			interpreation,
 			fmt.Sprintf(
 				"%s:%d (=%d%d) donor gain %f",
-				chromesome, position+ai.dpDG, position, ai.dpDG, ai.dsDG,
+				chromosome, position+ai.dpDG, position, ai.dpDG, ai.dsDG,
 			),
 		)
 	}
@@ -102,7 +102,7 @@ func (ai *spliceAI) Interpreatation(chromesome string, position int) (err error)
 			interpreation,
 			fmt.Sprintf(
 				"%s:%d (=%d%d) donor loss %f",
-				chromesome, position+ai.dpDL, position, ai.dpDL, ai.dsDL,
+				chromosome, position+ai.dpDL, position, ai.dpDL, ai.dsDL,
 			),
 		)
 	}
