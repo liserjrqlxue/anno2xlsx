@@ -57,7 +57,7 @@ var (
 var acmg59Gene = make(map[string]bool)
 var resultColumn []string
 
-func main() {
+func init() {
 	flag.Parse()
 	if *input == "" {
 		flag.Usage()
@@ -79,7 +79,9 @@ func main() {
 	if *trio {
 		resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
 	}
+}
 
+func main() {
 	xlF, err := xlsx.OpenFile(*input)
 	simple_util.CheckErr(err)
 

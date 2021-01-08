@@ -93,7 +93,6 @@ func main() {
 		fmt.Println("-input/-key/-sheet/-rowCount/-keyCount are required!")
 		os.Exit(1)
 	}
-	var valid = true
 	if *output == "" {
 		if *prefix == "" {
 			*prefix = *input
@@ -128,22 +127,26 @@ func main() {
 			continue
 		}
 		fmt.Printf("encode sheet:[%s]\n", *sheetName)
-		var rows = simpleUtil.HandleError(inputFh.GetRows(sheet)).([][]string)
-		fmt.Printf("rows:\t%d\t%v\n", len(rows), len(rows) == *rowCount)
-		valid = valid && len(rows) == *rowCount
-		var outputFile = *prefix + *output + "." + sheet + *suffix
-		var d []byte
-		var data, _ = simpleUtil.Slice2MapMapArrayMerge1(rows, *key, *mergeSep, skip)
-		for key := range data {
-			if !geneIDkeys[key] {
-				fmt.Printf("key:[%s] not contain in %s\n", key, *geneID)
-				valid = false
-			}
-		}
-		d = simpleUtil.HandleError(json.MarshalIndent(data, "", "  ")).([]byte)
-		fmt.Printf("keys:\t%d\t%v\n", len(data), len(data) == *keyCount)
-		valid = valid && len(data) == *keyCount
-		AES.Encode2File(outputFile, d, codeKeyBytes)
-		fmt.Printf("[%s] checked:\t%v\n", *sheetName, valid)
+		sheet2db(inputFh, sheet, geneIDkeys, skip, codeKeyBytes)
+
 	}
+}
+
+func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, skip map[int]bool, code []byte) {
+	var valid = true
+	var rows = simpleUtil.HandleError(inputFh.GetRows(sheet)).([][]string)
+	fmt.Printf("rows:\t%d\t%v\n", len(rows), len(rows) == *rowCount)
+	var outputFile = *prefix + *output + "." + sheet + *suffix
+	var d []byte
+	var data, _ = simpleUtil.Slice2MapMapArrayMerge1(rows, *key, *mergeSep, skip)
+	for key := range data {
+		if !geneIDkeys[key] {
+			fmt.Printf("key:[%s] not contain in %s\n", key, *geneID)
+			valid = false
+		}
+	}
+	d = simpleUtil.HandleError(json.MarshalIndent(data, "", "  ")).([]byte)
+	fmt.Printf("keys:\t%d\t%v\n", len(data), len(data) == *keyCount)
+	AES.Encode2File(outputFile, d, code)
+	fmt.Printf("[%s] checked:\t%v\n", *sheetName, valid)
 }

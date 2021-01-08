@@ -189,11 +189,10 @@ var redisDb *redis.Client
 
 var snvs []string
 
-func main() {
+var defaultConfig map[string]interface{}
+
+func init() {
 	version.LogVersion()
-	var ts []time.Time
-	var step = 0
-	ts = append(ts, time.Now())
 
 	flag.Parse()
 	if *snv == "" {
@@ -219,7 +218,7 @@ func main() {
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
-	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig = jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *ifRedis {
 		if *redisAddr == "" {
@@ -253,7 +252,6 @@ func main() {
 	if *geneDbFile == "" {
 		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
 	}
-	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
@@ -266,6 +264,14 @@ func main() {
 	for _, sample := range sampleList {
 		sampleMap[sample] = true
 	}
+}
+
+func main() {
+	var ts []time.Time
+	var step = 0
+	ts = append(ts, time.Now())
+
+	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
 
 	var tier1Xlsx = xlsx.NewFile()
 	var filterVariantsSheet = xlsxUtil.AddSheet(tier1Xlsx, "filter_variants")
@@ -333,67 +339,8 @@ func main() {
 
 		stats["Total"] = len(data)
 		for _, item := range data {
-
-			// score to prediction
-			anno.Score2Pred(item)
-
-			// update Function
-			anno.UpdateFunction(item)
-
-			// update FuncRegion
-			anno.UpdateFuncRegion(item)
-
-			var gene = item["Gene Symbol"]
-			var id, ok = gene2id[gene]
-			if !ok {
-				if gene != "-" && gene != "." {
-					log.Fatalf("can not find gene id of [%s]\n", gene)
-				}
-			}
-			// 基因-疾病
-			anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
-			item["Gene"] = item["Omim Gene"]
-			item["OMIM"] = item["OMIM_Phenotype_ID"]
-			item["death age"] = item["hpo_cn"]
-
-			// ues acmg of go
-			if *acmg {
-				acmg2015.AddEvidences(item)
-			}
-
-			item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
-
-			anno.UpdateSnv(item, *gender, *debug)
-
-			// 突变频谱
-			item["突变频谱"] = geneDb[id]
-
-			// 引物设计
-			item["exonCount"] = exonCount[item["Transcript"]]
-			item["引物设计"] = anno.PrimerDesign(item)
-
-			// 变异来源
-			if *trio2 {
-				item["变异来源"] = anno.InheritFrom2(item, sampleList)
-			}
-			if *trio {
-				item["变异来源"] = anno.InheritFrom(item, sampleList)
-			}
-
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, anno.AFlist)
-
-			anno.UpdateSnvTier1(item)
-			if *ifRedis {
-				anno.UpdateRedis(item, redisDb, *seqType)
-			}
-
-			anno.UpdateAutoRule(item)
-			anno.UpdateManualRule(item)
-			item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
-			anno.Format(item)
-
+			updateSNV(item, stats)
 			xlsxUtil.AddMap2Row(item, filterVariantsTitle, filterVariantsSheet.AddRow())
-			tier1GeneList[item["Gene Symbol"]] = true
 		}
 		ts = append(ts, time.Now())
 		step++
@@ -415,6 +362,69 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "save Tier1")
 	}
+}
+
+func updateSNV(item map[string]string, stats map[string]int) {
+
+	// score to prediction
+	anno.Score2Pred(item)
+
+	// update Function
+	anno.UpdateFunction(item)
+
+	// update FuncRegion
+	anno.UpdateFuncRegion(item)
+
+	var gene = item["Gene Symbol"]
+	var id, ok = gene2id[gene]
+	if !ok {
+		if gene != "-" && gene != "." {
+			log.Fatalf("can not find gene id of [%s]\n", gene)
+		}
+	}
+	// 基因-疾病
+	anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
+	item["Gene"] = item["Omim Gene"]
+	item["OMIM"] = item["OMIM_Phenotype_ID"]
+	item["death age"] = item["hpo_cn"]
+
+	// ues acmg of go
+	if *acmg {
+		acmg2015.AddEvidences(item)
+	}
+
+	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
+
+	anno.UpdateSnv(item, *gender, *debug)
+
+	// 突变频谱
+	item["突变频谱"] = geneDb[id]
+
+	// 引物设计
+	item["exonCount"] = exonCount[item["Transcript"]]
+	item["引物设计"] = anno.PrimerDesign(item)
+
+	// 变异来源
+	if *trio2 {
+		item["变异来源"] = anno.InheritFrom2(item, sampleList)
+	}
+	if *trio {
+		item["变异来源"] = anno.InheritFrom(item, sampleList)
+	}
+
+	anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, anno.AFlist)
+
+	anno.UpdateSnvTier1(item)
+	if *ifRedis {
+		anno.UpdateRedis(item, redisDb, *seqType)
+	}
+
+	anno.UpdateAutoRule(item)
+	anno.UpdateManualRule(item)
+	item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
+	anno.Format(item)
+
+	tier1GeneList[item["Gene Symbol"]] = true
 }
 
 func logTime(timeList []time.Time, step1, step2 int, message string) {

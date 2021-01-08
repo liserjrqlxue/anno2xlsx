@@ -87,7 +87,7 @@ var codeKey []byte
 // \n -> <br/>
 var isLF = regexp.MustCompile(`\n`)
 
-func main() {
+func init() {
 	flag.Parse()
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
@@ -105,7 +105,8 @@ func main() {
 	if *output == "" {
 		*output = *input + ".tsv"
 	}
-
+}
+func main() {
 	out, err := os.Create(*output)
 	simple_util.CheckErr(err)
 	defer simple_util.DeferClose(out)

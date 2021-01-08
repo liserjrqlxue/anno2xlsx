@@ -131,96 +131,125 @@ func main() {
 	simple_util.CheckErr(simple_util.Json2rawFile(*db+".db", outputDb))
 }
 
-//MTAllele2Variant convert MT allele to var info
-func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
-	var err error
-	switch {
-	case isSNP.MatchString(allele):
-		matchs := isSNP.FindStringSubmatch(allele)
-		if matchs != nil && len(matchs) == 4 {
-			ref = matchs[1]
-			alt = matchs[3]
-			end, err = strconv.Atoi(matchs[2])
-			simple_util.CheckErr(err, matchs...)
-			start = end - 1
+func MTAllele2SNP(allele string) (ref, alt string, start, end int) {
+	var matchs = isSNP.FindStringSubmatch(allele)
+	if matchs != nil && len(matchs) == 4 {
+		ref = matchs[1]
+		alt = matchs[3]
+		end, err := strconv.Atoi(matchs[2])
+		simple_util.CheckErr(err, matchs...)
+		start = end - 1
+		return
+	}
+	log.Fatalf("can not parser SNP:[%s]->[%v]\n", allele, matchs)
+	return
+}
+
+func MTAllele2DUP(allele string) (ref, alt string, start, end int) {
+	var matchs = isDUP.FindStringSubmatch(allele)
+	if matchs != nil && len(matchs) == 4 {
+		ref = matchs[1]
+		alt = matchs[3]
+		start, err := strconv.Atoi(matchs[2])
+		simple_util.CheckErr(err, matchs...)
+		altChr := strings.Split(alt, "")
+		end = start
+		if altChr[0] == ref {
+			ref = ""
+			alt = strings.Join(altChr[1:], "")
+			return
+		} else if altChr[len(altChr)-1] == ref {
+			ref = ""
+			start--
+			end = start
+			alt = strings.Join(altChr[:len(altChr)-1], "")
 			return
 		}
-		log.Fatalf("can not parser SNP:[%s]->[%v]\n", allele, matchs)
-	case isDUP.MatchString(allele):
-		matchs := isDUP.FindStringSubmatch(allele)
-		if matchs != nil && len(matchs) == 4 {
-			ref = matchs[1]
-			alt = matchs[3]
-			start, err = strconv.Atoi(matchs[2])
-			simple_util.CheckErr(err, matchs...)
-			altChr := strings.Split(alt, "")
-			end = start
-			if altChr[0] == ref {
-				ref = ""
-				alt = strings.Join(altChr[1:], "")
-				return
-			} else if altChr[len(altChr)-1] == ref {
-				ref = ""
-				start--
-				end = start
-				alt = strings.Join(altChr[:len(altChr)-1], "")
-				return
-			}
-		}
-		log.Fatalf("can not parser LSNP:[%s]->[%v]\n", allele, matchs)
-	case isDEL.MatchString(allele):
-		matchs := isDEL.FindStringSubmatch(allele)
-		if matchs != nil && len(matchs) == 3 {
-			ref = matchs[1]
-			alt = ""
-			start, err = strconv.Atoi(matchs[2])
-			simple_util.CheckErr(err, matchs...)
-			end = start
+	}
+	log.Fatalf("can not parser LSNP:[%s]->[%v]\n", allele, matchs)
+	return
+}
+
+func MTAllele2DEL(allele string) (ref, alt string, start, end int) {
+	var matchs = isDEL.FindStringSubmatch(allele)
+	if matchs != nil && len(matchs) == 3 {
+		ref = matchs[1]
+		alt = ""
+		start, err := strconv.Atoi(matchs[2])
+		simple_util.CheckErr(err, matchs...)
+		end = start
+		start--
+		return
+	}
+	log.Fatalf("can not parser DEL:[%s]->[%v]\n", allele, matchs)
+	return
+}
+
+func MTAllele2LDEL(allele string) (ref, alt string, start, end int) {
+	var matchs = isLDEL.FindStringSubmatch(allele)
+	if matchs != nil && len(matchs) == 4 {
+		alt = ""
+		ref = matchs[3]
+		start, err := strconv.Atoi(matchs[1])
+		simple_util.CheckErr(err, matchs...)
+		end, err = strconv.Atoi(matchs[2])
+		simple_util.CheckErr(err, matchs...)
+		if end-start+1 == len(ref) {
 			start--
 			return
 		}
-		log.Fatalf("can not parser DEL:[%s]->[%v]\n", allele, matchs)
-	case isLDEL.MatchString(allele):
-		matchs := isLDEL.FindStringSubmatch(allele)
-		if matchs != nil && len(matchs) == 4 {
-			alt = ""
-			ref = matchs[3]
-			start, err = strconv.Atoi(matchs[1])
-			simple_util.CheckErr(err, matchs...)
-			end, err = strconv.Atoi(matchs[2])
-			simple_util.CheckErr(err, matchs...)
-			if end-start+1 == len(ref) {
-				start--
-				return
-			}
-		}
-		log.Fatalf("can not parser LDEL:[%s]->[%v]\n", allele, matchs)
-	case isINS.MatchString(allele):
-		matchs := isINS.FindStringSubmatch(allele)
-		if matchs != nil && len(matchs) == 4 {
-			ref = ""
-			alt = matchs[3]
-			start, err = strconv.Atoi(matchs[2])
-			simple_util.CheckErr(err, matchs...)
+	}
+	log.Fatalf("can not parser LDEL:[%s]->[%v]\n", allele, matchs)
+	return
+}
+
+func MTAllele2INS(allele string) (ref, alt string, start, end int) {
+	var matchs = isINS.FindStringSubmatch(allele)
+	if matchs != nil && len(matchs) == 4 {
+		ref = ""
+		alt = matchs[3]
+		start, err := strconv.Atoi(matchs[2])
+		simple_util.CheckErr(err, matchs...)
+		end = start
+		return
+	}
+	log.Fatalf("can not parser INS:[%s]->[%v]\n", allele, matchs)
+	return
+}
+
+func MTAllele2LINS(allele string) (ref, alt string, start, end int) {
+	var matchs = isLINS.FindStringSubmatch(allele)
+	if matchs != nil && len(matchs) == 5 {
+		ref = ""
+		alt = matchs[4]
+		start, err := strconv.Atoi(matchs[2])
+		simple_util.CheckErr(err, matchs...)
+		end, err = strconv.Atoi(matchs[3])
+		simple_util.CheckErr(err, matchs...)
+		if end-start+1 == len(alt) {
 			end = start
 			return
 		}
-		log.Fatalf("can not parser INS:[%s]->[%v]\n", allele, matchs)
+	}
+	log.Fatalf("can not parser LINS:[%s]->[%v]\n", allele, matchs)
+	return
+}
+
+//MTAllele2Variant convert MT allele to var info
+func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
+	switch {
+	case isSNP.MatchString(allele):
+		return MTAllele2SNP(allele)
+	case isDUP.MatchString(allele):
+		return MTAllele2DUP(allele)
+	case isDEL.MatchString(allele):
+		return MTAllele2DEL(allele)
+	case isLDEL.MatchString(allele):
+		return MTAllele2LDEL(allele)
+	case isINS.MatchString(allele):
+		return MTAllele2INS(allele)
 	case isLINS.MatchString(allele):
-		matchs := isLINS.FindStringSubmatch(allele)
-		if matchs != nil && len(matchs) == 5 {
-			ref = ""
-			alt = matchs[4]
-			start, err = strconv.Atoi(matchs[2])
-			simple_util.CheckErr(err, matchs...)
-			end, err = strconv.Atoi(matchs[3])
-			simple_util.CheckErr(err, matchs...)
-			if end-start+1 == len(alt) {
-				end = start
-				return
-			}
-		}
-		log.Fatalf("can not parser LINS:[%s]->[%v]\n", allele, matchs)
+		return MTAllele2LINS(allele)
 	default:
 		log.Printf("can not parser:[%s]\n", allele)
 	}

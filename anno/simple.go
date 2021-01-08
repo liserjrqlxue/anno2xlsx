@@ -529,7 +529,6 @@ func InheritFrom(item map[string]string, sampleList []string) string {
 		"Het;NA;NA",
 		"Hemi;Hemi;NA", "Hemi;NA;Hemi", "Hemi;NA;NA":
 		from = inheritFromMap["Denovo"]
-		from = inheritFromMap["Denovo"]
 
 	case "Het;Hom;Hom", "Het;Hom;Het", "Het;Hom;Hemi",
 		"Het;Het;Hom", "Het;Het;Het", "Het;Het;Hemi",
@@ -790,7 +789,7 @@ func googleKeyChgvs(chgvs string, m []string) (searchKey []string) {
 	return
 }
 
-func googleKeyPhgvs(chgvs, phgvs, exInID string, m []string) (searchKey []string) {
+func googleKeyPhgvs(chgvs, phgvs, exInID string, m, searchKey []string) []string {
 	// pHGVS
 	if m = pHGVS1.FindStringSubmatch(phgvs); m != nil {
 		searchKey =
@@ -863,7 +862,7 @@ func googleKeyPhgvs(chgvs, phgvs, exInID string, m []string) (searchKey []string
 		}
 
 	}
-	return
+	return searchKey
 }
 
 func googleKey(item map[string]string) string {
@@ -874,8 +873,7 @@ func googleKey(item map[string]string) string {
 	if m != nil {
 		chgvs = m[1]
 	}
-	var searchKey = googleKeyChgvs(chgvs, m)
-	searchKey = googleKeyPhgvs(chgvs, phgvs, exInID, m)
+	var searchKey = googleKeyPhgvs(chgvs, phgvs, exInID, m, googleKeyChgvs(chgvs, m))
 
 	if rsID.MatchString(rs) {
 		searchKey = append(searchKey, rs)
