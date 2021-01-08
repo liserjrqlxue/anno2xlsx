@@ -131,12 +131,13 @@ func main() {
 	simple_util.CheckErr(simple_util.Json2rawFile(*db+".db", outputDb))
 }
 
-func MTAllele2SNP(allele string) (ref, alt string, start, end int) {
+func mtAllele2SNP(allele string) (ref, alt string, start, end int) {
+	var err error
 	var matchs = isSNP.FindStringSubmatch(allele)
 	if matchs != nil && len(matchs) == 4 {
 		ref = matchs[1]
 		alt = matchs[3]
-		end, err := strconv.Atoi(matchs[2])
+		end, err = strconv.Atoi(matchs[2])
 		simple_util.CheckErr(err, matchs...)
 		start = end - 1
 		return
@@ -145,12 +146,13 @@ func MTAllele2SNP(allele string) (ref, alt string, start, end int) {
 	return
 }
 
-func MTAllele2DUP(allele string) (ref, alt string, start, end int) {
+func mtAllele2DUP(allele string) (ref, alt string, start, end int) {
+	var err error
 	var matchs = isDUP.FindStringSubmatch(allele)
 	if matchs != nil && len(matchs) == 4 {
 		ref = matchs[1]
 		alt = matchs[3]
-		start, err := strconv.Atoi(matchs[2])
+		start, err = strconv.Atoi(matchs[2])
 		simple_util.CheckErr(err, matchs...)
 		altChr := strings.Split(alt, "")
 		end = start
@@ -170,12 +172,13 @@ func MTAllele2DUP(allele string) (ref, alt string, start, end int) {
 	return
 }
 
-func MTAllele2DEL(allele string) (ref, alt string, start, end int) {
+func mtAllele2DEL(allele string) (ref, alt string, start, end int) {
+	var err error
 	var matchs = isDEL.FindStringSubmatch(allele)
 	if matchs != nil && len(matchs) == 3 {
 		ref = matchs[1]
 		alt = ""
-		start, err := strconv.Atoi(matchs[2])
+		start, err = strconv.Atoi(matchs[2])
 		simple_util.CheckErr(err, matchs...)
 		end = start
 		start--
@@ -185,12 +188,13 @@ func MTAllele2DEL(allele string) (ref, alt string, start, end int) {
 	return
 }
 
-func MTAllele2LDEL(allele string) (ref, alt string, start, end int) {
+func mtAllele2LDEL(allele string) (ref, alt string, start, end int) {
+	var err error
 	var matchs = isLDEL.FindStringSubmatch(allele)
 	if matchs != nil && len(matchs) == 4 {
 		alt = ""
 		ref = matchs[3]
-		start, err := strconv.Atoi(matchs[1])
+		start, err = strconv.Atoi(matchs[1])
 		simple_util.CheckErr(err, matchs...)
 		end, err = strconv.Atoi(matchs[2])
 		simple_util.CheckErr(err, matchs...)
@@ -203,12 +207,13 @@ func MTAllele2LDEL(allele string) (ref, alt string, start, end int) {
 	return
 }
 
-func MTAllele2INS(allele string) (ref, alt string, start, end int) {
+func mtAllele2INS(allele string) (ref, alt string, start, end int) {
+	var err error
 	var matchs = isINS.FindStringSubmatch(allele)
 	if matchs != nil && len(matchs) == 4 {
 		ref = ""
 		alt = matchs[3]
-		start, err := strconv.Atoi(matchs[2])
+		start, err = strconv.Atoi(matchs[2])
 		simple_util.CheckErr(err, matchs...)
 		end = start
 		return
@@ -217,12 +222,13 @@ func MTAllele2INS(allele string) (ref, alt string, start, end int) {
 	return
 }
 
-func MTAllele2LINS(allele string) (ref, alt string, start, end int) {
+func mtAllele2LINS(allele string) (ref, alt string, start, end int) {
+	var err error
 	var matchs = isLINS.FindStringSubmatch(allele)
 	if matchs != nil && len(matchs) == 5 {
 		ref = ""
 		alt = matchs[4]
-		start, err := strconv.Atoi(matchs[2])
+		start, err = strconv.Atoi(matchs[2])
 		simple_util.CheckErr(err, matchs...)
 		end, err = strconv.Atoi(matchs[3])
 		simple_util.CheckErr(err, matchs...)
@@ -239,17 +245,17 @@ func MTAllele2LINS(allele string) (ref, alt string, start, end int) {
 func MTAllele2Variant(allele string) (ref, alt string, start, end int) {
 	switch {
 	case isSNP.MatchString(allele):
-		return MTAllele2SNP(allele)
+		return mtAllele2SNP(allele)
 	case isDUP.MatchString(allele):
-		return MTAllele2DUP(allele)
+		return mtAllele2DUP(allele)
 	case isDEL.MatchString(allele):
-		return MTAllele2DEL(allele)
+		return mtAllele2DEL(allele)
 	case isLDEL.MatchString(allele):
-		return MTAllele2LDEL(allele)
+		return mtAllele2LDEL(allele)
 	case isINS.MatchString(allele):
-		return MTAllele2INS(allele)
+		return mtAllele2INS(allele)
 	case isLINS.MatchString(allele):
-		return MTAllele2LINS(allele)
+		return mtAllele2LINS(allele)
 	default:
 		log.Printf("can not parser:[%s]\n", allele)
 	}

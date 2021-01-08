@@ -355,6 +355,7 @@ var (
 	isGz      = regexp.MustCompile(`\.gz$`)
 	isComment = regexp.MustCompile(`^##`)
 	isMT      = regexp.MustCompile(`MT|chrM`)
+	isHom     = regexp.MustCompile(`^Hom`)
 )
 
 var redisDb *redis.Client
@@ -375,21 +376,27 @@ var (
 	tier1Db   = make(map[string]bool)
 )
 
-func main() {
-	var ts []time.Time
-	var step = 0
-	ts = append(ts, time.Now())
+var (
+	logFile             *os.File
+	defaultConfig       map[string]interface{}
+	tier2TemplateInfo   templateInfo
+	tier2               xlsxTemplate
+	geneDbKey           string
+	err                 error
+	ts                  = []time.Time{time.Now()}
+	step                = 0
+	sampleMap           = make(map[string]bool)
+	stats               = make(map[string]int)
+	tier1Xlsx           = xlsx.NewFile()
+	filterVariantsTitle []string
+	tier3Titles         []string
+	tier3Xlsx           = xlsx.NewFile()
+	tier3Sheet          *xlsx.Sheet
+)
 
+func init() {
 	logVersion()
 	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
-		defer pprof.StopCPUProfile()
-	}
 	if *snv == "" && *exon == "" && *large == "" && *smn == "" && *loh == "" {
 		flag.Usage()
 		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn,-loh")
@@ -411,9 +418,8 @@ func main() {
 	if *logfile == "" {
 		*logfile = *prefix + ".log"
 	}
-	logFile, err := os.Create(*logfile)
+	logFile, err = os.Create(*logfile)
 	simpleUtil.CheckErr(err)
-	defer simpleUtil.DeferClose(logFile)
 	log.Printf("Log file         : %v\n", *logfile)
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
@@ -423,31 +429,17 @@ func main() {
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
+	parseCfg()
+
+	parseList()
+}
+
+func parseCfg() {
 	// parser etc/config.json
-	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig = jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
 
-	if *ifRedis {
-		if *redisAddr == "" {
-			*redisAddr = anno.GetStrVal("redisServer", defaultConfig)
-		}
-		redisDb = redis.NewClient(&redis.Options{
-			Addr: *redisAddr,
-		})
-		pong, err := redisDb.Ping().Result()
-		log.Printf("Connect [%s]:%s\n", redisDb.String(), pong)
-		if err != nil {
-			log.Fatalf("Error [%+v]\n", err)
-		}
-	}
-
-	if *acmg {
-		acmg2015.AutoPVS1 = *autoPVS1
-		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
-		for k, v := range acmgCfg {
-			acmgCfg[k] = anno.GuessPath(v, dbPath)
-		}
-		acmg2015.Init(acmgCfg)
-	}
+	openRedis()
+	initAcmg2015()
 
 	if *geneDiseaseDbFile == "" {
 		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
@@ -458,14 +450,13 @@ func main() {
 	if *geneDbFile == "" {
 		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
 	}
-	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
+	geneDbKey = anno.GetStrVal("geneDbKey", defaultConfig)
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
 	if *transInfo == "" {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
 	}
-
 	if *wgs {
 		for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
 			qualityColumn = append(qualityColumn, key.(string))
@@ -476,6 +467,25 @@ func main() {
 		}
 	}
 
+	initIM()
+
+	if *wgs {
+		for _, key := range defaultConfig["MTTitle"].([]interface{}) {
+			MTTitle = append(MTTitle, key.(string))
+		}
+		for k, v := range defaultConfig["qualityKeyMapWGS"].(map[string]interface{}) {
+			qualityKeyMap[k] = v.(string)
+		}
+	} else {
+		for k, v := range defaultConfig["qualityKeyMapWES"].(map[string]interface{}) {
+			qualityKeyMap[k] = v.(string)
+		}
+	}
+
+	parseQC()
+}
+
+func initIM() {
 	if *wesim {
 		acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
 		for _, gene := range acmg59GeneList {
@@ -500,29 +510,47 @@ func main() {
 		_, err = fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
 		simpleUtil.CheckErr(err)
 	}
+}
 
-	if *wgs {
-		for _, key := range defaultConfig["MTTitle"].([]interface{}) {
-			MTTitle = append(MTTitle, key.(string))
+func openRedis() {
+	if *ifRedis {
+		if *redisAddr == "" {
+			*redisAddr = anno.GetStrVal("redisServer", defaultConfig)
 		}
-		for k, v := range defaultConfig["qualityKeyMapWGS"].(map[string]interface{}) {
-			qualityKeyMap[k] = v.(string)
-		}
-	} else {
-		for k, v := range defaultConfig["qualityKeyMapWES"].(map[string]interface{}) {
-			qualityKeyMap[k] = v.(string)
+		redisDb = redis.NewClient(&redis.Options{
+			Addr: *redisAddr,
+		})
+		pong, err := redisDb.Ping().Result()
+		log.Printf("Connect [%s]:%s\n", redisDb.String(), pong)
+		if err != nil {
+			log.Fatalf("Error [%+v]\n", err)
 		}
 	}
 
+}
+
+func initAcmg2015() {
+	if *acmg {
+		acmg2015.AutoPVS1 = *autoPVS1
+		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
+		for k, v := range acmgCfg {
+			acmgCfg[k] = anno.GuessPath(v, dbPath)
+		}
+		acmg2015.Init(acmgCfg)
+	}
+}
+
+func parseList() {
 	sampleList = strings.Split(*list, ",")
-	var sampleMap = make(map[string]bool)
 	for _, sample := range sampleList {
 		sampleMap[sample] = true
 		quality := make(map[string]string)
 		quality["样本编号"] = sample
 		qualitys = append(qualitys, quality)
 	}
+}
 
+func parseQC() {
 	var karyotypeMap = make(map[string]string)
 	if *karyotype != "" {
 		karyotypeMap, err = textUtil.Files2Map(*karyotype, "\t", true)
@@ -551,31 +579,23 @@ func main() {
 		logTime(ts, step-1, step, "load coverage.report")
 	}
 	loadFilterStat(*filterStat, qualitys[0])
+}
 
+func prepareTier1() {
 	// load tier template
-	var tier1Xlsx = xlsx.NewFile()
 	xlsxUtil.AddSheets(tier1Xlsx, []string{"filter_variants", "exon_cnv", "large_cnv"})
-	var filterVariantsTitle = addFile2Row(*filterVariants, tier1Xlsx.Sheet["filter_variants"].AddRow())
-	var exonCnvTitle = addFile2Row(*exonCnv, tier1Xlsx.Sheet["exon_cnv"].AddRow())
-	var largeCNVTitle = addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
+	filterVariantsTitle = addFile2Row(*filterVariants, tier1Xlsx.Sheet["filter_variants"].AddRow())
+}
 
-	// create Tier3.xlsx
-	var tier3Xlsx = xlsx.NewFile()
-	var tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
-	var tier3Titles []string
-	if !*noTier3 {
-		tier3Titles = addFile2Row(*tier3Title, tier3Sheet.AddRow())
-	}
-
+func prepareTier2() {
 	// tier2
-	var tier2 = xlsxTemplate{
+	tier2 = xlsxTemplate{
 		flag:      "Tier2",
 		sheetName: *productID + "_" + sampleList[0],
 	}
 	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
 	tier2.xlsx = xlsx.NewFile()
 
-	var tier2TemplateInfo templateInfo
 	tier2Template, err := xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))
 	simpleUtil.CheckErr(err)
 	tier2Infos, err := tier2Template.ToSlice()
@@ -619,24 +639,26 @@ func main() {
 	for _, line := range tier2Note {
 		tier2NoteSheet.AddRow().AddCell().SetString(line)
 	}
+}
 
+func prepareTier3() {
+	// create Tier3.xlsx
+	tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
+	if !*noTier3 {
+		tier3Titles = addFile2Row(*tier3Title, tier3Sheet.AddRow())
+	}
+}
+
+func prepareExcel() {
+	prepareTier1()
+	prepareTier2()
+	prepareTier3()
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load template")
+}
 
-	// exonCount
-	exonCount = jsonUtil.JsonFile2Map(*transInfo)
-
-	// 突变频谱
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
-	for k := range geneDbExt {
-		geneDb[k] = geneDbExt[k][geneDbKey]
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load mutation spectrum")
-
+func prepareGD() {
 	// 基因-疾病
 	var geneDiseaseDbTitleInfo = jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
 	for key, item := range geneDiseaseDbTitleInfo {
@@ -655,18 +677,10 @@ func main() {
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load Gene-Disease DB")
+}
 
-	// 特殊位点库
-	for _, key := range textUtil.File2Array(*specVarList) {
-		specVarDb[key] = true
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Special mutation DB")
-
-	var stats = make(map[string]int)
-	var isHom = regexp.MustCompile(`^Hom`)
-
+func addExon() {
+	var exonCnvTitle = addFile2Row(*exonCnv, tier1Xlsx.Sheet["exon_cnv"].AddRow())
 	if *exon != "" {
 		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 		var paths []string
@@ -685,7 +699,10 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "add exon cnv")
 	}
+}
 
+func addLarge() {
+	var largeCNVTitle = addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
 	if *large != "" {
 		var paths []string
 		for _, path := range strings.Split(*large, ",") {
@@ -717,8 +734,9 @@ func main() {
 		step++
 		logTime(ts, step-1, step, "add SMN1 result")
 	}
-	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
+}
 
+func addExtra() {
 	// extra sheet
 	if *extra != "" {
 		extraArray := strings.Split(*extra, ",")
@@ -738,247 +756,324 @@ func main() {
 			}
 		}
 	}
+}
 
-	// anno
-	if *snv != "" {
-		var step0 = step
-		var data []map[string]string
-		for _, f := range snvs {
-			if isGz.MatchString(f) {
-				d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
-				data = append(data, d...)
-			} else {
-				d, _ := simple_util.File2MapArray(f, "\t", isComment)
-				data = append(data, d...)
-			}
+func loadData() (data []map[string]string) {
+	for _, f := range snvs {
+		if isGz.MatchString(f) {
+			d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
+			data = append(data, d...)
+		} else {
+			d, _ := simple_util.File2MapArray(f, "\t", isComment)
+			data = append(data, d...)
+		}
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load anno file")
+	return
+}
+
+func annotate1(item map[string]string) {
+	// score to prediction
+	anno.Score2Pred(item)
+
+	// update Function
+	anno.UpdateFunction(item)
+
+	// update FuncRegion
+	anno.UpdateFuncRegion(item)
+
+	var gene = item["Gene Symbol"]
+	var id, ok = gene2id[gene]
+	if !ok {
+		if gene != "-" && gene != "." {
+			log.Fatalf("can not find gene id of [%s]\n", gene)
+		}
+	}
+	// 基因-疾病
+
+	anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
+	item["Gene"] = item["Omim Gene"]
+	item["OMIM"] = item["OMIM_Phenotype_ID"]
+	item["death age"] = item["hpo_cn"]
+
+	//anno.ParseSpliceAI(item)
+
+	// ues acmg of go
+	if *acmg {
+		acmg2015.AddEvidences(item)
+	}
+	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
+
+	anno.UpdateSnv(item, *gender, *debug)
+
+	// 突变频谱
+	item["突变频谱"] = geneDb[id]
+
+	// 引物设计
+	item["exonCount"] = exonCount[item["Transcript"]]
+	item["引物设计"] = anno.PrimerDesign(item)
+
+	// 变异来源
+	if *trio2 {
+		item["变异来源"] = anno.InheritFrom2(item, sampleList)
+	}
+	if *trio {
+		item["变异来源"] = anno.InheritFrom(item, sampleList)
+	}
+
+	anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
+	if *mt && isMT.MatchString(item["#Chr"]) {
+		item["Tier"] = "Tier1"
+	}
+
+	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
+		anno.UpdateSnvTier1(item)
+		if *ifRedis {
+			anno.UpdateRedis(item, redisDb, *seqType)
 		}
 
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "load anno file")
+		anno.UpdateAutoRule(item)
+		anno.UpdateManualRule(item)
+	}
 
-		stats["Total"] = len(data)
+	// 遗传相符
+	// only for Tier1
+	annotate1Tier1(item)
+
+	stats[item["#Chr"]]++
+	if isHom.MatchString(item["Zygosity"]) {
+		stats["Hom"]++
+		stats["Hom:"+item["#Chr"]]++
+	}
+	stats[item["VarType"]]++
+}
+
+func annotate1Tier1(item map[string]string) {
+	if item["Tier"] == "Tier1" {
+		anno.InheritCheck(item, inheritDb)
+		tier1GeneList[item["Gene Symbol"]] = true
+		if anno.FuncInfo[item["Function"]] >= 3 {
+			stats["Tier1LoF"]++
+		}
+		if isHom.MatchString(item["Zygosity"]) {
+			stats["Tier1Hom"]++
+		}
+		stats["Tier1"+item["VarType"]]++
+	}
+}
+
+func annotate2(item map[string]string) {
+	// 遗传相符
+	item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+	item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
+	item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
+	if item["遗传相符"] == "相符" {
+		stats["遗传相符"]++
+	}
+	// familyTag
+	if *trio || *trio2 {
+		item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+	} else if *couple {
+		item["familyTag"] = anno.FamilyTag(item, inheritDb, "couple")
+	} else {
+		item["familyTag"] = anno.FamilyTag(item, inheritDb, "single")
+	}
+	item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
+
+	anno.Format(item)
+
+	// WESIM
+	annotate2IM(item)
+}
+
+func annotate2IM(item map[string]string) {
+	if *wesim {
+		if acmg59Gene[item["Gene Symbol"]] {
+			item["IsACMG59"] = "Y"
+		} else {
+			item["IsACMG59"] = "N"
+		}
+		if *trio {
+			zygosity := strings.Split(item["Zygosity"], ";")
+			zygosity = append(zygosity, "NA", "NA")
+			item["Zygosity"] = zygosity[0]
+			item["Genotype of Family Member 1"] = zygosity[1]
+			item["Genotype of Family Member 2"] = zygosity[2]
+		}
+		var resultArray []string
+		for _, key := range resultColumn {
+			resultArray = append(resultArray, item[key])
+		}
+		_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+		simpleUtil.CheckErr(err)
+	}
+}
+
+func annotate4(item map[string]string) {
+	if item["Tier"] == "Tier1" {
+		// 遗传相符
+		item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+		item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
+		item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
+		if item["遗传相符"] == "相符" {
+			stats["遗传相符"]++
+		}
+		// familyTag
+		if *trio {
+			item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+		}
+		item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
+	}
+}
+
+func cycle1(data []map[string]string) {
+	for _, item := range data {
+		annotate1(item)
+	}
+	logTierStats(stats)
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load snv cycle 1")
+}
+
+func cycle2(data []map[string]string) {
+	for _, item := range data {
+		if item["Tier"] == "Tier1" {
+			annotate2(item)
+
+			// Tier1 Sheet
+			xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
+
+			if !*wgs {
+				addTier2Row(tier2, item)
+			} else {
+				tier1Db[item["MutationName"]] = true
+				tier1GeneList[item["Gene Symbol"]] = true
+			}
+		}
+		// add to tier3
+		if !*noTier3 {
+			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
+		}
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load snv cycle 2")
+}
+
+func wgsCycle(data []map[string]string) {
+	if *wgs {
+		wgsXlsx = xlsx.NewFile()
+		// MT sheet
+		var MTSheet = xlsxUtil.AddSheet(wgsXlsx, "MT")
+		xlsxUtil.AddArray2Row(MTTitle, MTSheet.AddRow())
+		// intron sheet
+		var intronSheet = xlsxUtil.AddSheet(wgsXlsx, "intron")
+		xlsxUtil.AddArray2Row(filterVariantsTitle, intronSheet.AddRow())
+
+		TIPdbPath := anno.GetPath("TIPdb", dbPath, defaultConfig)
+		jsonUtil.JsonFile2Data(TIPdbPath, &TIPdb)
+		MTdiseasePath := anno.GetPath("MTdisease", dbPath, defaultConfig)
+		jsonUtil.JsonFile2Data(MTdiseasePath, &MTdisease)
+		MTAFdbPath := anno.GetPath("MTAFdb", dbPath, defaultConfig)
+		jsonUtil.JsonFile2Data(MTAFdbPath, &MTAFdb)
+
+		inheritDb = make(map[string]map[string]int)
 		for _, item := range data {
-
-			// score to prediction
-			anno.Score2Pred(item)
-
-			// update Function
-			anno.UpdateFunction(item)
-
-			// update FuncRegion
-			anno.UpdateFuncRegion(item)
-
-			var gene = item["Gene Symbol"]
-			var id, ok = gene2id[gene]
-			if !ok {
-				if gene != "-" && gene != "." {
-					log.Fatalf("can not find gene id of [%s]\n", gene)
-				}
-			}
-			// 基因-疾病
-
-			anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
-			item["Gene"] = item["Omim Gene"]
-			item["OMIM"] = item["OMIM_Phenotype_ID"]
-			item["death age"] = item["hpo_cn"]
-
-			//anno.ParseSpliceAI(item)
-
-			// ues acmg of go
-			if *acmg {
-				acmg2015.AddEvidences(item)
-			}
-			item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
-
-			anno.UpdateSnv(item, *gender, *debug)
-
-			// 突变频谱
-			item["突变频谱"] = geneDb[id]
-
-			// 引物设计
-			item["exonCount"] = exonCount[item["Transcript"]]
-			item["引物设计"] = anno.PrimerDesign(item)
-
-			// 变异来源
-			if *trio2 {
-				item["变异来源"] = anno.InheritFrom2(item, sampleList)
-			}
-			if *trio {
-				item["变异来源"] = anno.InheritFrom(item, sampleList)
-			}
-
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
-			if *mt && isMT.MatchString(item["#Chr"]) {
-				item["Tier"] = "Tier1"
-			}
-
-			if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
-				anno.UpdateSnvTier1(item)
-				if *ifRedis {
-					anno.UpdateRedis(item, redisDb, *seqType)
-				}
-
-				anno.UpdateAutoRule(item)
-				anno.UpdateManualRule(item)
-			}
-
+			anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, anno.AFlist)
 			// 遗传相符
 			// only for Tier1
 			if item["Tier"] == "Tier1" {
 				anno.InheritCheck(item, inheritDb)
-				tier1GeneList[item["Gene Symbol"]] = true
-				if anno.FuncInfo[item["Function"]] >= 3 {
-					stats["Tier1LoF"]++
-				}
-				if isHom.MatchString(item["Zygosity"]) {
-					stats["Tier1Hom"]++
-				}
-				stats["Tier1"+item["VarType"]]++
 			}
-			stats[item["#Chr"]]++
-			if isHom.MatchString(item["Zygosity"]) {
-				stats["Hom"]++
-				stats["Hom:"+item["#Chr"]]++
-			}
-			stats[item["VarType"]]++
 		}
-		logTierStats(stats)
 		ts = append(ts, time.Now())
 		step++
-		logTime(ts, step-1, step, "load snv cycle 1")
-
+		logTime(ts, step-1, step, "load snv cycle 3")
 		for _, item := range data {
-			if item["Tier"] == "Tier1" {
-				// 遗传相符
-				item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
-				item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
-				item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
-				if item["遗传相符"] == "相符" {
-					stats["遗传相符"]++
-				}
-				// familyTag
-				if *trio || *trio2 {
-					item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
-				} else if *couple {
-					item["familyTag"] = anno.FamilyTag(item, inheritDb, "couple")
-				} else {
-					item["familyTag"] = anno.FamilyTag(item, inheritDb, "single")
-				}
-				item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
+			annotate4(item)
 
-				anno.Format(item)
-
-				// Tier1 Sheet
-				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
-
-				if !*wgs {
-					addTier2Row(tier2, item)
-				} else {
-					tier1Db[item["MutationName"]] = true
-				}
-
-				// WESIM
-				if *wesim {
-					if acmg59Gene[item["Gene Symbol"]] {
-						item["IsACMG59"] = "Y"
-					} else {
-						item["IsACMG59"] = "N"
-					}
-					if *trio {
-						zygosity := strings.Split(item["Zygosity"], ";")
-						zygosity = append(zygosity, "NA", "NA")
-						item["Zygosity"] = zygosity[0]
-						item["Genotype of Family Member 1"] = zygosity[1]
-						item["Genotype of Family Member 2"] = zygosity[2]
-					}
-					var resultArray []string
-					for _, key := range resultColumn {
-						resultArray = append(resultArray, item[key])
-					}
-					_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
-					simpleUtil.CheckErr(err)
-				}
-
-				tier1GeneList[item["Gene Symbol"]] = true
+			if *wgs && isMT.MatchString(item["#Chr"]) {
+				addMTRow(MTSheet, item)
 			}
+			if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
+				addTier2Row(tier2, item)
 
-			// add to tier3
-			if !*noTier3 {
-				xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
+				if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
+					intronRow := intronSheet.AddRow()
+					for _, str := range filterVariantsTitle {
+						intronRow.AddCell().SetString(item[str])
+					}
+				}
 			}
 		}
 		ts = append(ts, time.Now())
 		step++
-		logTime(ts, step-1, step, "load snv cycle 2")
+		logTime(ts, step-1, step, "load snv cycle 4")
+	}
+}
 
+func addFV() {
+	// anno
+	if *snv != "" {
+		var step0 = step
+		var data = loadData()
+
+		stats["Total"] = len(data)
+
+		cycle1(data)
+		cycle2(data)
 		// WGS
-		if *wgs {
-			wgsXlsx = xlsx.NewFile()
-			// MT sheet
-			var MTSheet = xlsxUtil.AddSheet(wgsXlsx, "MT")
-			xlsxUtil.AddArray2Row(MTTitle, MTSheet.AddRow())
-			// intron sheet
-			var intronSheet = xlsxUtil.AddSheet(wgsXlsx, "intron")
-			xlsxUtil.AddArray2Row(filterVariantsTitle, intronSheet.AddRow())
-
-			TIPdbPath := anno.GetPath("TIPdb", dbPath, defaultConfig)
-			jsonUtil.JsonFile2Data(TIPdbPath, &TIPdb)
-			MTdiseasePath := anno.GetPath("MTdisease", dbPath, defaultConfig)
-			jsonUtil.JsonFile2Data(MTdiseasePath, &MTdisease)
-			MTAFdbPath := anno.GetPath("MTAFdb", dbPath, defaultConfig)
-			jsonUtil.JsonFile2Data(MTAFdbPath, &MTAFdb)
-
-			inheritDb = make(map[string]map[string]int)
-			for _, item := range data {
-				anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, anno.AFlist)
-				// 遗传相符
-				// only for Tier1
-				if item["Tier"] == "Tier1" {
-					anno.InheritCheck(item, inheritDb)
-				}
-			}
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "load snv cycle 3")
-			for _, item := range data {
-				if item["Tier"] == "Tier1" {
-					// 遗传相符
-					item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
-					item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
-					item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
-					if item["遗传相符"] == "相符" {
-						stats["遗传相符"]++
-					}
-					// familyTag
-					if *trio {
-						item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
-					}
-					item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
-				}
-				if *wgs && isMT.MatchString(item["#Chr"]) {
-					addMTRow(MTSheet, item)
-				}
-				if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
-					addTier2Row(tier2, item)
-
-					if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
-						intronRow := intronSheet.AddRow()
-						for _, str := range filterVariantsTitle {
-							intronRow.AddCell().SetString(item[str])
-						}
-					}
-				}
-			}
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "load snv cycle 4")
-		}
+		wgsCycle(data)
 
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step0, step, "update info")
 	}
+
+}
+
+func main() {
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		simpleUtil.CheckErr(err)
+		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
+		defer pprof.StopCPUProfile()
+	}
+	defer simpleUtil.DeferClose(logFile)
+
+	prepareExcel()
+
+	// exonCount
+	exonCount = jsonUtil.JsonFile2Map(*transInfo)
+
+	// 突变频谱
+	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
+	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	for k := range geneDbExt {
+		geneDb[k] = geneDbExt[k][geneDbKey]
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load mutation spectrum")
+
+	prepareGD()
+
+	// 特殊位点库
+	for _, key := range textUtil.File2Array(*specVarList) {
+		specVarDb[key] = true
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load Special mutation DB")
+
+	addExon()
+	addLarge()
+	addExtra()
+	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
+	addFV()
 
 	// QC Sheet
 	updateQC(stats, qualitys[0])
@@ -993,6 +1088,17 @@ func main() {
 		appendLOHs(&xlsxUtil.File{tier1Xlsx}, *loh, *lohSheet, sampleList)
 	}
 
+	saveExcel()
+
+	if *memprofile != "" {
+		var f, e = os.Create(*memprofile)
+		defer simpleUtil.DeferClose(f)
+		simpleUtil.CheckErr(e)
+		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
+	}
+}
+
+func saveExcel() {
 	if *save {
 		if *wgs && *snv != "" {
 			simpleUtil.CheckErr(wgsXlsx.Save(*prefix + ".WGS.xlsx"))
@@ -1034,11 +1140,4 @@ func main() {
 		logTime(ts, step-1, step, "save Tier3")
 	}
 	logTime(ts, 0, step, "total work")
-
-	if *memprofile != "" {
-		var f, e = os.Create(*memprofile)
-		defer simpleUtil.DeferClose(f)
-		simpleUtil.CheckErr(e)
-		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
-	}
 }

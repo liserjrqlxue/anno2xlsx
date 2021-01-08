@@ -96,7 +96,9 @@ var inheritDb = make(map[string]map[string]int)
 // Tier1
 var tier1GeneList = make(map[string]bool)
 
-func main() {
+var defaultConfig map[string]interface{}
+
+func init() {
 	flag.Parse()
 	if *snv == "" {
 		flag.Usage()
@@ -107,25 +109,10 @@ func main() {
 		*prefix = strings.Split(*snv, ",")[0]
 	}
 
-	title := textUtil.File2Array(*columns)
-	out, err := os.Create(*prefix + ".tier1.tsv")
-	simple_util.CheckErr(err)
-	defer simple_util.DeferClose(out)
-	_, err = fmt.Fprintln(out, strings.Join(title, "\t"))
-	simple_util.CheckErr(err)
-
-	outExcel := xlsx.NewFile()
-	sheet, err := outExcel.AddSheet("filter_variants")
-	simple_util.CheckErr(err)
-	row := sheet.AddRow()
-	for _, key := range title {
-		row.AddCell().SetString(key)
-	}
-
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig = simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
@@ -148,6 +135,22 @@ func main() {
 		if geneList[v] {
 			geneList[k] = true
 		}
+	}
+}
+func main() {
+	title := textUtil.File2Array(*columns)
+	out, err := os.Create(*prefix + ".tier1.tsv")
+	simple_util.CheckErr(err)
+	defer simple_util.DeferClose(out)
+	_, err = fmt.Fprintln(out, strings.Join(title, "\t"))
+	simple_util.CheckErr(err)
+
+	outExcel := xlsx.NewFile()
+	sheet, err := outExcel.AddSheet("filter_variants")
+	simple_util.CheckErr(err)
+	row := sheet.AddRow()
+	for _, key := range title {
+		row.AddCell().SetString(key)
 	}
 
 	// tier1 filter

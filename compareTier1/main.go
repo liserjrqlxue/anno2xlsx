@@ -140,7 +140,7 @@ var (
 
 var err error
 
-func main() {
+func init() {
 	flag.Parse()
 	if *snv == "" {
 		flag.Usage()
@@ -159,10 +159,8 @@ func main() {
 			*prefix = snvs[0]
 		}
 	}
-
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
-
+	defaultConfig = simple_util.JsonFile2Interface(*config).(map[string]interface{})
 	if *acmg {
 		// PVS1
 		simple_util.JsonFile2Data(anno.GetPath("LOFList", dbPath, defaultConfig), &LOFList)
@@ -193,7 +191,6 @@ func main() {
 		simple_util.JsonFile2Data(anno.GetPath("ClinVarBP1GeneList", dbPath, defaultConfig), &clinVarBP1GeneList)
 		simple_util.JsonFile2Data(anno.GetPath("HgmdBP1GeneList", dbPath, defaultConfig), &hgmdBP1GeneList)
 	}
-
 	if *geneDiseaseDbFile == "" {
 		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
 	}
@@ -203,6 +200,11 @@ func main() {
 	if *geneDbFile == "" {
 		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
 	}
+}
+
+var defaultConfig map[string]interface{}
+
+func main() {
 	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)

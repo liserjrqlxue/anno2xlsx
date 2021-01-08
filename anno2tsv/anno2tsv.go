@@ -89,11 +89,9 @@ var specVarDb = make(map[string]bool)
 
 var w1, w2, w3 *csv.Writer
 
-func main() {
-	var ts []time.Time
-	var step = 0
-	ts = append(ts, time.Now())
+var defaultConfig map[string]interface{}
 
+func init() {
 	flag.Parse()
 	if *input == "" || *prefix == "" {
 		flag.Usage()
@@ -101,7 +99,7 @@ func main() {
 	}
 
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig = simple_util.JsonFile2Interface(*config).(map[string]interface{})
 
 	if *geneDiseaseDbFile == "" {
 		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
@@ -112,6 +110,12 @@ func main() {
 	if *geneDbFile == "" {
 		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
 	}
+}
+
+func main() {
+	var ts = []time.Time{time.Now()}
+	var step = 0
+
 	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
 
 	// open file to write
