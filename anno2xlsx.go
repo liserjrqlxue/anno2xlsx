@@ -577,8 +577,8 @@ func parseQC() {
 		ts = append(ts, time.Now())
 		step++
 		logTime(ts, step-1, step, "load coverage.report")
+		loadFilterStat(*filterStat, qualitys[0])
 	}
-	loadFilterStat(*filterStat, qualitys[0])
 }
 
 func prepareTier1() {
