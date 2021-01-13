@@ -216,7 +216,7 @@ func getPhgvs(item map[string]string) string {
 	if item["pHGVS1"] != "" && item["pHGVS3"] != "" && item["pHGVS1"] != "." && item["pHGVS3"] != "." {
 		return item["pHGVS1"] + " | " + item["pHGVS3"]
 	}
-	return ""
+	return item["pHGVS"]
 }
 
 func getMNlite(item map[string]string) string {
