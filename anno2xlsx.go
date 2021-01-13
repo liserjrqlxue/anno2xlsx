@@ -431,7 +431,6 @@ func init() {
 
 	parseCfg()
 
-	parseList()
 }
 
 func parseCfg() {
@@ -482,6 +481,7 @@ func parseCfg() {
 		}
 	}
 
+	parseList()
 	parseQC()
 }
 
