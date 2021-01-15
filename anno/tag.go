@@ -13,8 +13,7 @@ var (
 	//isHgmdDM     = regexp.MustCompile(`DM$|DM\|`)
 	isHgmdDMplus = regexp.MustCompile(`DM`)
 	//isHgmdDMQ= regexp.MustCompile(`DM\?`)
-	isPP3  = regexp.MustCompile(`PP3`)
-	isZero = regexp.MustCompile(`^0$|^\.$|^$`)
+	isPP3 = regexp.MustCompile(`PP3`)
 )
 
 var keys = []string{
@@ -32,6 +31,14 @@ var keys = []string{
 	"Panel AlleleFreq",
 }
 
+func is0(str string) bool {
+	var f, e = strconv.ParseFloat(str, 64)
+	if e != nil || f == 0 {
+		return true
+	}
+	return false
+}
+
 func tag1Trio(tagMap map[string]bool, item map[string]string) {
 	if item["遗传相符-经典trio"] == "相符" {
 		tagMap["T1"] = true
@@ -43,7 +50,7 @@ func tag1Trio(tagMap map[string]bool, item map[string]string) {
 		} else if isAD.MatchString(inherit) {
 			var flag = true
 			for _, key := range keys {
-				if !isZero.MatchString(item[key]) {
+				if !is0(item[key]) {
 					flag = false
 				}
 			}
@@ -62,7 +69,7 @@ func tag1Single(tagMap map[string]bool, item map[string]string) {
 		} else if isAD.MatchString(inherit) {
 			var flag = true
 			for _, key := range keys {
-				if !isZero.MatchString(item[key]) {
+				if !is0(item[key]) {
 					flag = false
 				}
 			}
