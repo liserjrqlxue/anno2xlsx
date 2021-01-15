@@ -33,7 +33,7 @@ var keys = []string{
 
 func is0(str string) bool {
 	var f, e = strconv.ParseFloat(str, 64)
-	if e != nil || f == 0 {
+	if e != nil || f <= 0 {
 		return true
 	}
 	return false
