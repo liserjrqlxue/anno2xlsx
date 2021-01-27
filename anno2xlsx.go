@@ -500,7 +500,6 @@ func initIM() {
 		}
 		resultFile, err = os.Create(*prefix + ".result.tsv")
 		simpleUtil.CheckErr(err)
-		defer simpleUtil.DeferClose(resultFile)
 		_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
 		simpleUtil.CheckErr(err)
 
@@ -572,6 +571,9 @@ func parseQC() {
 				_, err = fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
 				simpleUtil.CheckErr(err)
 			}
+		}
+		if *wesim {
+			simpleUtil.CheckErr(qcFile.Close())
 		}
 
 		ts = append(ts, time.Now())
@@ -908,6 +910,7 @@ func annotate2IM(item map[string]string) {
 		}
 		_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
 		simpleUtil.CheckErr(err)
+		simpleUtil.CheckErr(resultFile.Close())
 	}
 }
 
