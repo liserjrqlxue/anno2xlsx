@@ -505,7 +505,6 @@ func initIM() {
 
 		qcFile, err = os.Create(*prefix + ".qc.tsv")
 		simpleUtil.CheckErr(err)
-		defer simpleUtil.DeferClose(qcFile)
 		_, err = fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
 		simpleUtil.CheckErr(err)
 	}
