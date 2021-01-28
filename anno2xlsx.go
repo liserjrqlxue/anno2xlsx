@@ -909,7 +909,6 @@ func annotate2IM(item map[string]string) {
 		}
 		_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
 		simpleUtil.CheckErr(err)
-		simpleUtil.CheckErr(resultFile.Close())
 	}
 }
 
@@ -960,6 +959,7 @@ func cycle2(data []map[string]string) {
 			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
 		}
 	}
+	simpleUtil.CheckErr(resultFile.Close())
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load snv cycle 2")

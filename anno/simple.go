@@ -231,9 +231,9 @@ func hemiPAR(item map[string]string, gender string) {
 	var chromosome = item["#Chr"]
 	if isChrXY.MatchString(chromosome) && isMale.MatchString(gender) {
 		start, e := strconv.Atoi(item["Start"])
-		simpleUtil.CheckErr(e)
+		simpleUtil.CheckErr(e, "Start")
 		stop, e := strconv.Atoi(item["Stop"])
-		simpleUtil.CheckErr(e)
+		simpleUtil.CheckErr(e, "Stop")
 		if !inPAR(chromosome, start, stop) && withHom.MatchString(item["Zygosity"]) {
 			zygosity := strings.Split(item["Zygosity"], ";")
 			genders := strings.Split(gender, ",")
@@ -639,7 +639,7 @@ func PrimerDesign(item map[string]string) string {
 	adepth := strings.Split(item["A.Depth"], ";")[0]
 	if reInt.MatchString(adepth) {
 		Adepth, err = strconv.Atoi(adepth)
-		simpleUtil.CheckErr(err)
+		simpleUtil.CheckErr(err, "A.Depth")
 	}
 
 	aratio := strings.Split(item["A.Ratio"], ";")[0]

@@ -43,9 +43,9 @@ func getNativeIndelField(item map[string]string) string {
 		zygo = "Hom"
 	}
 	start, err := strconv.Atoi(item["Start"])
-	simple_util.CheckErr(err)
+	simple_util.CheckErr(err, "Start")
 	stop, err := strconv.Atoi(item["Stop"])
-	simple_util.CheckErr(err)
+	simple_util.CheckErr(err, "Stop")
 	if item["VarType"] == "ins" {
 		return strings.Join(
 			[]string{
