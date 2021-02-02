@@ -959,7 +959,9 @@ func cycle2(data []map[string]string) {
 			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
 		}
 	}
-	simpleUtil.CheckErr(resultFile.Close())
+	if *wesim {
+		simpleUtil.CheckErr(resultFile.Close())
+	}
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load snv cycle 2")
