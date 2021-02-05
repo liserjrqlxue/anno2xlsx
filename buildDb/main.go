@@ -121,6 +121,8 @@ func main() {
 	simpleUtil.CheckErr(err)
 	//var inputFh = simpleUtil.HandleError(excelize.OpenFile(*input)).(*excelize.File)
 	//fmt.Printf("%+v\n",inputFh.GetSheetMap())
+	fmt.Printf("sheet name:\t%s\n", *sheetName)
+	fmt.Printf("key column:\t%s\n", *key)
 	for _, sheet := range inputFh.GetSheetMap() {
 		if *sheetName != sheet {
 			fmt.Printf("skip sheet:[%s]\n", sheet)

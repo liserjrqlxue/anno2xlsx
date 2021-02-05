@@ -1,8 +1,8 @@
 {
   "geneSymbol.transcript": "geneSymbol.transcript.txt",
-  "geneDiseaseDbFile": "全外疾病库2020.Q3-12.3.xlsx.更新后全外背景库（5654疾病OMIMID，4319个基因）.json.aes",
+  "geneDiseaseDbFile": "全外疾病库2020.Q4-2021.2.5V1.xlsx.更新后全外背景库（5755疾病OMIMID，4372个基因）.json.aes",
   "geneDiseaseDbTitle": "基因-疾病数据库.Title.json",
-  "geneDbFile": "V4.3 基因库-20200917-添加双基因遗传、更新PVS1PP2BP1基因集说明.xlsx.突变谱汇总.json.aes",
+  "geneDbFile": "V4.3(2021Q1) 基因库-20210205-统一动态突变重复数.xlsx.突变谱汇总.json.aes",
   "geneDbKey": "突变谱",
   "specVarList": "spec.var.lite.list",
   "transInfo": "trans.exonCount.json.new.json",
