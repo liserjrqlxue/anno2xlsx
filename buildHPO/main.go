@@ -29,17 +29,16 @@ func main() {
 		getNameCn[hpo.HpoID] = hpo.NameCn
 	}
 
-	var gene2hpo = make(map[string][]chpo)
+	var gene2hpo = make(map[string]map[string]string)
 	for _, array := range textUtil.File2Slice("genes_to_phenotype.txt", "\t")[1:] {
 		var geneID = array[0]
 		var hpoID = array[2]
-		gene2hpo[geneID] = append(
-			gene2hpo[geneID],
-			chpo{
-				HpoID:  hpoID,
-				NameCn: getNameCn[hpoID],
-			},
-		)
+		var item, ok = gene2hpo[geneID]
+		if !ok {
+			item = make(map[string]string)
+		}
+		item[hpoID] = getNameCn[hpoID]
+		gene2hpo[geneID] = item
 	}
 
 	var out = osUtil.Create("gene2chpo.txt")
@@ -64,18 +63,18 @@ func main() {
 			"HPO-Term-NameCN",
 		),
 	)
-	for geneID, hpoArray := range gene2hpo {
+	for geneID, item := range gene2hpo {
 		var hpoIDs, NameCns []string
-		for _, hpo := range hpoArray {
-			hpoIDs = append(hpoIDs, hpo.HpoID)
-			NameCns = append(NameCns, hpo.NameCn)
+		for hpoID, nameCn := range item {
+			hpoIDs = append(hpoIDs, hpoID)
+			NameCns = append(NameCns, nameCn)
 			simpleUtil.HandleError(
 				fmt.Fprintf(
 					out,
 					"%s\t%s\t%s\n",
 					geneID,
-					hpo.HpoID,
-					hpo.NameCn,
+					hpoID,
+					nameCn,
 				),
 			)
 		}
