@@ -1,0 +1,5 @@
+[annotation.hpo]
+file = "gene2hpo.txt"
+mainKey = "entre-gene-id"
+titleKey = ["HPO-Term-ID", "HPO-Term-NameCN"]
+title = ["hpo", "hop_cn"]

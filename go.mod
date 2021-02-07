@@ -8,11 +8,12 @@ require (
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/liserjrqlxue/acmg2015 v1.1.14
 	github.com/liserjrqlxue/crypto v0.1.0
-	github.com/liserjrqlxue/goUtil v0.0.34-0.20201130072138-b367de24c3d3
+	github.com/liserjrqlxue/goUtil v0.0.34
 	github.com/liserjrqlxue/simple-util v1.0.1
 	github.com/liserjrqlxue/version v1.0.1
 	github.com/onsi/ginkgo v1.14.1 // indirect
 	github.com/onsi/gomega v1.10.2 // indirect
+	github.com/pelletier/go-toml v1.8.1
 	github.com/tealeg/xlsx/v2 v2.0.1
 	github.com/tealeg/xlsx/v3 v3.2.0
 )

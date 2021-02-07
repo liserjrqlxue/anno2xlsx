@@ -38,6 +38,12 @@ skip sheet:[更新备注]
 
 ```
 
+## CHPO
+
+```shell
+buildHPO -chpo chpo-2021.json -g2p genes_to_phenotype.txt -output db/gene2chpo.txt
+```
+
 # 注意
 
 ## 基因-疾病数据库
