@@ -67,7 +67,9 @@ func main() {
 		var hpoIDs, NameCns []string
 		for hpoID, nameCn := range item {
 			hpoIDs = append(hpoIDs, hpoID)
-			NameCns = append(NameCns, nameCn)
+			if nameCn != "" {
+				NameCns = append(NameCns, nameCn)
+			}
 			simpleUtil.HandleError(
 				fmt.Fprintf(
 					out,
