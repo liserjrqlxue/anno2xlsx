@@ -2,7 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 )
 
 // flag
@@ -252,3 +255,28 @@ var (
 		"force all MT variant to Tier1",
 	)
 )
+
+func checkFlag() {
+	if *snv == "" && *exon == "" && *large == "" && *smn == "" && *loh == "" {
+		flag.Usage()
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn,-loh")
+		os.Exit(0)
+	}
+	if *snv == "" {
+		if *prefix == "" {
+			flag.Usage()
+			fmt.Println("\nshold have -prefix for output")
+			os.Exit(0)
+		}
+	} else {
+		snvs = strings.Split(*snv, ",")
+		if *prefix == "" {
+			*prefix = snvs[0]
+		}
+	}
+
+	if *logfile == "" {
+		*logfile = *prefix + ".log"
+
+	}
+}
