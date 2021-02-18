@@ -123,5 +123,6 @@ var (
 // database
 var (
 	gene2id map[string]string
-	chpo    *chpoDb
+	chpo    chpoDb
+	revel   revelDb
 )

@@ -215,6 +215,8 @@ func annotate1Tier1(item map[string]string) {
 			stats["Tier1Hom"]++
 		}
 		stats["Tier1"+item["VarType"]]++
+
+		revel.anno(item)
 	}
 }
 

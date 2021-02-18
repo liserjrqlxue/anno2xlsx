@@ -149,3 +149,4 @@ dcDescription
 历史样本检出个数
 是否报告
 Tier
+REVEL_score

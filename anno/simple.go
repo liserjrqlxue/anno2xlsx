@@ -197,7 +197,8 @@ func inPAR(chr string, start, end int) bool {
 
 // #Chr+Stop
 func updatePos(item map[string]string) {
-	item["#Chr"] = "chr" + rmChr.ReplaceAllString(item["#Chr"], "")
+	item["chromosome"] = rmChr.ReplaceAllString(item["#Chr"], "")
+	item["#Chr"] = "chr" + item["chromosome"]
 	if item["VarType"] == "snv" {
 		item["#Chr+Stop"] = item["#Chr"] + ":" + item["Stop"]
 		item["chr-show"] = item["#Chr"] + ":" + item["Stop"]

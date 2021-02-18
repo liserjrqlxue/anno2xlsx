@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.3.1
 	github.com/brentp/bix v0.0.0-20190718140914-00aa7a7f205d
+	github.com/brentp/irelate v0.0.0-20180801151701-1bf7c8f95c75
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/liserjrqlxue/acmg2015 v1.1.14
 	github.com/liserjrqlxue/crypto v0.1.0

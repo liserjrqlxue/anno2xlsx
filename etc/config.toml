@@ -2,4 +2,11 @@
 file = "gene2hpo.txt"
 mainKey = "entre-gene-id"
 titleKey = ["HPO-Term-ID", "HPO-Term-NameCN"]
-title = ["hpo", "hop_cn"]
+title = ["hpo", "hpo_cn"]
+
+[annotation.REVEL]
+file = "revel.lite.tsv.gz"
+key = ["Stop", "Ref", "Call"]
+keyIndex = [1, 2, 3]
+title = ["REVEL_score"]
+titleIndex = [4]

@@ -412,8 +412,10 @@ func main() {
 
 	var tomlConfig, _ = toml.LoadFile(*cfg)
 	var hpoCfg = tomlConfig.Get("annotation.hpo").(*toml.Tree)
+	var revelCfg = tomlConfig.Get("annotation.REVEL").(*toml.Tree)
 
 	chpo.loadCHPO(hpoCfg)
+	revel.loadRevel(revelCfg)
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
