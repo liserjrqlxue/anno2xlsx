@@ -216,7 +216,9 @@ func annotate1Tier1(item map[string]string) {
 		}
 		stats["Tier1"+item["VarType"]]++
 
-		revel.anno(item)
+		if *academic {
+			revel.anno(item)
+		}
 	}
 }
 

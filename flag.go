@@ -10,6 +10,11 @@ import (
 
 // flag
 var (
+	academic = flag.Bool(
+		"academic",
+		false,
+		"if non-commercial use",
+	)
 	cfg = flag.String(
 		"cfg",
 		filepath.Join(etcPath, "config.toml"),
