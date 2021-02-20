@@ -214,7 +214,6 @@ func getMhgvs(item map[string]string) string {
 	var alt = item["Call"]
 	if ref == "." {
 		ref = ""
-		pos--
 	}
 	if alt == "." {
 		alt = ""

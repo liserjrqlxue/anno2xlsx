@@ -12,7 +12,7 @@ func GetMhgvs(pos int, ref, alt []byte) (mHGVS string) {
 	}
 	mHGVS = fmt.Sprintf("%s:m.%d%s>%s", MT, pos, ref, alt)
 	if len(ref) == 0 || string(ref) == "" {
-		mHGVS = fmt.Sprintf("%s:m.%d_%dins%s", MT, pos, pos+1, alt)
+		mHGVS = fmt.Sprintf("%s:m.%d_%dins%s", MT, pos-1, pos, alt)
 	} else if len(alt) == 0 || string(ref) == "" {
 		if len(ref) == 1 {
 			mHGVS = fmt.Sprintf("%s:m.%ddel", MT, pos)
