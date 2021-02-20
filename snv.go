@@ -14,6 +14,7 @@ import (
 	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 )
 
 // add filter_variants
@@ -181,6 +182,7 @@ func annotate1(item map[string]string) {
 	anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
 	if *mt && isMT.MatchString(item["#Chr"]) {
 		item["Tier"] = "Tier1"
+		mtGnomAD.anno(item, getMhgvs(item))
 	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
@@ -205,6 +207,20 @@ func annotate1(item map[string]string) {
 	stats[item["VarType"]]++
 }
 
+func getMhgvs(item map[string]string) string {
+	var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int)
+	var ref = item["Ref"]
+	var alt = item["Call"]
+	if ref == "." {
+		ref = ""
+	}
+	if alt == "." {
+		alt = ""
+	}
+	hgvs.GetMhgvs(pos, []byte(ref), []byte(alt))
+	return ""
+}
+
 func annotate1Tier1(item map[string]string) {
 	if item["Tier"] == "Tier1" {
 		anno.InheritCheck(item, inheritDb)
@@ -219,10 +235,6 @@ func annotate1Tier1(item map[string]string) {
 
 		if *academic {
 			revel.anno(item)
-		}
-		if isMT.MatchString(item["#Chr"]) {
-			var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int) + 1
-			mtGnomAD.anno(item, fmt.Sprintf("%s:%d%s>%s", item["#Chr"], pos, item["Ref"], item["Call"]))
 		}
 	}
 }

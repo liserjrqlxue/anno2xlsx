@@ -11,6 +11,8 @@ import (
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 )
 
 // os
@@ -65,23 +67,12 @@ func main() {
 		var pos = simpleUtil.HandleError(strconv.Atoi(item["position"])).(int)
 		var ref = []byte(item["ref"])
 		var alt = []byte(item["alt"])
-		for ref[0] == alt[0] {
-			ref = ref[1:]
-			alt = alt[1:]
-			pos++
-			if len(ref) == 0 {
-				ref = []byte(".")
-			}
-			if len(alt) == 0 {
-				alt = []byte(".")
-			}
-		}
 		simpleUtil.HandleError(
 			fmt.Fprintln(
 				out,
 				strings.Join(
 					[]string{
-						fmt.Sprintf("%s:%d%s>%s", item["chromosome"], pos, ref, alt),
+						hgvs.GetMhgvs(pos, ref, alt),
 						item["AC_hom"],
 						item["AC_het"],
 						item["AF_hom"],
