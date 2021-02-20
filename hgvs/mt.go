@@ -5,6 +5,9 @@ import "fmt"
 var MT = "NC_012920.1"
 
 func GetMhgvs(pos int, ref, alt []byte) (mHGVS string) {
+	if string(ref) == string(alt) {
+		return fmt.Sprintf("%s:m.%d=", MT, pos)
+	}
 	for len(ref) > 0 && len(alt) > 0 && ref[0] == alt[0] {
 		ref = ref[1:]
 		alt = alt[1:]
