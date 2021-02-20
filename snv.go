@@ -209,7 +209,7 @@ func annotate1(item map[string]string) {
 }
 
 func getMhgvs(item map[string]string) string {
-	var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int)
+	var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int) + 1
 	var ref = item["Ref"]
 	var alt = item["Call"]
 	if ref == "." {
