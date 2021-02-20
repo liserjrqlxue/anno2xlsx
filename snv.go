@@ -182,7 +182,8 @@ func annotate1(item map[string]string) {
 	anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
 	if *mt && isMT.MatchString(item["#Chr"]) {
 		item["Tier"] = "Tier1"
-		mtGnomAD.anno(item, getMhgvs(item))
+		item["MTmut"] = getMhgvs(item)
+		mtGnomAD.anno(item, item["MTmut"])
 	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
