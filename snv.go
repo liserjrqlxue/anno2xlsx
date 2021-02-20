@@ -217,8 +217,7 @@ func getMhgvs(item map[string]string) string {
 	if alt == "." {
 		alt = ""
 	}
-	hgvs.GetMhgvs(pos, []byte(ref), []byte(alt))
-	return ""
+	return hgvs.GetMhgvs(pos, []byte(ref), []byte(alt))
 }
 
 func annotate1Tier1(item map[string]string) {
