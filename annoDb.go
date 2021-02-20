@@ -9,7 +9,7 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-type chpoDb struct {
+type annoDb struct {
 	File     string
 	MainKey  string
 	TitleKey []string
@@ -18,7 +18,7 @@ type chpoDb struct {
 	db       map[string]map[string]string
 }
 
-func (db *chpoDb) loadCHPO(hpoCfg *toml.Tree) {
+func (db *annoDb) load(hpoCfg *toml.Tree) {
 	simpleUtil.CheckErr(hpoCfg.Unmarshal(db))
 	if !osUtil.FileExists(db.File) {
 		db.File = filepath.Join(dbPath, db.File)
@@ -30,8 +30,7 @@ func (db *chpoDb) loadCHPO(hpoCfg *toml.Tree) {
 	}
 }
 
-func (db *chpoDb) anno(item map[string]string) {
-	var key = item["geneID"]
+func (db *annoDb) anno(item map[string]string, key string) {
 	var info, ok = db.db[key]
 	if ok {
 		for k, v := range db.titleMap {

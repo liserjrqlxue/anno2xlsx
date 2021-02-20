@@ -122,7 +122,8 @@ var (
 
 // database
 var (
-	gene2id map[string]string
-	chpo    chpoDb
-	revel   revelDb
+	gene2id  map[string]string
+	chpo     annoDb
+	revel    revelDb
+	mtGnomAD annoDb
 )

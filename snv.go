@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -150,7 +151,7 @@ func annotate1(item map[string]string) {
 	item["death age"] = item["hpo_cn"]
 
 	item["geneID"] = id
-	chpo.anno(item)
+	chpo.anno(item, id)
 
 	//anno.ParseSpliceAI(item)
 
@@ -218,6 +219,10 @@ func annotate1Tier1(item map[string]string) {
 
 		if *academic {
 			revel.anno(item)
+		}
+		if isMT.MatchString(item["#Chr"]) {
+			var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int) + 1
+			mtGnomAD.anno(item, fmt.Sprintf("%s:%d%s>%s", item["#Chr"], pos, item["Ref"], item["Call"]))
 		}
 	}
 }
