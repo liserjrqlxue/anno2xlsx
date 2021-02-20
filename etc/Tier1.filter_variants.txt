@@ -150,7 +150,6 @@ dcDescription
 是否报告
 Tier
 REVEL_score
-REVEL_score
 MTmut
 MT_AC_hom
 MT_AC_het
