@@ -54,7 +54,7 @@ func addCnv2Sheet(
 			anno.UpdateDiseMultiGene(gene, item, gene2id, geneDiseaseDbColumn, geneDiseaseDb)
 			anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
 			// 突变频谱
-			updateGeneDb(gene, item, geneDb)
+			anno.UpdateGeneDb(gene, item, geneDb)
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			stats[key]++
 			if item["OMIM"] != "" {
@@ -101,16 +101,6 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
 		}
 	}
-}
-
-func updateGeneDb(geneList string, item, geneDb map[string]string) {
-	genes := strings.Split(geneList, ";")
-	// 突变频谱
-	var vals []string
-	for _, gene := range genes {
-		vals = append(vals, geneDb[gene])
-	}
-	item["突变频谱"] = strings.Join(vals, "\n")
 }
 
 //Variant struct for anno info

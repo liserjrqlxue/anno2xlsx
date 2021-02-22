@@ -11,6 +11,7 @@ import (
 	"runtime/pprof"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
@@ -52,6 +53,11 @@ var (
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
 	)
+	geneDbFile = flag.String(
+		"geneDb",
+		"",
+		"database of 突变频谱",
+	)
 	geneDiseaseDbFile = flag.String(
 		"geneDisease",
 		"",
@@ -84,6 +90,10 @@ var gene2id = make(map[string]string)
 // 基因-疾病
 var geneDiseaseDb = make(map[string]map[string]string)
 var geneDiseaseDbColumn = make(map[string]string)
+
+// 突变谱
+var geneDbKey string
+var geneDb = make(map[string]string)
 
 var codeKey []byte
 
@@ -125,6 +135,10 @@ func main() {
 	if *geneDiseaseDbTitle == "" {
 		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
 	}
+	if *geneDbFile == "" {
+		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
+	}
+	geneDbKey = anno.GetStrVal("geneDbKey", defaultConfig)
 
 	// 基因-疾病
 	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
@@ -133,6 +147,13 @@ func main() {
 	}
 	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
 	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
+
+	// 突变频谱
+	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
+	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
+	for k := range geneDbExt {
+		geneDb[k] = geneDbExt[k][geneDbKey]
+	}
 
 	cnvDb, _ := simple_util.LongFile2MapArray(*input, "\t", nil)
 	titles := textUtil.File2Array(*title)
@@ -148,6 +169,8 @@ func main() {
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
 		anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
+		// 突变频谱
+		anno.UpdateGeneDb(gene, item, geneDb)
 		item["OMIM"] = item["OMIM_Phenotype_ID"]
 
 		var array []string
