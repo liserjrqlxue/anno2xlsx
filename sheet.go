@@ -54,7 +54,7 @@ func addCnv2Sheet(
 			anno.UpdateDiseMultiGene(gene, item, gene2id, geneDiseaseDbColumn, geneDiseaseDb)
 			anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
 			// 突变频谱
-			anno.UpdateGeneDb(gene, item, geneDb)
+			spectrumDb.Annos(item, "\n", strings.Split(gene, ";"))
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			stats[key]++
 			if item["OMIM"] != "" {

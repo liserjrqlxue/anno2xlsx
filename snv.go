@@ -153,6 +153,8 @@ func annotate1(item map[string]string) {
 
 	item["geneID"] = id
 	chpo.Anno(item, id)
+	// 突变频谱
+	spectrumDb.Anno(item, id)
 
 	//anno.ParseSpliceAI(item)
 
@@ -163,9 +165,6 @@ func annotate1(item map[string]string) {
 	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
 	anno.UpdateSnv(item, *gender, *debug)
-
-	// 突变频谱
-	item["突变频谱"] = geneDb[id]
 
 	// 引物设计
 	item["exonCount"] = exonCount[item["Transcript"]]

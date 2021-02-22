@@ -72,10 +72,6 @@ func parseCfg() {
 	if *geneDiseaseDbTitle == "" {
 		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
 	}
-	if *geneDbFile == "" {
-		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
-	}
-	geneDbKey = anno.GetStrVal("geneDbKey", defaultConfig)
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
@@ -291,8 +287,7 @@ func prepareGD() {
 	for key, item := range geneDiseaseDbTitleInfo {
 		geneDiseaseDbColumn[key] = item["Key"]
 	}
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
+	geneDiseaseDb = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, []byte(aesCode)))
 	for key := range geneDiseaseDb {
 		geneList[key] = true
 	}
@@ -414,6 +409,7 @@ func main() {
 	var hpoCfg = tomlConfig.Get("annotation.hpo").(*toml.Tree)
 	var revelCfg = tomlConfig.Get("annotation.REVEL").(*toml.Tree)
 	var mtCfg = tomlConfig.Get("annotation.GnomAD.MT").(*toml.Tree)
+	var spectrumCfg = tomlConfig.Get("annotation.Gene.spectrum").(*toml.Tree)
 
 	chpo.Load(hpoCfg, dbPath)
 	if *academic {
@@ -421,22 +417,15 @@ func main() {
 	}
 	mtGnomAD.Load(mtCfg, dbPath)
 
+	// 突变频谱
+	spectrumDb.Load(spectrumCfg, dbPath, []byte(aesCode))
+
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	prepareExcel()
 
 	// exonCount
 	exonCount = jsonUtil.JsonFile2Map(*transInfo)
-
-	// 突变频谱
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
-	for k := range geneDbExt {
-		geneDb[k] = geneDbExt[k][geneDbKey]
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load mutation spectrum")
 
 	prepareGD()
 

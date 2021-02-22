@@ -27,8 +27,7 @@ var sampleList []string
 // to-do add exon count info of transcript
 var exonCount = make(map[string]string)
 
-// 突变频谱
-var geneDb = make(map[string]string)
+var aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
 
 // 基因-疾病
 var geneList = make(map[string]bool)
@@ -76,8 +75,6 @@ type templateInfo struct {
 	note      [2][]string
 }
 
-var codeKey []byte
-
 // regexp
 var (
 	isGz      = regexp.MustCompile(`\.gz$`)
@@ -109,7 +106,6 @@ var (
 	defaultConfig       map[string]interface{}
 	tier2TemplateInfo   templateInfo
 	tier2               xlsxTemplate
-	geneDbKey           string
 	err                 error
 	ts                  = []time.Time{time.Now()}
 	step                = 0
@@ -128,4 +124,6 @@ var (
 	chpo     anno.AnnoDb
 	revel    revelDb
 	mtGnomAD anno.AnnoDb
+	// 突变频谱
+	spectrumDb anno.EncodeDb
 )

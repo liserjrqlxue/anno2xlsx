@@ -16,3 +16,10 @@ file = "gnomad.genomes.v3.1.sites.chrM.reduced_annotations.tsv.db"
 mainKey = "MTmut"
 titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
 title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
+
+[annotation.Gene.spectrum]
+file = "V4.3(2021Q1) 基因库-20210205-统一动态突变重复数.xlsx.突变谱汇总.json.aes"
+type = "json"
+codeKey = "****"
+titleKey = ["突变谱"]
+title = ["突变频谱"]
