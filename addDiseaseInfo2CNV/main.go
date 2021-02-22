@@ -11,23 +11,31 @@ import (
 	"runtime/pprof"
 	"strings"
 
-	"github.com/liserjrqlxue/goUtil/jsonUtil"
+	"github.com/liserjrqlxue/goUtil/fmtUtil"
+	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
+	"github.com/pelletier/go-toml"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os
 var (
-	ex, _  = os.Executable()
-	exPath = filepath.Dir(ex)
-	dbPath = filepath.Join(exPath, "..", "db")
+	ex, _   = os.Executable()
+	exPath  = filepath.Dir(ex)
+	etcPath = filepath.Join(exPath, "..", "etc")
+	dbPath  = filepath.Join(exPath, "..", "db")
 )
 
 // flag
 var (
+	cfg = flag.String(
+		"cfg",
+		filepath.Join(etcPath, "config.toml"),
+		"toml config document",
+	)
 	input = flag.String(
 		"input",
 		"",
@@ -53,21 +61,6 @@ var (
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
 	)
-	geneDbFile = flag.String(
-		"geneDb",
-		"",
-		"database of 突变频谱",
-	)
-	geneDiseaseDbFile = flag.String(
-		"geneDisease",
-		"",
-		"database of 基因-疾病数据库",
-	)
-	geneDiseaseDbTitle = flag.String(
-		"geneDiseaseTitle",
-		"",
-		"Title map of 基因-疾病数据库",
-	)
 	config = flag.String(
 		"config",
 		filepath.Join(exPath, "..", "etc", "config.json"),
@@ -85,17 +78,17 @@ var (
 	)
 )
 
-var gene2id = make(map[string]string)
+var tomlCfg *toml.Tree
 
-// 基因-疾病
-var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = make(map[string]string)
-
-// 突变谱
-var geneDbKey string
-var geneDb = make(map[string]string)
-
-var codeKey []byte
+// database
+var (
+	aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
+	gene2id map[string]string
+	// 突变频谱
+	spectrumDb anno.EncodeDb
+	// 基因-疾病
+	diseaseDb anno.EncodeDb
+)
 
 //var err error
 
@@ -121,72 +114,71 @@ func main() {
 		*output = *input + ".tsv"
 	}
 
-	out, err := os.Create(*output)
-	simple_util.CheckErr(err)
+	tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
+
+	// 突变频谱
+	spectrumDb.Load(
+		tomlCfg.Get("annotation.Gene.spectrum").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
+	// 基因-疾病
+	diseaseDb.Load(
+		tomlCfg.Get("annotation.Gene.disease").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
+
+	var out = osUtil.Create(*output)
 	defer simple_util.DeferClose(out)
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
 	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
-	if *geneDiseaseDbFile == "" {
-		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
-	}
-	if *geneDiseaseDbTitle == "" {
-		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
-	}
-	if *geneDbFile == "" {
-		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
-	}
-	geneDbKey = anno.GetStrVal("geneDbKey", defaultConfig)
-
-	// 基因-疾病
-	geneDiseaseDbTitleInfo := simple_util.JsonFile2MapMap(*geneDiseaseDbTitle)
-	for key, item := range geneDiseaseDbTitleInfo {
-		geneDiseaseDbColumn[key] = item["Key"]
-	}
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
-
-	// 突变频谱
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
-	for k := range geneDbExt {
-		geneDb[k] = geneDbExt[k][geneDbKey]
-	}
 
 	cnvDb, _ := simple_util.LongFile2MapArray(*input, "\t", nil)
 	titles := textUtil.File2Array(*title)
 
 	anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 
-	_, err = fmt.Fprintln(out, strings.Join(titles, "\t"))
-	simple_util.CheckErr(err)
+	fmtUtil.Fprintln(out, strings.Join(titles, "\t"))
 	for _, item := range cnvDb {
-		gene := item["OMIM_Gene"]
-		// 基因-疾病
-		anno.UpdateDisGenes("<br/>", strings.Split(gene, ";"), item, gene2id, geneDiseaseDbColumn, geneDiseaseDb)
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
-		anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
+
+		var gene = item["OMIM_Gene"]
+
+		var geneIDs []string
+		for _, g := range strings.Split(gene, ";") {
+			var id, ok = gene2id[g]
+			if !ok {
+				if g != "-" && g != "." {
+					log.Fatalf("can not find gene id of [%s]\n", gene)
+				}
+			}
+			geneIDs = append(geneIDs, id)
+		}
+
+		// 基因-疾病
+		diseaseDb.Annos(item, "<br/>", geneIDs)
 		// 突变频谱
-		anno.UpdateGeneDb(gene, item, geneDb)
+		spectrumDb.Annos(item, "<br/>", geneIDs)
+
 		item["OMIM"] = item["OMIM_Phenotype_ID"]
+
+		anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
 
 		var array []string
 		for _, key := range titles {
 			array = append(array, isLF.ReplaceAllString(item[key], "<br/>"))
 		}
-		_, err = fmt.Fprintln(out, strings.Join(array, "\t"))
-		simple_util.CheckErr(err)
+		fmtUtil.Fprintln(out, strings.Join(array, "\t"))
 	}
 
 	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		simple_util.CheckErr(pprof.WriteHeapProfile(f))
-		defer simple_util.DeferClose(f)
+		var f = osUtil.Create(*memprofile)
+		defer simpleUtil.DeferClose(f)
+		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
 	}
 }

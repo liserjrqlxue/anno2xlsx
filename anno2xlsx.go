@@ -444,9 +444,8 @@ func main() {
 	saveExcel()
 
 	if *memprofile != "" {
-		var f, e = os.Create(*memprofile)
+		var f = osUtil.Create(*memprofile)
 		defer simpleUtil.DeferClose(f)
-		simpleUtil.CheckErr(e)
 		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
 	}
 }

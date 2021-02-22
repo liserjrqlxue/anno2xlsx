@@ -27,8 +27,6 @@ var sampleList []string
 // to-do add exon count info of transcript
 var exonCount = make(map[string]string)
 
-var aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
-
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
@@ -117,6 +115,7 @@ var geneList = make(map[string]bool)
 
 // database
 var (
+	aesCode  = "c3d112d6a47a0a04aad2b9d2d2cad266"
 	gene2id  map[string]string
 	chpo     anno.AnnoDb
 	revel    revelDb
