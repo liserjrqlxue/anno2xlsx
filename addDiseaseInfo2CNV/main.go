@@ -90,18 +90,13 @@ var (
 	diseaseDb anno.EncodeDb
 )
 
-//var err error
-
 // \n -> <br/>
 var isLF = regexp.MustCompile(`\n`)
 
-func main() {
+func init() {
 	flag.Parse()
 	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal(err)
-		}
+		var f = osUtil.Create(*cpuprofile)
 		simple_util.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
@@ -128,7 +123,9 @@ func main() {
 		dbPath,
 		[]byte(aesCode),
 	)
+}
 
+func main() {
 	var out = osUtil.Create(*output)
 	defer simple_util.DeferClose(out)
 
@@ -143,6 +140,7 @@ func main() {
 	anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 
 	fmtUtil.Fprintln(out, strings.Join(titles, "\t"))
+
 	for _, item := range cnvDb {
 		// Primer
 		item["Primer"] = anno.CnvPrimer(item, *cnvType)
@@ -173,7 +171,7 @@ func main() {
 		for _, key := range titles {
 			array = append(array, isLF.ReplaceAllString(item[key], "<br/>"))
 		}
-		fmtUtil.Fprintln(out, strings.Join(array, "\t"))
+		fmtUtil.FprintStringArray(out, array, "\t")
 	}
 
 	if *memprofile != "" {
