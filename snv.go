@@ -152,7 +152,7 @@ func annotate1(item map[string]string) {
 	item["death age"] = item["hpo_cn"]
 
 	item["geneID"] = id
-	chpo.anno(item, id)
+	chpo.Anno(item, id)
 
 	//anno.ParseSpliceAI(item)
 
@@ -183,7 +183,7 @@ func annotate1(item map[string]string) {
 	if *mt && isMT.MatchString(item["#Chr"]) {
 		item["Tier"] = "Tier1"
 		item["MTmut"] = getMhgvs(item)
-		mtGnomAD.anno(item, item["MTmut"])
+		mtGnomAD.Anno(item, item["MTmut"])
 	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
