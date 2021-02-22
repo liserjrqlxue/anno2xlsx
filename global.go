@@ -8,6 +8,8 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/tealeg/xlsx/v3"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 // os
@@ -123,7 +125,7 @@ var (
 // database
 var (
 	gene2id  map[string]string
-	chpo     annoDb
+	chpo     anno.AnnoDb
 	revel    revelDb
-	mtGnomAD annoDb
+	mtGnomAD anno.AnnoDb
 )

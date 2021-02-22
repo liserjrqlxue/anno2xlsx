@@ -1,4 +1,4 @@
-package main
+package anno
 
 import (
 	"path/filepath"
@@ -9,7 +9,7 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-type annoDb struct {
+type AnnoDb struct {
 	File     string
 	MainKey  string
 	TitleKey []string
@@ -18,8 +18,8 @@ type annoDb struct {
 	db       map[string]map[string]string
 }
 
-func (db *annoDb) load(hpoCfg *toml.Tree) {
-	simpleUtil.CheckErr(hpoCfg.Unmarshal(db))
+func (db *AnnoDb) Load(cfg *toml.Tree, dbPath string) {
+	simpleUtil.CheckErr(cfg.Unmarshal(db))
 	if !osUtil.FileExists(db.File) {
 		db.File = filepath.Join(dbPath, db.File)
 	}
@@ -30,7 +30,7 @@ func (db *annoDb) load(hpoCfg *toml.Tree) {
 	}
 }
 
-func (db *annoDb) anno(item map[string]string, key string) {
+func (db *AnnoDb) Anno(item map[string]string, key string) {
 	var info, ok = db.db[key]
 	if ok {
 		for k, v := range db.titleMap {
