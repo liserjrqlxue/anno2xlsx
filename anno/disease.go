@@ -58,34 +58,6 @@ type omimDisease struct {
 	HeredityModel    string `json:"heredityModel"`
 }
 
-//UpdateDiseMultiGene anno disease info for multil gene
-func UpdateDiseMultiGene(geneLst string, item, gene2id, geneDisDbCol map[string]string, geneDisDb map[string]map[string]string) {
-	var genes = strings.Split(geneLst, ";")
-	var geneLocus []string
-	// 基因-疾病
-	for key, value := range geneDisDbCol {
-		var vals []string
-		for _, gene := range genes {
-			var geneID, ok1 = gene2id[gene]
-			if !ok1 {
-				if gene != "-" && gene != "." {
-					log.Fatalf("can not find gene id of [%s]\n", gene)
-				}
-			}
-			singelGeneDb, ok := geneDisDb[geneID]
-			if ok {
-				vals = append(vals, singelGeneDb[key])
-				geneLocus = append(geneLocus, singelGeneDb["Gene/Locus"])
-			}
-		}
-		if len(vals) > 0 {
-			item[value] = strings.Join(vals, "\n")
-			item["Gene/Locus"] = strings.Join(geneLocus, "\n")
-		}
-	}
-
-}
-
 //UpdateCnvAnnot update annot of cnv
 func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb map[string]map[string]string) {
 	var genes = strings.Split(geneLst, ";")

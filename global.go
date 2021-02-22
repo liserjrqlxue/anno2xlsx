@@ -29,11 +29,6 @@ var exonCount = make(map[string]string)
 
 var aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
 
-// 基因-疾病
-var geneList = make(map[string]bool)
-var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = make(map[string]string)
-
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
@@ -118,6 +113,8 @@ var (
 	tier3Sheet          *xlsx.Sheet
 )
 
+var geneList = make(map[string]bool)
+
 // database
 var (
 	gene2id  map[string]string
@@ -126,4 +123,6 @@ var (
 	mtGnomAD anno.AnnoDb
 	// 突变频谱
 	spectrumDb anno.EncodeDb
+	// 基因-疾病
+	diseaseDb anno.EncodeDb
 )

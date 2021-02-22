@@ -23,3 +23,40 @@ type = "json"
 codeKey = "****"
 titleKey = ["突变谱"]
 title = ["突变频谱"]
+
+[annotation.Gene.disease]
+file = "全外疾病库2020.Q4-2021.2.5V1.xlsx.更新后全外背景库（5755疾病OMIMID，4372个基因）.json.aes"
+type = "json"
+codeKey = "****"
+titleKey = [
+    "Disease NameEN",
+    "Disease NameCH",
+    "Alternative Disease NameEN",
+    "Location",
+    "Gene/Locus",
+    "Gene/Locus MIM number",
+    "Inheritance",
+    "GeneralizationEN",
+    "GeneralizationCH",
+    "SystemSort",
+    "lab-翻译",
+    "发病年龄",
+    "imprinted gene/Expressed Allele",
+    "Phenotype MIM number",
+]
+title = [
+    "DiseaseNameEN",
+    "DiseaseNameCH",
+    "AliasEN",
+    "Location",
+    "Omim Gene",
+    "Gene/Locus MIM number",
+    "ModeInheritance",
+    "GeneralizationEN",
+    "GeneralizationCH",
+    "SystemSort",
+    "Lab-CH",
+    "Onset age",
+    "imprinted gene",
+    "OMIM_Phenotype_ID",
+]

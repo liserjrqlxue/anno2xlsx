@@ -1,51 +1,7 @@
 {
-  "Alternative Disease NameEN": {
-    "Key": "AliasEN",
-    "Title": "Alternative Disease NameEN"
-  },
-  "Disease NameCH": {
-    "Key": "DiseaseNameCH",
-    "Title": "Disease NameCH"
-  },
-  "Disease NameEN": {
-    "Key": "DiseaseNameEN",
-    "Title": "Disease NameEN"
-  },
-  "Gene/Locus": {
-    "Key": "Omim Gene",
-    "Title": "Gene/Locus"
-  },
-  "Gene/Locus MIM number": {
-    "Key": "Gene/Locus MIM number",
-    "Title": "Gene/Locus MIM number"
-  },
-  "GeneralizationCH": {
-    "Key": "GeneralizationCH",
-    "Title": "GeneralizationCH"
-  },
-  "GeneralizationEN": {
-    "Key": "GeneralizationEN",
-    "Title": "GeneralizationEN"
-  },
-  "Inheritance": {
-    "Key": "ModeInheritance",
-    "Title": "Inheritance"
-  },
-  "Location": {
-    "Key": "Location",
-    "Title": "Location"
-  },
-  "Phenotype MIM number": {
-    "Key": "OMIM_Phenotype_ID",
-    "Title": "Phenotype MIM number"
-  },
   "Status": {
     "Key": "Status",
     "Title": "Status"
-  },
-  "SystemSort": {
-    "Key": "SystemSort",
-    "Title": "SystemSort"
   },
   "age of death/cause of death-OMIM": {
     "Key": "age of death/cause of death-OMIM",
@@ -55,21 +11,9 @@
     "Key": "age_of_onset-加人工校对",
     "Title": "age_of_onset-加人工校对"
   },
-  "imprinted gene/Expressed Allele": {
-    "Key": "imprinted gene",
-    "Title": "imprinted gene/Expressed Allele"
-  },
   "lab": {
     "Key": "lab",
     "Title": "lab"
-  },
-  "lab-翻译": {
-    "Key": "Lab-CH",
-    "Title": "lab-翻译"
-  },
-  "发病年龄": {
-    "Key": "Onset age",
-    "Title": "发病年龄"
   },
   "发病年龄备注": {
     "Key": "发病年龄备注",

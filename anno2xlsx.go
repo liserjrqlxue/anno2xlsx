@@ -140,11 +140,7 @@ func openRedis() {
 		redisDb = redis.NewClient(&redis.Options{
 			Addr: *redisAddr,
 		})
-		pong, err := redisDb.Ping().Result()
-		log.Printf("Connect [%s]:%s\n", redisDb.String(), pong)
-		if err != nil {
-			log.Fatalf("Error [%+v]\n", err)
-		}
+		log.Printf("Connect [%s]:%s\n", redisDb.String(), simpleUtil.HandleError(redisDb.Ping().Result()).(string))
 	}
 
 }
@@ -219,10 +215,9 @@ func prepareTier2() {
 	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
 	tier2.xlsx = xlsx.NewFile()
 
-	tier2Template, err := xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))
-	simpleUtil.CheckErr(err)
-	tier2Infos, err := tier2Template.ToSlice()
-	simpleUtil.CheckErr(err)
+	var tier2Infos = simpleUtil.HandleError(
+		simpleUtil.HandleError(xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))).(*xlsx.File).ToSlice(),
+	).([][][]string)
 	for i, item := range tier2Infos[0] {
 		if i > 0 {
 			tier2TemplateInfo.cols = append(tier2TemplateInfo.cols, item[0])
@@ -257,8 +252,7 @@ func prepareTier2() {
 	} else {
 		tier2Note = tier2TemplateInfo.note[0]
 	}
-	tier2NoteSheet, err := tier2.xlsx.AddSheet(tier2NoteSheetName)
-	simpleUtil.CheckErr(err)
+	var tier2NoteSheet = simpleUtil.HandleError(tier2.xlsx.AddSheet(tier2NoteSheetName)).(*xlsx.Sheet)
 	for _, line := range tier2Note {
 		tier2NoteSheet.AddRow().AddCell().SetString(line)
 	}
@@ -279,26 +273,6 @@ func prepareExcel() {
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load template")
-}
-
-func prepareGD() {
-	// 基因-疾病
-	var geneDiseaseDbTitleInfo = jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
-	for key, item := range geneDiseaseDbTitleInfo {
-		geneDiseaseDbColumn[key] = item["Key"]
-	}
-	geneDiseaseDb = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, []byte(aesCode)))
-	for key := range geneDiseaseDb {
-		geneList[key] = true
-	}
-	for k, v := range gene2id {
-		if geneList[v] {
-			geneList[k] = true
-		}
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Gene-Disease DB")
 }
 
 func addExon() {
@@ -398,18 +372,18 @@ func loadData() (data []map[string]string) {
 
 func main() {
 	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		simpleUtil.CheckErr(err)
+		var f = osUtil.Create(*cpuprofile)
 		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
 	defer simpleUtil.DeferClose(logFile)
 
-	var tomlConfig, _ = toml.LoadFile(*cfg)
+	var tomlConfig = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 	var hpoCfg = tomlConfig.Get("annotation.hpo").(*toml.Tree)
 	var revelCfg = tomlConfig.Get("annotation.REVEL").(*toml.Tree)
 	var mtCfg = tomlConfig.Get("annotation.GnomAD.MT").(*toml.Tree)
 	var spectrumCfg = tomlConfig.Get("annotation.Gene.spectrum").(*toml.Tree)
+	var diseaseCfg = tomlConfig.Get("annotation.Gene.disease").(*toml.Tree)
 
 	chpo.Load(hpoCfg, dbPath)
 	if *academic {
@@ -419,6 +393,19 @@ func main() {
 
 	// 突变频谱
 	spectrumDb.Load(spectrumCfg, dbPath, []byte(aesCode))
+	// 基因-疾病
+	diseaseDb.Load(diseaseCfg, dbPath, []byte(aesCode))
+	for key := range diseaseDb.Db {
+		geneList[key] = true
+	}
+	for k, v := range gene2id {
+		if geneList[v] {
+			geneList[k] = true
+		}
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load Gene-Disease DB")
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
@@ -426,8 +413,6 @@ func main() {
 
 	// exonCount
 	exonCount = jsonUtil.JsonFile2Map(*transInfo)
-
-	prepareGD()
 
 	// 特殊位点库
 	for _, key := range textUtil.File2Array(*specVarList) {
@@ -453,7 +438,7 @@ func main() {
 
 	// append loh sheet
 	if *loh != "" {
-		appendLOHs(&xlsxUtil.File{tier1Xlsx}, *loh, *lohSheet, sampleList)
+		appendLOHs(&xlsxUtil.File{File: tier1Xlsx}, *loh, *lohSheet, sampleList)
 	}
 
 	saveExcel()

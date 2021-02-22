@@ -11,6 +11,7 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+// EncodeDb encode json
 type EncodeDb struct {
 	File     string
 	MainKey  string
@@ -18,7 +19,7 @@ type EncodeDb struct {
 	Title    []string
 	titleMap map[string]string
 	codeKey  []byte
-	db       map[string]map[string]string
+	Db       map[string]map[string]string
 }
 
 func (db *EncodeDb) Load(cfg *toml.Tree, dbPath string, codeKey []byte) {
@@ -27,7 +28,7 @@ func (db *EncodeDb) Load(cfg *toml.Tree, dbPath string, codeKey []byte) {
 		db.File = filepath.Join(dbPath, db.File)
 	}
 	db.codeKey = codeKey
-	db.db = jsonUtil.Json2MapMap(simple_util.File2Decode(db.File, db.codeKey))
+	db.Db = jsonUtil.Json2MapMap(simple_util.File2Decode(db.File, db.codeKey))
 	db.titleMap = make(map[string]string)
 	for i := range db.Title {
 		db.titleMap[db.TitleKey[i]] = db.Title[i]
@@ -35,7 +36,7 @@ func (db *EncodeDb) Load(cfg *toml.Tree, dbPath string, codeKey []byte) {
 }
 
 func (db *EncodeDb) Anno(item map[string]string, key string) {
-	var info, ok = db.db[key]
+	var info, ok = db.Db[key]
 	if ok {
 		for k, v := range db.titleMap {
 			item[v] = info[k]
@@ -46,7 +47,7 @@ func (db *EncodeDb) Anno(item map[string]string, key string) {
 func (db *EncodeDb) Annos(item map[string]string, sep string, keys []string) {
 	var tmp = make(map[string][]string)
 	for i := range keys {
-		var info, ok = db.db[keys[i]]
+		var info, ok = db.Db[keys[i]]
 		for k, v := range db.titleMap {
 			if ok {
 				tmp[v] = append(tmp[v], info[k])

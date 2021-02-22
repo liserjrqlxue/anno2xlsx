@@ -144,17 +144,16 @@ func annotate1(item map[string]string) {
 			log.Fatalf("can not find gene id of [%s]\n", gene)
 		}
 	}
-
-	// 基因-疾病
-	anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
-	item["Gene"] = item["Omim Gene"]
-	item["OMIM"] = item["OMIM_Phenotype_ID"]
-	item["death age"] = item["hpo_cn"]
-
 	item["geneID"] = id
+
 	chpo.Anno(item, id)
+	// 基因-疾病
+	diseaseDb.Anno(item, id)
 	// 突变频谱
 	spectrumDb.Anno(item, id)
+
+	item["Gene"] = item["Omim Gene"]
+	item["OMIM"] = item["OMIM_Phenotype_ID"]
 
 	//anno.ParseSpliceAI(item)
 

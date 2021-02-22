@@ -50,11 +50,26 @@ func addCnv2Sheet(
 		sample := item["Sample"]
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
-			gene := item["OMIM_Gene"]
-			anno.UpdateDiseMultiGene(gene, item, gene2id, geneDiseaseDbColumn, geneDiseaseDb)
-			anno.UpdateCnvAnnot(gene, item, gene2id, geneDiseaseDb)
+			var gene = item["OMIM_Gene"]
+
+			var geneIDs []string
+			for _, g := range strings.Split(gene, ";") {
+				var id, ok = gene2id[g]
+				if !ok {
+					if g != "-" && g != "." {
+						log.Fatalf("can not find gene id of [%s]\n", gene)
+					}
+				}
+				geneIDs = append(geneIDs, id)
+			}
+
+			// 基因-疾病
+			diseaseDb.Annos(item, "\n", geneIDs)
 			// 突变频谱
-			spectrumDb.Annos(item, "\n", strings.Split(gene, ";"))
+			spectrumDb.Annos(item, "\n", geneIDs)
+
+			anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			stats[key]++
 			if item["OMIM"] != "" {
