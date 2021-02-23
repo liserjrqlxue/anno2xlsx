@@ -301,12 +301,16 @@ func addLarge() {
 	var largeCNVTitle = addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
 	if *large != "" {
 		var paths []string
+		var pathMap = make(map[string]bool)
 		for _, path := range strings.Split(*large, ",") {
 			if osUtil.FileExists(path) {
-				paths = append(paths, path)
+				pathMap[path] = true
 			} else {
 				log.Printf("ERROR:not exists or not a file:%v \n", path)
 			}
+		}
+		for path := range pathMap {
+			paths = append(paths, path)
 		}
 		addCnv2Sheet(
 			tier1Xlsx.Sheet["large_cnv"], largeCNVTitle, paths, sampleMap,
