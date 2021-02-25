@@ -471,7 +471,7 @@ func saveExcel() {
 			tagStr = textUtil.File2Array(*tag)[0]
 		}
 		var tier1Output string
-		if isSMN1 {
+		if isSMN1 && !*wesim {
 			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
 		} else {
 			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
