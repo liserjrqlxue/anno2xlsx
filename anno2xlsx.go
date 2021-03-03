@@ -396,6 +396,7 @@ func main() {
 	for key := range diseaseDb.Db {
 		geneList[key] = true
 	}
+	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 	for k, v := range gene2id {
 		if geneList[v] {
 			geneList[k] = true
@@ -404,8 +405,6 @@ func main() {
 	ts = append(ts, time.Now())
 	step++
 	logTime(ts, step-1, step, "load Gene-Disease DB")
-
-	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	prepareExcel()
 
