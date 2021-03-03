@@ -18,7 +18,7 @@ titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
 title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
 
 [annotation.Gene.spectrum]
-file = "V4.3(2021Q1) 基因库-20210205-统一动态突变重复数.xlsx.突变谱汇总.json.aes"
+file = "V4.3.1(2021Q1) 基因库-202100303-修正别名问题导致的PVS1基因list.xlsx.突变谱汇总.json.aes"
 type = "json"
 codeKey = "****"
 titleKey = ["突变谱"]
