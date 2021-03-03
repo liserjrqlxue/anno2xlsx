@@ -45,16 +45,6 @@ var (
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
 	)
-	geneDiseaseDbFile = flag.String(
-		"geneDisease",
-		"",
-		"database of 基因-疾病数据库",
-	)
-	geneDiseaseDbTitle = flag.String(
-		"geneDiseaseTitle",
-		"",
-		"Title map of 基因-疾病数据库",
-	)
 	specVarList = flag.String(
 		"specVarList",
 		"",

@@ -66,12 +66,6 @@ func parseCfg() {
 	openRedis()
 	initAcmg2015()
 
-	if *geneDiseaseDbFile == "" {
-		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
-	}
-	if *geneDiseaseDbTitle == "" {
-		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
-	}
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
