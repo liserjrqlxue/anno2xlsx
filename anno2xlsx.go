@@ -387,7 +387,9 @@ func main() {
 	if *academic {
 		revel.loadRevel(revelCfg)
 	}
-	mtGnomAD.Load(mtCfg, dbPath)
+	if *mt {
+		mtGnomAD.Load(mtCfg, dbPath)
+	}
 
 	// 突变频谱
 	spectrumDb.Load(spectrumCfg, dbPath, []byte(aesCode))
