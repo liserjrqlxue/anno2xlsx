@@ -19,6 +19,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/liserjrqlxue/version"
+	"github.com/pelletier/go-toml"
 	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -34,6 +35,11 @@ var (
 
 // flag
 var (
+	cfg = flag.String(
+		"cfg",
+		filepath.Join(etcPath, "config.toml"),
+		"toml config document",
+	)
 	snv = flag.String(
 		"snv",
 		"",
@@ -53,21 +59,6 @@ var (
 		"geneId",
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
-	)
-	geneDbFile = flag.String(
-		"geneDb",
-		"",
-		"database of 突变频谱",
-	)
-	geneDiseaseDbFile = flag.String(
-		"geneDisease",
-		"",
-		"database of 基因-疾病数据库",
-	)
-	geneDiseaseDbTitle = flag.String(
-		"geneDiseaseTitle",
-		"",
-		"Title map of 基因-疾病数据库",
 	)
 	specVarList = flag.String(
 		"specVarList",
@@ -156,7 +147,19 @@ var (
 	)
 )
 
-var gene2id = make(map[string]string)
+var tomlCfg *toml.Tree
+
+// database
+var (
+	aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
+	gene2id map[string]string
+	chpo    anno.AnnoDb
+	// 突变频谱
+	spectrumDb anno.EncodeDb
+	// 基因-疾病
+	diseaseDb anno.EncodeDb
+	geneList  = make(map[string]bool)
+)
 
 // family list
 var sampleList []string
@@ -164,20 +167,10 @@ var sampleList []string
 // to-do add exon count info of transcript
 var exonCount = make(map[string]string)
 
-// 突变频谱
-var geneDb = make(map[string]string)
-
-// 基因-疾病
-var geneList = make(map[string]bool)
-var geneDiseaseDb = make(map[string]map[string]string)
-var geneDiseaseDbColumn = make(map[string]string)
-
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
 var tier1GeneList = make(map[string]bool)
-
-var codeKey []byte
 
 // regexp
 var (
@@ -215,7 +208,34 @@ func init() {
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
 
+	tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
+
+	chpo.Load(
+		tomlCfg.Get("annotation.hpo").(*toml.Tree),
+		dbPath,
+	)
+
+	// 突变频谱
+	spectrumDb.Load(
+		tomlCfg.Get("annotation.Gene.spectrum").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
+	// 基因-疾病
+	diseaseDb.Load(
+		tomlCfg.Get("annotation.Gene.disease").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
+	for key := range diseaseDb.Db {
+		geneList[key] = true
+	}
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
+	for k, v := range gene2id {
+		if geneList[v] {
+			geneList[k] = true
+		}
+	}
 
 	// parser etc/config.json
 	defaultConfig = jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
@@ -243,15 +263,6 @@ func init() {
 		acmg2015.Init(acmgCfg)
 	}
 
-	if *geneDiseaseDbFile == "" {
-		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
-	}
-	if *geneDiseaseDbTitle == "" {
-		*geneDiseaseDbTitle = anno.GetPath("geneDiseaseDbTitle", dbPath, defaultConfig)
-	}
-	if *geneDbFile == "" {
-		*geneDbFile = anno.GetPath("geneDbFile", dbPath, defaultConfig)
-	}
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
@@ -271,43 +282,12 @@ func main() {
 	var step = 0
 	ts = append(ts, time.Now())
 
-	geneDbKey := anno.GetStrVal("geneDbKey", defaultConfig)
-
 	var tier1Xlsx = xlsx.NewFile()
 	var filterVariantsSheet = xlsxUtil.AddSheet(tier1Xlsx, "filter_variants")
 	var filterVariantsTitle = addFile2Row(*filterVariants, filterVariantsSheet.AddRow())
 
 	// exonCount
 	exonCount = jsonUtil.JsonFile2Map(*transInfo)
-
-	// 突变频谱
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	var geneDbExt = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDbFile, codeKey))
-	for k := range geneDbExt {
-		geneDb[k] = geneDbExt[k][geneDbKey]
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load mutation spectrum")
-
-	// 基因-疾病
-	var geneDiseaseDbTitleInfo = jsonUtil.JsonFile2MapMap(*geneDiseaseDbTitle)
-	for key, item := range geneDiseaseDbTitleInfo {
-		geneDiseaseDbColumn[key] = item["Key"]
-	}
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = jsonUtil.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
-	for key := range geneDiseaseDb {
-		geneList[key] = true
-	}
-	for k, v := range gene2id {
-		if geneList[v] {
-			geneList[k] = true
-		}
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Gene-Disease DB")
 
 	// 特殊位点库
 	for _, key := range textUtil.File2Array(*specVarList) {
@@ -382,11 +362,15 @@ func updateSNV(item map[string]string, stats map[string]int) {
 			log.Fatalf("can not find gene id of [%s]\n", gene)
 		}
 	}
+
+	chpo.Anno(item, id)
 	// 基因-疾病
-	anno.UpdateDisease(id, item, geneDiseaseDbColumn, geneDiseaseDb)
+	diseaseDb.Anno(item, id)
+	// 突变频谱
+	spectrumDb.Anno(item, id)
+
 	item["Gene"] = item["Omim Gene"]
 	item["OMIM"] = item["OMIM_Phenotype_ID"]
-	item["death age"] = item["hpo_cn"]
 
 	// ues acmg of go
 	if *acmg {
@@ -396,9 +380,6 @@ func updateSNV(item map[string]string, stats map[string]int) {
 	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
 	anno.UpdateSnv(item, *gender, *debug)
-
-	// 突变频谱
-	item["突变频谱"] = geneDb[id]
 
 	// 引物设计
 	item["exonCount"] = exonCount[item["Transcript"]]
