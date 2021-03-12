@@ -267,7 +267,7 @@
     "目标区平均深度>30X位点所占比例": "[Target] Coverage (>=30x)",
     "bam文件路径": "bamPath",
     "核型预测": "核型预测",
-    "On target 率": "[Target] Fraction of Target Reads in all reads",
+    "On target 率": "[Target] Fraction of Target Data in all data",
     "Duplicate reads 的比例": "[Total] Fraction of PCR duplicate reads"
   }
 }
