@@ -16,6 +16,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
+	"github.com/liserjrqlxue/version"
 	"github.com/pelletier/go-toml"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -126,6 +127,7 @@ func init() {
 }
 
 func main() {
+	version.LogVersion()
 	var out = osUtil.Create(*output)
 	defer simple_util.DeferClose(out)
 
