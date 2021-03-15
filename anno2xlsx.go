@@ -85,16 +85,14 @@ func parseCfg() {
 	initIM()
 
 	if *wgs {
-		for _, key := range defaultConfig["MTTitle"].([]interface{}) {
-			MTTitle = append(MTTitle, key.(string))
-		}
-		for k, v := range defaultConfig["qualityKeyMapWGS"].(map[string]interface{}) {
-			qualityKeyMap[k] = v.(string)
-		}
+		MTTitle = textUtil.File2Array(filepath.Join(etcPath, "MT.title.txt"))
+		qualityKeyMap = simpleUtil.HandleError(
+			textUtil.File2Map(filepath.Join(etcPath, "wgs.qc.txt"), "\t", false),
+		).(map[string]string)
 	} else {
-		for k, v := range defaultConfig["qualityKeyMapWES"].(map[string]interface{}) {
-			qualityKeyMap[k] = v.(string)
-		}
+		qualityKeyMap = simpleUtil.HandleError(
+			textUtil.File2Map(filepath.Join(etcPath, "coverage.report.txt"), "\t", false),
+		).(map[string]string)
 	}
 
 	parseList()
@@ -377,24 +375,35 @@ func main() {
 	defer simpleUtil.DeferClose(logFile)
 
 	var tomlConfig = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
-	var hpoCfg = tomlConfig.Get("annotation.hpo").(*toml.Tree)
-	var revelCfg = tomlConfig.Get("annotation.REVEL").(*toml.Tree)
-	var mtCfg = tomlConfig.Get("annotation.GnomAD.MT").(*toml.Tree)
-	var spectrumCfg = tomlConfig.Get("annotation.Gene.spectrum").(*toml.Tree)
-	var diseaseCfg = tomlConfig.Get("annotation.Gene.disease").(*toml.Tree)
 
-	chpo.Load(hpoCfg, dbPath)
+	chpo.Load(
+		tomlConfig.Get("annotation.hpo").(*toml.Tree),
+		dbPath,
+	)
 	if *academic {
-		revel.loadRevel(revelCfg)
+		revel.loadRevel(
+			tomlConfig.Get("annotation.REVEL").(*toml.Tree),
+		)
 	}
 	if *mt {
-		mtGnomAD.Load(mtCfg, dbPath)
+		mtGnomAD.Load(
+			tomlConfig.Get("annotation.GnomAD.MT").(*toml.Tree),
+			dbPath,
+		)
 	}
 
 	// 突变频谱
-	spectrumDb.Load(spectrumCfg, dbPath, []byte(aesCode))
+	spectrumDb.Load(
+		tomlConfig.Get("annotation.Gene.spectrum").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
 	// 基因-疾病
-	diseaseDb.Load(diseaseCfg, dbPath, []byte(aesCode))
+	diseaseDb.Load(
+		tomlConfig.Get("annotation.Gene.disease").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
 	for key := range diseaseDb.Db {
 		geneList[key] = true
 	}

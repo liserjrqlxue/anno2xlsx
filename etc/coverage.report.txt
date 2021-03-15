@@ -1,0 +1,13 @@
+样本编号	样本编号
+原始数据产出（Mb）	[Total] Raw Data(Mb)
+目标区长度（bp）	[Target] Len of region
+目标区覆盖度	[Target] Coverage (>0x)
+目标区平均深度（X）	[Target] Average depth
+目标区平均深度>4X位点所占比例	[Target] Coverage (>=4x)
+目标区平均深度>10X位点所占比例	[Target] Coverage (>=10x)
+目标区平均深度>20X位点所占比例	[Target] Coverage (>=20x)
+目标区平均深度>30X位点所占比例	[Target] Coverage (>=30x)
+bam文件路径	bamPath
+核型预测	核型预测
+On target 率	[Target] Fraction of Target Data in all data
+Duplicate reads 的比例	[Total] Fraction of PCR duplicate reads

@@ -111,8 +111,6 @@ var (
 	tier3Sheet          *xlsx.Sheet
 )
 
-var geneList = make(map[string]bool)
-
 // database
 var (
 	aesCode  = "c3d112d6a47a0a04aad2b9d2d2cad266"
@@ -124,4 +122,5 @@ var (
 	spectrumDb anno.EncodeDb
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
+	geneList  = make(map[string]bool)
 )

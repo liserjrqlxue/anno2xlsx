@@ -1,0 +1,151 @@
+SampleID
+#Chr
+Start
+Stop
+Ref
+Call
+Gene Symbol
+Transcript
+cHGVS
+pHGVS
+ExIn_ID
+Function
+Zygosity
+A.Depth
+A.Ratio
+RepeatTag
+Filter
+rsID
+dbSNP Allele Freq
+1000G EAS AF
+1000G AF
+ESP6500 AF
+ExAC EAS AF
+ExAC AF
+GnomAD EAS AF
+GnomAD AF
+PVFD AF
+Panel AlleleFreq
+ExAC EAS HomoAlt Count
+ExAC HomoAlt Count
+PVFD Homo Count
+GnomAD HomoAlt Count
+GnomAD HemiAlt Count
+GnomAD homo
+GnomAD EAS HomoAlt Count
+PhyloP Vertebrates Pred
+PhyloP Placental Mammals Pred
+GERP++_RS_pred
+Ens Condel Pred
+SIFT Pred
+Polyphen2 HDIV Pred
+Polyphen2 HVAR Pred
+MutationTaster Pred
+dbscSNV_ADA_pred
+dbscSNV_RF_pred
+MatEntScan pred
+HGMDorClinvar
+ClinVar Significance
+HGMD ID
+HGMD Disease
+HGMD pmID
+HGMD Pred
+引物设计
+一键搜索链接
+OMIM
+DiseaseNameEN
+DiseaseNameCH
+AliasEN
+Location
+Gene
+Gene/Locus MIM number
+ModeInheritance
+GeneralizationEN
+GeneralizationCH
+SystemSort
+Lab-CH
+Onset age
+hpo_cn
+imprinted gene
+MUTATION_TYPE
+LITERATURE
+DISEASE_PHENOTYPE
+mut
+frequency
+sampleMut
+sampleAll
+sampleInformation
+autoRuleName
+自动化判断
+遗传相符
+表型分值
+综合排序
+烈性突变
+突变频谱
+变异来源
+familyTag
+筛选标签
+MutationNameLite
+pHGVS1
+pHGVS3
+Flank
+#Chr+Stop
+Protein
+Ens SIFT Score
+Ens Polyphen2HumVar Score
+Strand
+CodonChange
+PolarChange
+MapLoc
+FuncRegion
+EntrezGeneID
+TestCode
+MIM Gene ID
+MIM Inheritance
+MIM information
+CGD Condition
+CGD Inheritance
+CGD Allelic Condition
+CGD Manifestation Categories
+CGD Intervention Categories
+CGD References
+MutationName
+ClinVar Significance nearby
+PVFD Homo Frequency
+PhyloP Primates
+PhyloP Vertebrates
+PhyloP Placental Mammals
+Ens Polyphen2HumDiv Score
+Ens Condel Score
+Interpro_domain
+GERP++_RS
+dbscSNV_ADA_SCORE
+dbscSNV_RF_SCORE
+GWASdb_or
+AutoInterpStatus
+ACMG
+autoIsChecked
+manualRuleName
+manualEevidenceType
+manualExplaination
+manualIsChecked
+manualIsIgnore
+dcDocumentType
+dcDocumentNo
+dcRuleName
+dcIsChoice
+dcWeight
+dcDescription
+纯合，半合
+基因描述
+历史样本检出个数
+是否报告
+Tier
+Disease
+pmid
+title
+Status
+Mito TIP
+# in HG branch with variant
+Total # HG branch seqs
+Fequency in HG branch(%)

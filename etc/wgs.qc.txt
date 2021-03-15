@@ -1,0 +1,12 @@
+样本编号	样本编号
+原始数据产出（Gb）	raw data(G)
+目标区长度（bp）	length(2858383468|2835398939)
+目标区覆盖度	coverage >0x(%)
+目标区平均深度（X）	rmdup depth
+目标区平均深度>4X位点所占比例	dedup coverage >=4(%)
+目标区平均深度>10X位点所占比例	dedup coverage >=10(%)
+目标区平均深度>20X位点所占比例	dedup coverage >=20(%)
+目标区平均深度>30X位点所占比例	dedup coverage >=30(%)
+bam文件路径	bamPath
+核型预测	核型预测
+线粒体基因组区域平均深度>2000X位点所占比例	chrM dedup coverage >=2000(%)
