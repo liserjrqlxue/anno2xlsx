@@ -48,6 +48,9 @@ var qualityKeyMap = make(map[string]string)
 var isEnProduct = map[string]bool{
 	"DX0700": true,
 	"DX1335": true,
+	"DX1107": true,
+	"DX1108": true,
+	"DX1110": true,
 	"DX0458": false,
 	"DX1616": false,
 	"DX1515": false,
