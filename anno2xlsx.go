@@ -199,6 +199,11 @@ func prepareTier1() {
 }
 
 func prepareTier2() {
+	// 准备英文产品列表
+	var productEn = textUtil.File2Array(filepath.Join(etcPath, "product.en.list"))
+	for i := range productEn {
+		isEnProduct[productEn[i]] = true
+	}
 	// tier2
 	tier2 = xlsxTemplate{
 		flag:      "Tier2",

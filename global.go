@@ -45,18 +45,7 @@ var qualitys []map[string]string
 var qualityKeyMap = make(map[string]string)
 
 // tier2
-var isEnProduct = map[string]bool{
-	"DX0700": true,
-	"DX1335": true,
-	"DX1107": true,
-	"DX1108": true,
-	"DX1110": true,
-	"DX0458": false,
-	"DX1616": false,
-	"DX1515": false,
-	"DX1617": false,
-	"RC0029": false,
-}
+var isEnProduct map[string]bool
 
 var transEN = map[string]string{
 	"是":    "Yes",
