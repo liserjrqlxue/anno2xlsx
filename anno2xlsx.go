@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -135,17 +134,6 @@ func openRedis() {
 		log.Printf("Connect [%s]:%s\n", redisDb.String(), simpleUtil.HandleError(redisDb.Ping().Result()).(string))
 	}
 
-}
-
-func initAcmg2015() {
-	if *acmg {
-		acmg2015.AutoPVS1 = *autoPVS1
-		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
-		for k, v := range acmgCfg {
-			acmgCfg[k] = anno.GuessPath(v, dbPath)
-		}
-		acmg2015.Init(acmgCfg)
-	}
 }
 
 func parseList() {
@@ -396,6 +384,7 @@ func main() {
 			dbPath,
 		)
 	}
+	acmgDb = filepath.Join(etcPath, tomlConfig.Get("acmg.list").(string))
 
 	// 突变频谱
 	spectrumDb.Load(

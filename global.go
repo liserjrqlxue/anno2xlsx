@@ -116,3 +116,8 @@ var (
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
 )
+
+// ACMG
+var (
+	acmgDb string
+)

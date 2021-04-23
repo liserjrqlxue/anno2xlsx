@@ -189,11 +189,6 @@ var (
 		false,
 		"if use autoPVS1 for acmg",
 	)
-	acmgDb = flag.String(
-		"acmgDb",
-		filepath.Join(etcPath, "acmg.db.list.txt"),
-		"acmg db list",
-	)
 	cpuprofile = flag.String(
 		"cpuprofile",
 		"",

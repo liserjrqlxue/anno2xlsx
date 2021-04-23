@@ -60,3 +60,6 @@ title = [
     "imprinted gene",
     "OMIM_Phenotype_ID",
 ]
+
+[acmg]
+list = "acmg.db.list.txt"

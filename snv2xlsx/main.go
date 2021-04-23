@@ -125,11 +125,6 @@ var (
 		false,
 		"if use autoPVS1 for acmg",
 	)
-	acmgDb = flag.String(
-		"acmgDb",
-		filepath.Join(etcPath, "acmg.db.list.txt"),
-		"acmg db list",
-	)
 	debug = flag.Bool(
 		"debug",
 		false,
@@ -256,7 +251,7 @@ func init() {
 
 	if *acmg {
 		acmg2015.AutoPVS1 = *autoPVS1
-		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
+		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(tomlCfg.Get("acmg.list").(string), "\t", false)).(map[string]string)
 		for k, v := range acmgCfg {
 			acmgCfg[k] = anno.GuessPath(v, dbPath)
 		}
