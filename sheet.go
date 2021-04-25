@@ -338,5 +338,5 @@ func saveExcel() {
 			}
 		}
 	}
-	logTime("total work")
+	logTime0("total work")
 }

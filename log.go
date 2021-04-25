@@ -67,7 +67,15 @@ func logTime(message string) {
 	step++
 	var trim = 3*8 - 1
 	var str = simple_util.FormatWidth(trim, message, ' ')
-	log.Printf("%s\ttook %7.3fs to run.\n", str, ts[step].Sub(ts[step-1]).Seconds())
+	log.Printf("%s\ttook %7.3f/%7.3fs to run.\n", str, ts[step].Sub(ts[step-1]).Seconds(), ts[step].Sub(ts[0]).Seconds())
+}
+
+func logTime0(message string) {
+	ts = append(ts, time.Now())
+	step++
+	var trim = 3*8 - 1
+	var str = simple_util.FormatWidth(trim, message, ' ')
+	log.Printf("%s\ttook %7.3fs to run.\n", str, ts[step].Sub(ts[0]).Seconds())
 }
 
 // version

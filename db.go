@@ -1,12 +1,15 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/pelletier/go-toml"
 )
 
 func loadDb() {
+	sampleList = strings.Split(*list, ",")
 
 	chpo.Load(
 		TomlTree.Get("annotation.hpo").(*toml.Tree),

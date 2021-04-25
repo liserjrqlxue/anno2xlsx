@@ -160,7 +160,6 @@ func parseQC() {
 }
 
 func parseList() {
-	sampleList = strings.Split(*list, ",")
 	for _, sample := range sampleList {
 		sampleMap[sample] = true
 		var quality = make(map[string]string)
