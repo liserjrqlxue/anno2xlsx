@@ -5,7 +5,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
@@ -22,7 +21,6 @@ import (
 func addFV() {
 	// anno
 	if *snv != "" {
-		var step0 = step
 		var data = loadData()
 
 		stats["Total"] = len(data)
@@ -32,9 +30,7 @@ func addFV() {
 		// WGS
 		wgsCycle(data)
 
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step0, step, "update info")
+		logTime("update info")
 	}
 }
 
@@ -43,9 +39,7 @@ func cycle1(data []map[string]string) {
 		annotate1(item)
 	}
 	logTierStats(stats)
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load snv cycle 1")
+	logTime("load snv cycle 1")
 }
 
 func cycle2(data []map[string]string) {
@@ -71,9 +65,7 @@ func cycle2(data []map[string]string) {
 	if *wesim {
 		simpleUtil.CheckErr(resultFile.Close())
 	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load snv cycle 2")
+	logTime("load snv cycle 2")
 }
 
 func wgsCycle(data []map[string]string) {
@@ -102,9 +94,7 @@ func wgsCycle(data []map[string]string) {
 				anno.InheritCheck(item, inheritDb)
 			}
 		}
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "load snv cycle 3")
+		logTime("load snv cycle 3")
 		for _, item := range data {
 			annotate4(item)
 
@@ -122,9 +112,7 @@ func wgsCycle(data []map[string]string) {
 				}
 			}
 		}
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "load snv cycle 4")
+		logTime("load snv cycle 4")
 	}
 }
 
@@ -314,8 +302,6 @@ func loadData() (data []map[string]string) {
 			data = append(data, d...)
 		}
 	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load anno file")
+	logTime("load anno file")
 	return
 }

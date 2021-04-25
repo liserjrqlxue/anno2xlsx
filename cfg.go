@@ -49,9 +49,6 @@ func parseCfg() {
 			textUtil.File2Map(filepath.Join(etcPath, "coverage.report.txt"), "\t", false),
 		).(map[string]string)
 	}
-
-	parseList()
-	parseQC()
 }
 
 func parseToml() {

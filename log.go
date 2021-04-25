@@ -62,10 +62,12 @@ func logTierStats(stats map[string]int) {
 	log.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
 }
 
-func logTime(timeList []time.Time, step1, step2 int, message string) {
-	trim := 3*8 - 1
-	str := simple_util.FormatWidth(trim, message, ' ')
-	log.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
+func logTime(message string) {
+	ts = append(ts, time.Now())
+	step++
+	var trim = 3*8 - 1
+	var str = simple_util.FormatWidth(trim, message, ' ')
+	log.Printf("%s\ttook %7.3fs to run.\n", str, ts[step].Sub(ts[step-1]).Seconds())
 }
 
 // version

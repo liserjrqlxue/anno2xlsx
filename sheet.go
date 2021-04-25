@@ -4,7 +4,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -221,9 +220,7 @@ func addExon() {
 			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
 			false, *cnvFilter, stats, "exonCNV",
 		)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add exon cnv")
+		logTime("add exon cnv")
 	}
 }
 
@@ -245,9 +242,7 @@ func addLarge() {
 			tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap,
 			*cnvFilter, false, stats, "largeCNV",
 		)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add large cnv")
+		logTime("add large cnv")
 	}
 	if *smn != "" {
 		var paths []string
@@ -259,9 +254,7 @@ func addLarge() {
 			}
 		}
 		addSmnResult(tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add SMN1 result")
+		logTime("add SMN1 result")
 	}
 }
 
@@ -288,12 +281,12 @@ func addExtra() {
 }
 
 func addQC() {
+	parseList()
+	parseQC()
 	// QC Sheet
 	updateQC(stats, qualitys[0])
 	addQCSheet(tier1Xlsx, "quality", qualityColumn, qualitys)
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "add qc")
+	logTime("add qc")
 }
 
 func addLOH() {
@@ -316,9 +309,7 @@ func saveExcel() {
 	if *save {
 		if *wgs && *snv != "" {
 			simpleUtil.CheckErr(wgsXlsx.Save(*prefix + ".WGS.xlsx"))
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "save WGS")
+			logTime("save WGS")
 		}
 
 		// Tier1 excel
@@ -333,25 +324,19 @@ func saveExcel() {
 			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
 		}
 		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "save Tier1")
+		logTime("save Tier1")
 
 		if *snv != "" {
 			// Tier2 excel
 			simpleUtil.CheckErr(tier2.save(), "Tier2 save fail")
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "save Tier2")
+			logTime("save Tier2")
 
 			// Tier3 excel
 			if !*noTier3 {
 				simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
-				ts = append(ts, time.Now())
-				step++
-				logTime(ts, step-1, step, "save Tier3")
+				logTime("save Tier3")
 			}
 		}
 	}
-	logTime(ts, 0, step, "total work")
+	logTime("total work")
 }

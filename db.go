@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/pelletier/go-toml"
@@ -47,15 +45,11 @@ func loadDb() {
 			geneList[k] = true
 		}
 	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Gene-Disease DB")
+	logTime("load Gene-Disease DB")
 
 	// 特殊位点库
 	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Special mutation DB")
+	logTime("load Special mutation DB")
 }

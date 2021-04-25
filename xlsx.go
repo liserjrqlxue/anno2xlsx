@@ -2,7 +2,6 @@ package main
 
 import (
 	"path/filepath"
-	"time"
 
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
@@ -14,9 +13,7 @@ func prepareExcel() {
 	prepareTier1()
 	prepareTier2()
 	prepareTier3()
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load template")
+	logTime("load template")
 }
 
 func prepareTier1() {

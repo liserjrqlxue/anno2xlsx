@@ -8,7 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/fmtUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 
 	simple_util "github.com/liserjrqlxue/simple-util"
@@ -123,5 +125,46 @@ func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 				quality[i][k] = v
 			}
 		}
+	}
+}
+
+func parseQC() {
+	var karyotypeMap = make(map[string]string)
+	if *karyotype != "" {
+		karyotypeMap, err = textUtil.Files2Map(*karyotype, "\t", true)
+		simpleUtil.CheckErr(err)
+	}
+	// load coverage.report
+	if *qc != "" {
+		loadQC(*qc, *kinship, qualitys, *wgs)
+		for _, quality := range qualitys {
+			for k, v := range qualityKeyMap {
+				quality[k] = quality[v]
+			}
+			quality["核型预测"] = karyotypeMap[quality["样本编号"]]
+			if *wesim {
+				var qcArray []string
+				for _, key := range qcColumn {
+					qcArray = append(qcArray, quality[key])
+				}
+				fmtUtil.Fprintln(qcFile, strings.Join(qcArray, "\t"))
+			}
+		}
+		if *wesim {
+			simpleUtil.CheckErr(qcFile.Close())
+		}
+
+		logTime("load coverage.report")
+		loadFilterStat(*filterStat, qualitys[0])
+	}
+}
+
+func parseList() {
+	sampleList = strings.Split(*list, ",")
+	for _, sample := range sampleList {
+		sampleMap[sample] = true
+		quality := make(map[string]string)
+		quality["样本编号"] = sample
+		qualitys = append(qualitys, quality)
 	}
 }
