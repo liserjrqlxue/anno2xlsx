@@ -4,7 +4,10 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/liserjrqlxue/goUtil/osUtil"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
@@ -201,4 +204,154 @@ func appendLOHs(excel *xlsxUtil.File, lohs, lohSheetName string, sampleList []st
 		}
 		excel.AppendSheet(*xlsxUtil.OpenFile(loh).File.Sheet[lohSheetName], sampleID+"-loh")
 	}
+}
+
+func addExon() {
+	if *exon != "" {
+		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
+		var paths []string
+		for _, path := range strings.Split(*exon, ",") {
+			if osUtil.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
+		}
+		addCnv2Sheet(
+			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
+			false, *cnvFilter, stats, "exonCNV",
+		)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add exon cnv")
+	}
+}
+
+func addLarge() {
+	if *large != "" {
+		var paths []string
+		var pathMap = make(map[string]bool)
+		for _, path := range strings.Split(*large, ",") {
+			if osUtil.FileExists(path) {
+				pathMap[path] = true
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
+		}
+		for path := range pathMap {
+			paths = append(paths, path)
+		}
+		addCnv2Sheet(
+			tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap,
+			*cnvFilter, false, stats, "largeCNV",
+		)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add large cnv")
+	}
+	if *smn != "" {
+		var paths []string
+		for _, path := range strings.Split(*smn, ",") {
+			if osUtil.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
+		}
+		addSmnResult(tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap)
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "add SMN1 result")
+	}
+}
+
+func addExtra() {
+	// extra sheet
+	if *extra != "" {
+		extraArray := strings.Split(*extra, ",")
+		extraSheetArray := strings.Split(*extraSheetName, ",")
+		if len(extraArray) != len(extraSheetArray) {
+			log.Printf(
+				"extra files not equal length to sheetnames:%+vvs.%+v",
+				extraArray,
+				extraSheetArray,
+			)
+		} else {
+			for i := range extraArray {
+				xlsxUtil.AddSlice2Sheet(
+					textUtil.File2Slice(extraArray[i], "\t"),
+					xlsxUtil.AddSheet(tier1Xlsx, extraSheetArray[i]),
+				)
+			}
+		}
+	}
+}
+
+func addQC() {
+	// QC Sheet
+	updateQC(stats, qualitys[0])
+	addQCSheet(tier1Xlsx, "quality", qualityColumn, qualitys)
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "add qc")
+}
+
+func addLOH() {
+	// append loh sheet
+	if *loh != "" {
+		appendLOHs(&xlsxUtil.File{File: tier1Xlsx}, *loh, *lohSheet, sampleList)
+	}
+}
+
+func fillSheet() {
+	addExon()
+	addLarge()
+	addExtra()
+	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
+	addFV()
+	addQC()
+	addLOH()
+}
+func saveExcel() {
+	if *save {
+		if *wgs && *snv != "" {
+			simpleUtil.CheckErr(wgsXlsx.Save(*prefix + ".WGS.xlsx"))
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "save WGS")
+		}
+
+		// Tier1 excel
+		tagStr := ""
+		if *tag != "" {
+			tagStr = textUtil.File2Array(*tag)[0]
+		}
+		var tier1Output string
+		if isSMN1 && !*wesim {
+			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
+		} else {
+			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
+		}
+		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
+		ts = append(ts, time.Now())
+		step++
+		logTime(ts, step-1, step, "save Tier1")
+
+		if *snv != "" {
+			// Tier2 excel
+			simpleUtil.CheckErr(tier2.save(), "Tier2 save fail")
+			ts = append(ts, time.Now())
+			step++
+			logTime(ts, step-1, step, "save Tier2")
+
+			// Tier3 excel
+			if !*noTier3 {
+				simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
+				ts = append(ts, time.Now())
+				step++
+				logTime(ts, step-1, step, "save Tier3")
+			}
+		}
+	}
+	logTime(ts, 0, step, "total work")
 }

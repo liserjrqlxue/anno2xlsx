@@ -11,6 +11,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
+	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -301,4 +302,20 @@ func annotate4(item map[string]string) {
 		}
 		item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 	}
+}
+
+func loadData() (data []map[string]string) {
+	for _, f := range snvs {
+		if isGz.MatchString(f) {
+			d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
+			data = append(data, d...)
+		} else {
+			d, _ := simple_util.File2MapArray(f, "\t", isComment)
+			data = append(data, d...)
+		}
+	}
+	ts = append(ts, time.Now())
+	step++
+	logTime(ts, step-1, step, "load anno file")
+	return
 }

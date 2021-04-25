@@ -63,3 +63,39 @@ title = [
 
 [acmg]
 list = "acmg.db.list.txt"
+59gene = "ACMG59Gene.list"
+
+[template.tier1]
+filter_variants="Tier1.filter_variants.txt"
+exon_cnv="Tier1.exon_cnv.txt"
+large_cnv="Tier1.large_cnv.txt"
+
+[template.tier3]
+title = "Tier3.总表.txt"
+
+[redis]
+addr="10.2.1.4:6380"
+
+[wesim]
+resultColumn=[
+    "Gene Symbol",
+    "#Chr+Stop",
+    "MutationName",
+    "Zygosity",
+    "自动化判断",
+    "DiseaseName/ModeInheritance",
+    "IsACMG59"
+]
+qcColumn=[
+    "样本编号",
+    "原始数据产出（Mb）",
+    "目标区长度（bp）",
+    "目标区覆盖度",
+    "目标区平均深度（X）",
+    "目标区平均深度>4X位点所占比例",
+    "目标区平均深度>10X位点所占比例",
+    "目标区平均深度>20X位点所占比例",
+    "目标区平均深度>30X位点所占比例",
+    "bam文件路径",
+    "核型预测"
+]

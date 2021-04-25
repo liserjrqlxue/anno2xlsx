@@ -6,23 +6,14 @@ import (
 	"log"
 	_ "net/http/pprof"
 	"os"
-	"path/filepath"
 	"runtime/pprof"
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis"
-	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
-	"github.com/liserjrqlxue/goUtil/xlsxUtil"
-	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v3"
-
-	"github.com/pelletier/go-toml"
-
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 type xlsxTemplate struct {
@@ -54,85 +45,9 @@ func init() {
 	log.Printf("Log file         : %v\n", *logfile)
 	logVersion()
 
+	// 解析配置
+	parseToml()
 	parseCfg()
-
-}
-
-func parseCfg() {
-	// parser etc/config.json
-	defaultConfig = jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
-
-	openRedis()
-	initAcmg2015()
-
-	if *specVarList == "" {
-		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
-	}
-	if *transInfo == "" {
-		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
-	}
-	if *wgs {
-		for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
-			qualityColumn = append(qualityColumn, key.(string))
-		}
-	} else {
-		for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
-			qualityColumn = append(qualityColumn, key.(string))
-		}
-	}
-
-	initIM()
-
-	if *wgs {
-		MTTitle = textUtil.File2Array(filepath.Join(etcPath, "MT.title.txt"))
-		qualityKeyMap = simpleUtil.HandleError(
-			textUtil.File2Map(filepath.Join(etcPath, "wgs.qc.txt"), "\t", false),
-		).(map[string]string)
-	} else {
-		qualityKeyMap = simpleUtil.HandleError(
-			textUtil.File2Map(filepath.Join(etcPath, "coverage.report.txt"), "\t", false),
-		).(map[string]string)
-	}
-
-	parseList()
-	parseQC()
-}
-
-func initIM() {
-	if *wesim {
-		acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
-		for _, gene := range acmg59GeneList {
-			acmg59Gene[gene] = true
-		}
-
-		for _, key := range defaultConfig["resultColumn"].([]interface{}) {
-			resultColumn = append(resultColumn, key.(string))
-		}
-		if *trio {
-			resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
-		}
-		resultFile, err = os.Create(*prefix + ".result.tsv")
-		simpleUtil.CheckErr(err)
-		_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
-		simpleUtil.CheckErr(err)
-
-		qcFile, err = os.Create(*prefix + ".qc.tsv")
-		simpleUtil.CheckErr(err)
-		_, err = fmt.Fprintln(qcFile, strings.Join(qualityColumn, "\t"))
-		simpleUtil.CheckErr(err)
-	}
-}
-
-func openRedis() {
-	if *ifRedis {
-		if *redisAddr == "" {
-			*redisAddr = anno.GetStrVal("redisServer", defaultConfig)
-		}
-		redisDb = redis.NewClient(&redis.Options{
-			Addr: *redisAddr,
-		})
-		log.Printf("Connect [%s]:%s\n", redisDb.String(), simpleUtil.HandleError(redisDb.Ping().Result()).(string))
-	}
 
 }
 
@@ -162,7 +77,7 @@ func parseQC() {
 			quality["核型预测"] = karyotypeMap[quality["样本编号"]]
 			if *wesim {
 				var qcArray []string
-				for _, key := range qualityColumn {
+				for _, key := range qcColumn {
 					qcArray = append(qcArray, quality[key])
 				}
 				_, err = fmt.Fprintln(qcFile, strings.Join(qcArray, "\t"))
@@ -180,186 +95,8 @@ func parseQC() {
 	}
 }
 
-func prepareTier1() {
-	// load tier template
-	xlsxUtil.AddSheets(tier1Xlsx, []string{"filter_variants", "exon_cnv", "large_cnv"})
-	filterVariantsTitle = addFile2Row(*filterVariants, tier1Xlsx.Sheet["filter_variants"].AddRow())
-}
-
-func prepareTier2() {
-	// 准备英文产品列表
-	var productEn = textUtil.File2Array(filepath.Join(etcPath, "product.en.list"))
-	for i := range productEn {
-		isEnProduct[productEn[i]] = true
-	}
-	// tier2
-	tier2 = xlsxTemplate{
-		flag:      "Tier2",
-		sheetName: *productID + "_" + sampleList[0],
-	}
-	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
-	tier2.xlsx = xlsx.NewFile()
-
-	var tier2Infos = simpleUtil.HandleError(
-		simpleUtil.HandleError(xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))).(*xlsx.File).ToSlice(),
-	).([][][]string)
-	for i, item := range tier2Infos[0] {
-		if i > 0 {
-			tier2TemplateInfo.cols = append(tier2TemplateInfo.cols, item[0])
-			tier2TemplateInfo.titles[0] = append(tier2TemplateInfo.titles[0], item[1])
-			tier2TemplateInfo.titles[1] = append(tier2TemplateInfo.titles[0], item[2])
-		}
-	}
-	for _, item := range tier2Infos[1] {
-		tier2TemplateInfo.note[0] = append(tier2TemplateInfo.note[0], item[0])
-		tier2TemplateInfo.note[1] = append(tier2TemplateInfo.note[1], item[1])
-	}
-
-	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName)
-	simpleUtil.CheckErr(err)
-	tier2row := tier2.sheet.AddRow()
-	for i, col := range tier2TemplateInfo.cols {
-		tier2.title = append(tier2.title, col)
-		var title string
-		if isEnProduct[*productID] {
-			title = tier2TemplateInfo.titles[0][i]
-		} else {
-			title = tier2TemplateInfo.titles[1][i]
-		}
-		tier2row.AddCell().SetString(title)
-	}
-
-	var tier2NoteSheetName = "备注说明"
-	var tier2Note []string
-	if isEnProduct[*productID] {
-		tier2NoteSheetName = transEN[tier2NoteSheetName]
-		tier2Note = tier2TemplateInfo.note[1]
-	} else {
-		tier2Note = tier2TemplateInfo.note[0]
-	}
-	var tier2NoteSheet = simpleUtil.HandleError(tier2.xlsx.AddSheet(tier2NoteSheetName)).(*xlsx.Sheet)
-	for _, line := range tier2Note {
-		tier2NoteSheet.AddRow().AddCell().SetString(line)
-	}
-}
-
-func prepareTier3() {
-	// create Tier3.xlsx
-	tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
-	if !*noTier3 {
-		tier3Titles = addFile2Row(*tier3Title, tier3Sheet.AddRow())
-	}
-}
-
-func prepareExcel() {
-	prepareTier1()
-	prepareTier2()
-	prepareTier3()
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load template")
-}
-
-func addExon() {
-	var exonCnvTitle = addFile2Row(*exonCnv, tier1Xlsx.Sheet["exon_cnv"].AddRow())
-	if *exon != "" {
-		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
-		var paths []string
-		for _, path := range strings.Split(*exon, ",") {
-			if osUtil.FileExists(path) {
-				paths = append(paths, path)
-			} else {
-				log.Printf("ERROR:not exists or not a file:%v \n", path)
-			}
-		}
-		addCnv2Sheet(
-			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
-			false, *cnvFilter, stats, "exonCNV",
-		)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add exon cnv")
-	}
-}
-
-func addLarge() {
-	var largeCNVTitle = addFile2Row(*largeCnv, tier1Xlsx.Sheet["large_cnv"].AddRow())
-	if *large != "" {
-		var paths []string
-		var pathMap = make(map[string]bool)
-		for _, path := range strings.Split(*large, ",") {
-			if osUtil.FileExists(path) {
-				pathMap[path] = true
-			} else {
-				log.Printf("ERROR:not exists or not a file:%v \n", path)
-			}
-		}
-		for path := range pathMap {
-			paths = append(paths, path)
-		}
-		addCnv2Sheet(
-			tier1Xlsx.Sheet["large_cnv"], largeCNVTitle, paths, sampleMap,
-			*cnvFilter, false, stats, "largeCNV",
-		)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add large cnv")
-	}
-	if *smn != "" {
-		var paths []string
-		for _, path := range strings.Split(*smn, ",") {
-			if osUtil.FileExists(path) {
-				paths = append(paths, path)
-			} else {
-				log.Printf("ERROR:not exists or not a file:%v \n", path)
-			}
-		}
-		addSmnResult(tier1Xlsx.Sheet["large_cnv"], largeCNVTitle, paths, sampleMap)
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "add SMN1 result")
-	}
-}
-
-func addExtra() {
-	// extra sheet
-	if *extra != "" {
-		extraArray := strings.Split(*extra, ",")
-		extraSheetArray := strings.Split(*extraSheetName, ",")
-		if len(extraArray) != len(extraSheetArray) {
-			log.Printf(
-				"extra files not equal length to sheetnames:%+vvs.%+v",
-				extraArray,
-				extraSheetArray,
-			)
-		} else {
-			for i := range extraArray {
-				xlsxUtil.AddSlice2Sheet(
-					textUtil.File2Slice(extraArray[i], "\t"),
-					xlsxUtil.AddSheet(tier1Xlsx, extraSheetArray[i]),
-				)
-			}
-		}
-	}
-}
-
-func loadData() (data []map[string]string) {
-	for _, f := range snvs {
-		if isGz.MatchString(f) {
-			d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
-			data = append(data, d...)
-		} else {
-			d, _ := simple_util.File2MapArray(f, "\t", isComment)
-			data = append(data, d...)
-		}
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load anno file")
-	return
-}
-
 func main() {
+	// pprof.StartCPUProfile
 	if *cpuprofile != "" {
 		var f = osUtil.Create(*cpuprofile)
 		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
@@ -367,131 +104,20 @@ func main() {
 	}
 	defer simpleUtil.DeferClose(logFile)
 
-	var tomlConfig = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
+	//  读取数据库
+	loadDb()
 
-	chpo.Load(
-		tomlConfig.Get("annotation.hpo").(*toml.Tree),
-		dbPath,
-	)
-	if *academic {
-		revel.loadRevel(
-			tomlConfig.Get("annotation.REVEL").(*toml.Tree),
-		)
-	}
-	if *mt {
-		mtGnomAD.Load(
-			tomlConfig.Get("annotation.GnomAD.MT").(*toml.Tree),
-			dbPath,
-		)
-	}
-	acmgDb = filepath.Join(etcPath, tomlConfig.Get("acmg.list").(string))
-
-	// 突变频谱
-	spectrumDb.Load(
-		tomlConfig.Get("annotation.Gene.spectrum").(*toml.Tree),
-		dbPath,
-		[]byte(aesCode),
-	)
-	// 基因-疾病
-	diseaseDb.Load(
-		tomlConfig.Get("annotation.Gene.disease").(*toml.Tree),
-		dbPath,
-		[]byte(aesCode),
-	)
-	for key := range diseaseDb.Db {
-		geneList[key] = true
-	}
-	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
-	for k, v := range gene2id {
-		if geneList[v] {
-			geneList[k] = true
-		}
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Gene-Disease DB")
-
+	// 准备excel输出
 	prepareExcel()
-
-	// exonCount
-	exonCount = jsonUtil.JsonFile2Map(*transInfo)
-
-	// 特殊位点库
-	for _, key := range textUtil.File2Array(*specVarList) {
-		specVarDb[key] = true
-	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load Special mutation DB")
-
-	addExon()
-	addLarge()
-	addExtra()
-	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
-	addFV()
-
-	// QC Sheet
-	updateQC(stats, qualitys[0])
-	addQCSheet(tier1Xlsx, "quality", qualityColumn, qualitys)
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "add qc")
-	//qcSheet.Cols[1].Width = 12
-
-	// append loh sheet
-	if *loh != "" {
-		appendLOHs(&xlsxUtil.File{File: tier1Xlsx}, *loh, *lohSheet, sampleList)
-	}
-
+	// 填充sheet
+	fillSheet()
+	// 保存excel
 	saveExcel()
 
+	// pprof.WriteHeapProfile
 	if *memprofile != "" {
 		var f = osUtil.Create(*memprofile)
 		defer simpleUtil.DeferClose(f)
 		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
 	}
-}
-
-func saveExcel() {
-	if *save {
-		if *wgs && *snv != "" {
-			simpleUtil.CheckErr(wgsXlsx.Save(*prefix + ".WGS.xlsx"))
-			ts = append(ts, time.Now())
-			step++
-			logTime(ts, step-1, step, "save WGS")
-		}
-	}
-
-	// Tier1 excel
-	if *save {
-		tagStr := ""
-		if *tag != "" {
-			tagStr = textUtil.File2Array(*tag)[0]
-		}
-		var tier1Output string
-		if isSMN1 && !*wesim {
-			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
-		} else {
-			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
-		}
-		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "save Tier1")
-	}
-
-	if *save {
-		simpleUtil.CheckErr(tier2.save(), "Tier2 save fail")
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "save Tier2")
-	}
-
-	if *save && *snv != "" && !*noTier3 {
-		simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "save Tier3")
-	}
-	logTime(ts, 0, step, "total work")
 }
