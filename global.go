@@ -48,7 +48,7 @@ var qualitys []map[string]string
 var qualityKeyMap = make(map[string]string)
 
 // tier2
-var isEnProduct map[string]bool
+var isEnProduct = make(map[string]bool)
 
 var transEN = map[string]string{
 	"是":    "Yes",
