@@ -300,9 +300,9 @@ func fillSheet() {
 	addExon()
 	addLarge()
 	addExtra()
+	addQC()
 	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
 	addFV()
-	addQC()
 	addLOH()
 }
 func saveExcel() {
