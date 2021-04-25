@@ -3,6 +3,7 @@ package main
 import (
 	"path/filepath"
 
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
@@ -20,9 +21,27 @@ func prepareTier1() {
 	tier1Xlsx = xlsx.NewFile()
 	// load tier template
 	xlsxUtil.AddSheets(tier1Xlsx, []string{"filter_variants", "exon_cnv", "large_cnv"})
-	filterVariantsTitle = addFile2Row(TomlTree.Get("template.tier1.filter_variants").(string), tier1Xlsx.Sheet["filter_variants"].AddRow())
-	exonCnvTitle = addFile2Row(TomlTree.Get("template.tier1.exon_cnv").(string), tier1Xlsx.Sheet["exon_cnv"].AddRow())
-	largeCnvTitle = addFile2Row(TomlTree.Get("template.tier1.large_cnv").(string), tier1Xlsx.Sheet["large_cnv"].AddRow())
+	filterVariantsTitle = addFile2Row(
+		anno.GuessPath(
+			TomlTree.Get("template.tier1.filter_variants").(string),
+			etcPath,
+		),
+		tier1Xlsx.Sheet["filter_variants"].AddRow(),
+	)
+	exonCnvTitle = addFile2Row(
+		anno.GuessPath(
+			TomlTree.Get("template.tier1.exon_cnv").(string),
+			etcPath,
+		),
+		tier1Xlsx.Sheet["exon_cnv"].AddRow(),
+	)
+	largeCnvTitle = addFile2Row(
+		anno.GuessPath(
+			TomlTree.Get("template.tier1.large_cnv").(string),
+			etcPath,
+		),
+		tier1Xlsx.Sheet["large_cnv"].AddRow(),
+	)
 }
 
 func prepareTier2() {
