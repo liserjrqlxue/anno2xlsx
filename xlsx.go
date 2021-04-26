@@ -106,6 +106,12 @@ func prepareTier3() {
 		// create Tier3.xlsx
 		tier3Xlsx = xlsx.NewFile()
 		tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
-		tier3Titles = addFile2Row(TomlTree.Get("template.tier3.title").(string), tier3Sheet.AddRow())
+		tier3Titles = addFile2Row(
+			anno.GuessPath(
+				TomlTree.Get("template.tier3.title").(string),
+				etcPath,
+			),
+			tier3Sheet.AddRow(),
+		)
 	}
 }
