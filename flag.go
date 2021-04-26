@@ -173,6 +173,21 @@ var (
 		false,
 		"if use autoPVS1 for acmg",
 	)
+	cnvAnnot = flag.Bool(
+		"cnvAnnot",
+		false,
+		"if UpdateCnvAnnot",
+	)
+	cnvFilter = flag.Bool(
+		"cnvFilter",
+		false,
+		"if filter cnv result",
+	)
+	couple = flag.Bool(
+		"couple",
+		false,
+		"if couple mode",
+	)
 	save = flag.Bool(
 		"save",
 		true,
@@ -187,16 +202,6 @@ var (
 		"trio2",
 		false,
 		"if no standard trio mode but proband-father-mother",
-	)
-	couple = flag.Bool(
-		"couple",
-		false,
-		"if couple mode",
-	)
-	cnvFilter = flag.Bool(
-		"cnvFilter",
-		false,
-		"if filter cnv result",
 	)
 	wgs = flag.Bool(
 		"wgs",

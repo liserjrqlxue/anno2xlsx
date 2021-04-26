@@ -70,7 +70,9 @@ func addCnv2Sheet(
 			// 突变频谱
 			spectrumDb.Annos(item, "\n", geneIDs)
 
-			anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+			if *cnvAnnot {
+				anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+			}
 
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			stats[key]++
