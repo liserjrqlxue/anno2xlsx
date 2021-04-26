@@ -299,10 +299,10 @@ func addLOH() {
 }
 
 func fillSheet() {
+	addQC()
 	addExon()
 	addLarge()
 	addExtra()
-	addQC()
 	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
 	addFV()
 	addLOH()
