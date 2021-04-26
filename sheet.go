@@ -283,7 +283,6 @@ func addExtra() {
 }
 
 func addQC() {
-	parseList()
 	parseQC()
 	// QC Sheet
 	updateQC(stats, qualitys[0])
@@ -299,13 +298,15 @@ func addLOH() {
 }
 
 func fillSheet() {
-	addQC()
+	parseList()
 	addExon()
 	addLarge()
 	addExtra()
 	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
 	addFV()
 	addLOH()
+	// need stats
+	addQC()
 }
 func saveExcel() {
 	if *save {
