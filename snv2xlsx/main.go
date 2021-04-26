@@ -33,7 +33,6 @@ var (
 	dbPath  = filepath.Join(exPath, "..", "db")
 )
 
-// flag
 var (
 	cfg = flag.String(
 		"cfg",
@@ -124,11 +123,6 @@ var (
 		"autoPVS1",
 		false,
 		"if use autoPVS1 for acmg",
-	)
-	debug = flag.Bool(
-		"debug",
-		false,
-		"if print some log",
 	)
 	tag = flag.String(
 		"tag",
@@ -374,7 +368,7 @@ func updateSNV(item map[string]string, stats map[string]int) {
 
 	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
-	anno.UpdateSnv(item, *gender, *debug)
+	anno.UpdateSnv(item, *gender)
 
 	// 引物设计
 	item["exonCount"] = exonCount[item["Transcript"]]

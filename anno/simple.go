@@ -253,7 +253,7 @@ func hemiPAR(item map[string]string, gender string) {
 }
 
 //UpdateSnv add info for all variant
-func UpdateSnv(item map[string]string, gender string, debug bool) {
+func UpdateSnv(item map[string]string, gender string) {
 	updatePos(item)
 	item["pHGVS"] = getPhgvs(item)
 	item["MutationNameLite"] = getMNlite(item)

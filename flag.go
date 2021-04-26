@@ -158,6 +158,21 @@ var (
 		false,
 		"if non-commercial use",
 	)
+	acmg = flag.Bool(
+		"acmg",
+		false,
+		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
+	)
+	allGene = flag.Bool(
+		"allgene",
+		false,
+		"if not filter gene",
+	)
+	autoPVS1 = flag.Bool(
+		"autoPVS1",
+		false,
+		"if use autoPVS1 for acmg",
+	)
 	save = flag.Bool(
 		"save",
 		true,
@@ -193,30 +208,10 @@ var (
 		false,
 		"if wesim, output result.tsv",
 	)
-	acmg = flag.Bool(
-		"acmg",
-		false,
-		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
-	)
-	autoPVS1 = flag.Bool(
-		"autoPVS1",
-		false,
-		"if use autoPVS1 for acmg",
-	)
 	noTier3 = flag.Bool(
 		"noTier3",
 		false,
 		"if not output Tier3.xlsx",
-	)
-	debug = flag.Bool(
-		"debug",
-		false,
-		"if print some log",
-	)
-	allGene = flag.Bool(
-		"allgene",
-		false,
-		"if not filter gene",
 	)
 	mt = flag.Bool(
 		"mt",
