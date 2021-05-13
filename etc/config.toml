@@ -25,7 +25,7 @@ titleKey = ["突变谱"]
 title = ["突变频谱"]
 
 [annotation.Gene.disease]
-file = "全外疾病库2021.Q1-2021.5.12.xlsx.更新后全外背景库（5816疾病OMIMID，4489个基因）.json.aes"
+file = "全外疾病库.json.aes"
 type = "json"
 codeKey = "****"
 titleKey = [
