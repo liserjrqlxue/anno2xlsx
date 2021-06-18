@@ -273,10 +273,19 @@ func addExtra() {
 			)
 		} else {
 			for i := range extraArray {
-				xlsxUtil.AddSlice2Sheet(
-					textUtil.File2Slice(extraArray[i], "\t"),
-					xlsxUtil.AddSheet(tier1Xlsx, extraSheetArray[i]),
-				)
+				if strings.HasSuffix(extraArray[i], "xlsx") {
+					simpleUtil.HandleError(
+						tier1Xlsx.AppendSheet(
+							*xlsxUtil.OpenFile(extraArray[i]).File.Sheet[extraSheetArray[i]],
+							extraSheetArray[i],
+						),
+					)
+				} else {
+					xlsxUtil.AddSlice2Sheet(
+						textUtil.File2Slice(extraArray[i], "\t"),
+						xlsxUtil.AddSheet(tier1Xlsx, extraSheetArray[i]),
+					)
+				}
 			}
 		}
 	}
