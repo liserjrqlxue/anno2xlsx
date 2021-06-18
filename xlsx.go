@@ -20,28 +20,36 @@ func prepareExcel() {
 func prepareTier1() {
 	tier1Xlsx = xlsx.NewFile()
 	// load tier template
-	xlsxUtil.AddSheets(tier1Xlsx, []string{"filter_variants", "exon_cnv", "large_cnv"})
-	filterVariantsTitle = addFile2Row(
-		anno.GuessPath(
-			TomlTree.Get("template.tier1.filter_variants").(string),
-			etcPath,
-		),
-		tier1Xlsx.Sheet["filter_variants"].AddRow(),
-	)
-	exonCnvTitle = addFile2Row(
-		anno.GuessPath(
-			TomlTree.Get("template.tier1.exon_cnv").(string),
-			etcPath,
-		),
-		tier1Xlsx.Sheet["exon_cnv"].AddRow(),
-	)
-	largeCnvTitle = addFile2Row(
-		anno.GuessPath(
-			TomlTree.Get("template.tier1.large_cnv").(string),
-			etcPath,
-		),
-		tier1Xlsx.Sheet["large_cnv"].AddRow(),
-	)
+	if *snv != "" {
+		xlsxUtil.AddSheet(tier1Xlsx, "filter_variants")
+		filterVariantsTitle = addFile2Row(
+			anno.GuessPath(
+				TomlTree.Get("template.tier1.filter_variants").(string),
+				etcPath,
+			),
+			tier1Xlsx.Sheet["filter_variants"].AddRow(),
+		)
+	}
+	if *exon != "" {
+		xlsxUtil.AddSheet(tier1Xlsx, "exon_cnv")
+		exonCnvTitle = addFile2Row(
+			anno.GuessPath(
+				TomlTree.Get("template.tier1.exon_cnv").(string),
+				etcPath,
+			),
+			tier1Xlsx.Sheet["exon_cnv"].AddRow(),
+		)
+	}
+	if *large != "" {
+		xlsxUtil.AddSheet(tier1Xlsx, "large_cnv")
+		largeCnvTitle = addFile2Row(
+			anno.GuessPath(
+				TomlTree.Get("template.tier1.large_cnv").(string),
+				etcPath,
+			),
+			tier1Xlsx.Sheet["large_cnv"].AddRow(),
+		)
+	}
 }
 
 func prepareTier2() {
