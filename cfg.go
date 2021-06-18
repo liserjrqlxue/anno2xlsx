@@ -63,9 +63,12 @@ func openRedis() {
 		if *redisAddr == "" {
 			*redisAddr = TomlTree.Get("redis.addr").(string)
 		}
-		redisDb = redis.NewClient(&redis.Options{
-			Addr: *redisAddr,
-		})
+		redisDb = redis.NewClient(
+			&redis.Options{
+				Addr:     *redisAddr,
+				Password: TomlTree.Get("redis.pass").(string),
+			},
+		)
 		log.Printf("Connect [%s]:%s\n", redisDb.String(), simpleUtil.HandleError(redisDb.Ping().Result()).(string))
 	}
 }

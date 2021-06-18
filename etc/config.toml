@@ -75,6 +75,7 @@ title = "Tier3.总表.txt"
 
 [redis]
 addr="10.2.1.4:6380"
+pass="7b80ba2cca2d34313d17e11ccabd19e2"
 
 [wesim]
 resultColumn=[
