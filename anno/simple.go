@@ -264,40 +264,40 @@ func UpdateSnv(item map[string]string, gender string) {
 
 //InheritCheck count variants of gene
 func InheritCheck(item map[string]string, inheritDb map[string]map[string]int) {
-	geneSymbol := item["Gene Symbol"]
+	var geneTranscript = item["Gene Symbol"] + ":" + item["Transcript"]
 	inherit := item["ModeInheritance"]
 	zygosity := item["Zygosity"]
 	var db = make(map[string]int)
-	if inheritDb[geneSymbol] == nil {
-		inheritDb[geneSymbol] = db
+	if inheritDb[geneTranscript] == nil {
+		inheritDb[geneTranscript] = db
 	}
 	if isARorXR.MatchString(inherit) {
 		if isHet.MatchString(zygosity) {
-			inheritDb[geneSymbol]["flag1"]++
+			inheritDb[geneTranscript]["flag1"]++
 		}
 		if isHetNA.MatchString(zygosity) {
-			inheritDb[geneSymbol]["flag10"]++
+			inheritDb[geneTranscript]["flag10"]++
 		}
 		if isNAHet.MatchString(zygosity) {
-			inheritDb[geneSymbol]["flag01"]++
+			inheritDb[geneTranscript]["flag01"]++
 		}
 		if isHetHetNA.MatchString(zygosity) {
-			inheritDb[geneSymbol]["flag110"]++
+			inheritDb[geneTranscript]["flag110"]++
 		}
 		if isHetNAHet.MatchString(zygosity) {
-			inheritDb[geneSymbol]["flag101"]++
+			inheritDb[geneTranscript]["flag101"]++
 		}
 		if isHetNANA.MatchString(zygosity) {
-			inheritDb[geneSymbol]["flag100"]++
+			inheritDb[geneTranscript]["flag100"]++
 		}
 	}
 }
 
 func isCoincideTrioARCP(item map[string]string, inheritDb map[string]map[string]int) bool {
-	geneSymbol := item["Gene Symbol"]
+	var geneTranscript = item["Gene Symbol"] + ":" + item["Transcript"]
 	zygosity := item["Zygosity"]
-	if inheritDb[geneSymbol]["flag110"] > 0 &&
-		inheritDb[geneSymbol]["flag101"] > 0 &&
+	if inheritDb[geneTranscript]["flag110"] > 0 &&
+		inheritDb[geneTranscript]["flag101"] > 0 &&
 		(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
 		return true
 	}
@@ -305,24 +305,24 @@ func isCoincideTrioARCP(item map[string]string, inheritDb map[string]map[string]
 }
 
 func isCoincideTrioAR(item map[string]string, inheritDb map[string]map[string]int) bool {
-	geneSymbol := item["Gene Symbol"]
+	geneTranscript := item["Gene Symbol"] + ":" + item["Transcript"]
 	zygosity := item["Zygosity"]
 	if isHomInherit.MatchString(zygosity) {
 		return true
 	}
-	if inheritDb[geneSymbol]["flag100"] >= 2 && isHetNANA.MatchString(zygosity) {
+	if inheritDb[geneTranscript]["flag100"] >= 2 && isHetNANA.MatchString(zygosity) {
 		return true
 	}
 	if isCoincideTrioARCP(item, inheritDb) {
 		return true
 	}
-	if inheritDb[geneSymbol]["flag110"] > 0 &&
-		inheritDb[geneSymbol]["flag100"] > 0 &&
+	if inheritDb[geneTranscript]["flag110"] > 0 &&
+		inheritDb[geneTranscript]["flag100"] > 0 &&
 		(isHetHetNA.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
 		return true
 	}
-	if inheritDb[geneSymbol]["flag101"] > 0 &&
-		inheritDb[geneSymbol]["flag100"] > 0 &&
+	if inheritDb[geneTranscript]["flag101"] > 0 &&
+		inheritDb[geneTranscript]["flag100"] > 0 &&
 		(isHetNAHet.MatchString(zygosity) || isHetNANA.MatchString(zygosity)) {
 		return true
 	}
@@ -375,7 +375,7 @@ func inheritCoincideTrio(item map[string]string, inheritDb map[string]map[string
 }
 
 func inheritCoincideSingle(item map[string]string, inheritDb map[string]map[string]int) string {
-	geneSymbol := item["Gene Symbol"]
+	var geneTranscript = item["Gene Symbol"] + ":" + item["Transcript"]
 	inherit := item["ModeInheritance"]
 	zygosity := item["Zygosity"]
 	if isXL.MatchString(inherit) || isYL.MatchString(inherit) {
@@ -393,7 +393,7 @@ func inheritCoincideSingle(item map[string]string, inheritDb map[string]map[stri
 			return "相符"
 		}
 		if isHet.MatchString(zygosity) {
-			if inheritDb[geneSymbol]["flag1"] >= 2 {
+			if inheritDb[geneTranscript]["flag1"] >= 2 {
 				return "相符"
 			}
 			return "不确定"
@@ -411,12 +411,12 @@ func InheritCoincide(item map[string]string, inheritDb map[string]map[string]int
 }
 
 func familyTagCouple(item map[string]string, inheritDb map[string]map[string]int) string {
-	var geneSymbol = item["Gene Symbol"]
+	var geneTranscript = item["Gene Symbol"] + ":" + item["Transcript"]
 	var inherit = item["ModeInheritance"]
 	var zygosity = item["Zygosity"]
 	if isARorXR.MatchString(inherit) {
-		if inheritDb[geneSymbol]["flag10"] > 0 &&
-			inheritDb[geneSymbol]["flag01"] > 0 &&
+		if inheritDb[geneTranscript]["flag10"] > 0 &&
+			inheritDb[geneTranscript]["flag01"] > 0 &&
 			(isHetNA.MatchString(zygosity) || isNAHet.MatchString(zygosity)) {
 			return "couple-CP"
 		}
@@ -424,7 +424,7 @@ func familyTagCouple(item map[string]string, inheritDb map[string]map[string]int
 	return ""
 }
 func familyTagTrio(item map[string]string, inheritDb map[string]map[string]int) string {
-	var geneSymbol = item["Gene Symbol"]
+	var geneTranscript = item["Gene Symbol"] + ":" + item["Transcript"]
 	var inherit = item["ModeInheritance"]
 	var zygosity = item["Zygosity"]
 	var chr = item["#Chr"]
@@ -435,8 +435,8 @@ func familyTagTrio(item map[string]string, inheritDb map[string]map[string]int) 
 		return "trio-AD"
 	}
 	if isARorXR.MatchString(inherit) {
-		if inheritDb[geneSymbol]["flag110"] > 0 &&
-			inheritDb[geneSymbol]["flag101"] > 0 &&
+		if inheritDb[geneTranscript]["flag110"] > 0 &&
+			inheritDb[geneTranscript]["flag101"] > 0 &&
 			(isHetHetNA.MatchString(zygosity) || isHetNAHet.MatchString(zygosity)) {
 			return "trio-CP"
 		}
@@ -450,13 +450,13 @@ func familyTagTrio(item map[string]string, inheritDb map[string]map[string]int) 
 	return ""
 }
 func familyTagSingle(item map[string]string, inheritDb map[string]map[string]int) string {
-	var geneSymbol = item["Gene Symbol"]
+	var geneTranscript = item["Gene Symbol"] + ":" + item["Transcript"]
 	var inherit = item["ModeInheritance"]
 	var zygosity = item["Zygosity"]
 	if isAR.MatchString(inherit) && isHom.MatchString(zygosity) {
 		return "AR-Hom"
 	}
-	if isAR.MatchString(inherit) && inheritDb[geneSymbol]["flag1"] > 1 && isHet.MatchString(zygosity) {
+	if isAR.MatchString(inherit) && inheritDb[geneTranscript]["flag1"] > 1 && isHet.MatchString(zygosity) {
 		return "AR-CP"
 	}
 	if isXL.MatchString(inherit) && (isHom.MatchString(zygosity) || isHemi.MatchString(zygosity)) {
