@@ -72,7 +72,7 @@ func delDupVar(data []map[string]string) {
 					if minTrans == 0 {
 						minTrans = transcriptLeve[transcript]
 					}
-					if minTrans != 0 && minTrans > transcriptLeve[transcript] {
+					if minTrans > transcriptLeve[transcript] {
 						minTrans = transcriptLeve[transcript]
 					}
 				}
@@ -85,6 +85,7 @@ func delDupVar(data []map[string]string) {
 					item["delete"] = "Y"
 					deleteVar[key+"\t"+transcript] = true
 					countVar[key]--
+					log.Printf("Delete:%s\t%s\n", key, transcript)
 				}
 			}
 		}
@@ -281,7 +282,7 @@ func annotate1Tier1(item map[string]string) {
 		revel.anno(item)
 	}
 
-	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"]}, "\t")
+	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
 	countVar[key]++
 }
 
