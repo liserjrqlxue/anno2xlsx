@@ -7,14 +7,13 @@ import (
 	"strings"
 
 	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v3"
-
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
-	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 )
 
 // add filter_variants
@@ -26,6 +25,30 @@ func addFV() {
 		stats["Total"] = len(data)
 
 		cycle1(data)
+		for _, item := range data {
+			if item["Tier"] == "Tier1" {
+				var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
+				if countVar[key] > 1 {
+					duplicateVar[key] = append(duplicateVar[key], item)
+				}
+			}
+		}
+		for key, items := range duplicateVar {
+			var maxFunc = 0
+			for _, item := range items {
+				var score = anno.FuncInfo[item["Function"]]
+				if score > maxFunc {
+					maxFunc = score
+				}
+			}
+			for _, item := range items {
+				var score = anno.FuncInfo[item["Function"]]
+				if score < maxFunc {
+					deleteVar[key+"\t"+item["Transcript"]] = true
+					countVar[key]--
+				}
+			}
+		}
 		cycle2(data)
 		// WGS
 		wgsCycle(data)
@@ -45,16 +68,19 @@ func cycle1(data []map[string]string) {
 func cycle2(data []map[string]string) {
 	for _, item := range data {
 		if item["Tier"] == "Tier1" {
-			annotate2(item)
-
-			// Tier1 Sheet
-			xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
-
-			if !*wgs {
-				addTier2Row(tier2, item)
+			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
+			if !deleteVar[key] {
+				annotate2(item)
+				// Tier1 Sheet
+				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
+				if !*wgs {
+					addTier2Row(tier2, item)
+				}
 			} else {
-				tier1Db[item["MutationName"]] = true
-				tier1GeneList[item["Gene Symbol"]] = true
+				if *wgs {
+					tier1Db[item["MutationName"]] = true
+					tier1GeneList[item["Gene Symbol"]] = true
+				}
 			}
 		}
 		// add to tier3
@@ -183,9 +209,11 @@ func annotate1(item map[string]string) {
 		anno.UpdateManualRule(item)
 	}
 
-	// 遗传相符
 	// only for Tier1
-	annotate1Tier1(item)
+	if item["Tier"] == "Tier1" {
+		// 遗传相符
+		annotate1Tier1(item)
+	}
 
 	stats[item["#Chr"]]++
 	if isHom.MatchString(item["Zygosity"]) {
@@ -209,21 +237,22 @@ func getMhgvs(item map[string]string) string {
 }
 
 func annotate1Tier1(item map[string]string) {
-	if item["Tier"] == "Tier1" {
-		anno.InheritCheck(item, inheritDb)
-		tier1GeneList[item["Gene Symbol"]] = true
-		if anno.FuncInfo[item["Function"]] >= 3 {
-			stats["Tier1LoF"]++
-		}
-		if isHom.MatchString(item["Zygosity"]) {
-			stats["Tier1Hom"]++
-		}
-		stats["Tier1"+item["VarType"]]++
-
-		if *academic {
-			revel.anno(item)
-		}
+	anno.InheritCheck(item, inheritDb)
+	tier1GeneList[item["Gene Symbol"]] = true
+	if anno.FuncInfo[item["Function"]] >= 3 {
+		stats["Tier1LoF"]++
 	}
+	if isHom.MatchString(item["Zygosity"]) {
+		stats["Tier1Hom"]++
+	}
+	stats["Tier1"+item["VarType"]]++
+
+	if *academic {
+		revel.anno(item)
+	}
+
+	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"]}, "\t")
+	countVar[key]++
 }
 
 func annotate2(item map[string]string) {
@@ -248,6 +277,11 @@ func annotate2(item map[string]string) {
 
 	// WESIM
 	annotate2IM(item)
+	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
+	if countVar[key] > 1 {
+		log.Printf("Duplicate:%s\t%s\t%s\t%s\n", key, item["Transcript"], item["cHGVS"], item["Function"])
+		duplicateVar[key] = append(duplicateVar[key], item)
+	}
 }
 
 func annotate2IM(item map[string]string) {

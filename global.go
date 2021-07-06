@@ -131,3 +131,8 @@ var (
 var (
 	acmgDb string
 )
+
+// find duplicate
+var countVar = make(map[string]int)
+var duplicateVar = make(map[string][]map[string]string)
+var deleteVar = make(map[string]bool)
