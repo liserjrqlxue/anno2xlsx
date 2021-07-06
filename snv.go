@@ -25,52 +25,7 @@ func addFV() {
 		stats["Total"] = len(data)
 
 		cycle1(data)
-		for _, item := range data {
-			if item["Tier"] == "Tier1" {
-				var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
-				if countVar[key] > 1 {
-					duplicateVar[key] = append(duplicateVar[key], item)
-				}
-			}
-		}
-		for key, items := range duplicateVar {
-			var maxFunc = 0
-			for _, item := range items {
-				var score = anno.FuncInfo[item["Function"]]
-				if score > maxFunc {
-					maxFunc = score
-				}
-			}
-			var minTrans = 0
-			for _, item := range items {
-				var transcript = item["Transcript"]
-				var score = anno.FuncInfo[item["Function"]]
-				if score < maxFunc {
-					item["delete"] = "Y"
-					deleteVar[key+"\t"+transcript] = true
-					countVar[key]--
-				} else {
-					if transcriptLeve[transcript] > 0 {
-						if minTrans == 0 {
-							minTrans = transcriptLeve[transcript]
-						}
-						if minTrans != 0 && minTrans > transcriptLeve[transcript] {
-							minTrans = transcriptLeve[transcript]
-						}
-					}
-				}
-			}
-			if minTrans > 0 {
-				for _, item := range items {
-					var transcript = item["Transcript"]
-					if item["delete"] != "Y" && transcriptLeve[transcript] > minTrans {
-						item["delete"] = "Y"
-						deleteVar[key+"\t"+transcript] = true
-						countVar[key]--
-					}
-				}
-			}
-		}
+		delDupVar(data)
 		cycle2(data)
 		// WGS
 		wgsCycle(data)
@@ -87,7 +42,61 @@ func cycle1(data []map[string]string) {
 	logTime("load snv cycle 1")
 }
 
+func delDupVar(data []map[string]string) {
+	for _, item := range data {
+		if item["Tier"] == "Tier1" {
+			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
+			if countVar[key] > 1 {
+				duplicateVar[key] = append(duplicateVar[key], item)
+			}
+		}
+	}
+	for key, items := range duplicateVar {
+		var maxFunc = 0
+		for _, item := range items {
+			var score = anno.FuncInfo[item["Function"]]
+			if score > maxFunc {
+				maxFunc = score
+			}
+		}
+		var minTrans = 0
+		for _, item := range items {
+			var transcript = item["Transcript"]
+			var score = anno.FuncInfo[item["Function"]]
+			if score < maxFunc {
+				item["delete"] = "Y"
+				deleteVar[key+"\t"+transcript] = true
+				countVar[key]--
+			} else {
+				if transcriptLeve[transcript] > 0 {
+					if minTrans == 0 {
+						minTrans = transcriptLeve[transcript]
+					}
+					if minTrans != 0 && minTrans > transcriptLeve[transcript] {
+						minTrans = transcriptLeve[transcript]
+					}
+				}
+			}
+		}
+		if minTrans > 0 {
+			for _, item := range items {
+				var transcript = item["Transcript"]
+				if item["delete"] != "Y" && transcriptLeve[transcript] > minTrans {
+					item["delete"] = "Y"
+					deleteVar[key+"\t"+transcript] = true
+					countVar[key]--
+				}
+			}
+		}
+	}
+}
+
 func cycle2(data []map[string]string) {
+	for _, item := range data {
+		if item["Tier"] == "Tier1" {
+			anno.InheritCheck(item, inheritDb)
+		}
+	}
 	for _, item := range data {
 		if item["Tier"] == "Tier1" {
 			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
@@ -259,7 +268,6 @@ func getMhgvs(item map[string]string) string {
 }
 
 func annotate1Tier1(item map[string]string) {
-	anno.InheritCheck(item, inheritDb)
 	tier1GeneList[item["Gene Symbol"]] = true
 	if anno.FuncInfo[item["Function"]] >= 3 {
 		stats["Tier1LoF"]++
