@@ -1,9 +1,11 @@
 package main
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/stringsUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/pelletier/go-toml"
 )
@@ -55,4 +57,8 @@ func loadDb() {
 		specVarDb[key] = true
 	}
 	logTime("load Special mutation DB")
+
+	for transcript, level := range simpleUtil.HandleError(textUtil.File2Map(filepath.Join(etcPath, "转录本优先级.txt"), "\t", false)).(map[string]string) {
+		transcriptLeve[transcript] = stringsUtil.Atoi(level)
+	}
 }

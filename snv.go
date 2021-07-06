@@ -41,11 +41,33 @@ func addFV() {
 					maxFunc = score
 				}
 			}
+			var minTrans = 0
 			for _, item := range items {
+				var transcript = item["Transcript"]
 				var score = anno.FuncInfo[item["Function"]]
 				if score < maxFunc {
-					deleteVar[key+"\t"+item["Transcript"]] = true
+					item["delete"] = "Y"
+					deleteVar[key+"\t"+transcript] = true
 					countVar[key]--
+				} else {
+					if transcriptLeve[transcript] > 0 {
+						if minTrans == 0 {
+							minTrans = transcriptLeve[transcript]
+						}
+						if minTrans != 0 && minTrans > transcriptLeve[transcript] {
+							minTrans = transcriptLeve[transcript]
+						}
+					}
+				}
+			}
+			if minTrans > 0 {
+				for _, item := range items {
+					var transcript = item["Transcript"]
+					if item["delete"] != "Y" && transcriptLeve[transcript] > minTrans {
+						item["delete"] = "Y"
+						deleteVar[key+"\t"+transcript] = true
+						countVar[key]--
+					}
 				}
 			}
 		}

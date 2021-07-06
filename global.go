@@ -136,3 +136,4 @@ var (
 var countVar = make(map[string]int)
 var duplicateVar = make(map[string][]map[string]string)
 var deleteVar = make(map[string]bool)
+var transcriptLeve = make(map[string]int)
