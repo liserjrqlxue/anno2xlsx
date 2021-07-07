@@ -81,7 +81,7 @@ func delDupVar(data []map[string]string) {
 		if minTrans > 0 {
 			for _, item := range items {
 				var transcript = item["Transcript"]
-				if item["delete"] != "Y" && transcriptLeve[transcript] > minTrans {
+				if item["delete"] != "Y" && transcriptLeve[transcript] != minTrans {
 					item["delete"] = "Y"
 					deleteVar[key+"\t"+transcript] = true
 					countVar[key]--
