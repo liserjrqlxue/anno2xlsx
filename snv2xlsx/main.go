@@ -231,16 +231,15 @@ func init() {
 
 	if *ifRedis {
 		if *redisAddr == "" {
-			*redisAddr = anno.GetStrVal("redisServer", defaultConfig)
+			*redisAddr = tomlCfg.Get("redis.addr").(string)
 		}
-		redisDb = redis.NewClient(&redis.Options{
-			Addr: *redisAddr,
-		})
-		pong, e := redisDb.Ping().Result()
-		log.Println("connect redis:", pong, e)
-		if e != nil {
-			log.Fatalf("Error connect redis[%+v]\n", e)
-		}
+		redisDb = redis.NewClient(
+			&redis.Options{
+				Addr:     *redisAddr,
+				Password: tomlCfg.Get("redis.pass").(string),
+			},
+		)
+		log.Printf("Connect [%s]:%s\n", redisDb.String(), simpleUtil.HandleError(redisDb.Ping().Result()).(string))
 	}
 
 	if *acmg {
