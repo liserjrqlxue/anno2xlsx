@@ -59,6 +59,6 @@ func loadDb() {
 	logTime("load Special mutation DB")
 
 	for transcript, level := range simpleUtil.HandleError(textUtil.File2Map(filepath.Join(etcPath, "转录本优先级.txt"), "\t", false)).(map[string]string) {
-		transcriptLeve[transcript] = stringsUtil.Atoi(level)
+		transcriptLevel[transcript] = stringsUtil.Atoi(level)
 	}
 }
