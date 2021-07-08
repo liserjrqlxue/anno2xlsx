@@ -102,7 +102,7 @@ func cycle2(data []map[string]string) {
 		if item["Tier"] == "Tier1" {
 			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
 			if !deleteVar[key] {
-				deleteCount++
+				tier1Count++
 				annotate2(item)
 				// Tier1 Sheet
 				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
@@ -121,7 +121,7 @@ func cycle2(data []map[string]string) {
 			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
 		}
 	}
-	log.Printf("Duplitcate Delete Count: %d\n", deleteCount)
+	log.Printf("Tier1 Count : %d\n", tier1Count)
 	if *wesim {
 		simpleUtil.CheckErr(resultFile.Close())
 	}
