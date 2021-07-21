@@ -47,10 +47,11 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 
 func addCnv2Sheet(
 	sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
-	key string, cnvFile *os.File) {
+	key, gender string, cnvFile *os.File) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	for _, item := range cnvDb {
+		item["gender"] = strings.Split(gender, ",")[0]
 		if item["cn"] == "" {
 			item["cn"] = item["Copy_Num"]
 		}
@@ -235,7 +236,7 @@ func addExon() {
 		}
 		addCnv2Sheet(
 			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
-			false, *cnvFilter, stats, "exonCNV", exonFile,
+			false, *cnvFilter, stats, "exonCNV", *gender, exonFile,
 		)
 		logTime("add exon cnv")
 	}
@@ -257,7 +258,7 @@ func addLarge() {
 		}
 		addCnv2Sheet(
 			tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap,
-			*cnvFilter, false, stats, "largeCNV", largeFile,
+			*cnvFilter, false, stats, "largeCNV", *gender, largeFile,
 		)
 		logTime("add large cnv")
 	}
