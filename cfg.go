@@ -80,18 +80,18 @@ func initIM() {
 			acmg59Gene[gene] = true
 		}
 
-		resultColumn = TomlTree.Get("wesim.resultColumn").([]string)
+		resultColumn = TomlTree.GetArray("wesim.resultColumn").([]string)
 		if *trio {
 			resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
 		}
 		resultFile = osUtil.Create(*prefix + ".result.tsv")
 		fmtUtil.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
 
-		qcColumn = TomlTree.Get("wesim.qcColumn").([]string)
+		qcColumn = TomlTree.GetArray("wesim.qcColumn").([]string)
 		qcFile = osUtil.Create(*prefix + ".qc.tsv")
 		fmtUtil.Fprintln(qcFile, strings.Join(qcColumn, "\t"))
 
-		cnvColumn = TomlTree.Get("wesim.cnvColumn").([]string)
+		cnvColumn = TomlTree.GetArray("wesim.cnvColumn").([]string)
 
 		exonFile = osUtil.Create(*prefix + ".exonCNV.tsv")
 		fmtUtil.Fprintln(exonFile, strings.Join(cnvColumn, "\t"))
