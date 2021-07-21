@@ -100,3 +100,10 @@ qcColumn=[
     "bam文件路径",
     "核型预测"
 ]
+cnvColumn=[
+    "chromosome",
+    "start",
+    "end",
+    "cn",
+    "gender"
+]

@@ -147,7 +147,7 @@ func parseQC() {
 				for _, key := range qcColumn {
 					qcArray = append(qcArray, quality[key])
 				}
-				fmtUtil.Fprintln(qcFile, strings.Join(qcArray, "\t"))
+				fmtUtil.FprintStringArray(qcFile, qcArray, "\t")
 			}
 		}
 		if *wesim {

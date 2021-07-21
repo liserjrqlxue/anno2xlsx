@@ -2,9 +2,11 @@ package main
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/fmtUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
@@ -45,10 +47,13 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 
 func addCnv2Sheet(
 	sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
-	key string) {
+	key string, cnvFile *os.File) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	for _, item := range cnvDb {
+		if item["cn"] == "" {
+			item["cn"] = item["Copy_Num"]
+		}
 		sample := item["Sample"]
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
@@ -94,7 +99,17 @@ func addCnv2Sheet(
 				}
 			}
 			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
+			if *wesim {
+				var cnvArray []string
+				for _, key := range cnvColumn {
+					cnvArray = append(cnvArray, item[key])
+				}
+				fmtUtil.FprintStringArray(cnvFile, cnvArray, "\t")
+			}
 		}
+	}
+	if *wesim {
+		simpleUtil.CheckErr(cnvFile.Close())
 	}
 }
 
@@ -220,7 +235,7 @@ func addExon() {
 		}
 		addCnv2Sheet(
 			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
-			false, *cnvFilter, stats, "exonCNV",
+			false, *cnvFilter, stats, "exonCNV", exonFile,
 		)
 		logTime("add exon cnv")
 	}
@@ -242,7 +257,7 @@ func addLarge() {
 		}
 		addCnv2Sheet(
 			tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap,
-			*cnvFilter, false, stats, "largeCNV",
+			*cnvFilter, false, stats, "largeCNV", largeFile,
 		)
 		logTime("add large cnv")
 	}

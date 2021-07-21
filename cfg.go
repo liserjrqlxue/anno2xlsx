@@ -90,5 +90,13 @@ func initIM() {
 		qcColumn = TomlTree.Get("wesim.qcColumn").([]string)
 		qcFile = osUtil.Create(*prefix + ".qc.tsv")
 		fmtUtil.Fprintln(qcFile, strings.Join(qcColumn, "\t"))
+
+		cnvColumn = TomlTree.Get("wesim.cnvColumn").([]string)
+
+		exonFile = osUtil.Create(*prefix + ".exonCNV.tsv")
+		fmtUtil.Fprintln(exonFile, strings.Join(cnvColumn, "\t"))
+
+		largeFile = osUtil.Create(*prefix + ".largeCNV.tsv")
+		fmtUtil.Fprintln(largeFile, strings.Join(cnvColumn, "\t"))
 	}
 }

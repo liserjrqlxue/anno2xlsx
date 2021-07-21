@@ -40,8 +40,8 @@ var qualityColumn []string
 
 // WESIM
 var (
-	resultColumn, qcColumn []string
-	resultFile, qcFile     *os.File
+	resultColumn, qcColumn, cnvColumn       []string
+	resultFile, qcFile, exonFile, largeFile *os.File
 )
 
 var qualitys []map[string]string
