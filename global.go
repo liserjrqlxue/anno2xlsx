@@ -138,3 +138,7 @@ var duplicateVar = make(map[string][]map[string]string)
 var deleteVar = make(map[string]bool)
 var transcriptLevel = make(map[string]int)
 var tier1Count int
+
+// log
+var cycle1Count int
+var cycle2Count int
