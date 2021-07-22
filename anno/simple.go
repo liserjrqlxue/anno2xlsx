@@ -897,7 +897,7 @@ func UpdateFunction(item map[string]string) {
 	item["Function"] = updateFunction(item["Function"], item["cHGVS"])
 }
 
-var isCdsReg = regexp.MustCompile(`^C`)
+var isCdsReg = regexp.MustCompile(`^C\d+`)
 
 // UpdateFuncRegion Convert C* to CDS*
 func UpdateFuncRegion(item map[string]string) {
