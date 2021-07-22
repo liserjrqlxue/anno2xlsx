@@ -53,7 +53,7 @@ func addCnv2Sheet(
 	for _, item := range cnvDb {
 		if *wesim {
 			if item["chromosome"] == "" {
-				item["chromosome"] = item["Chr"]
+				item["chromosome"] = strings.TrimLeft(item["Chr"], "chr")
 			}
 			if item["start"] == "" {
 				item["start"] = item["Start"]
