@@ -242,10 +242,10 @@ func annotate1(item map[string]string) {
 	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
-		anno.UpdateSnvTier1(item)
 		if *ifRedis {
 			anno.UpdateRedis(item, redisDb, *seqType)
 		}
+		anno.UpdateSnvTier1(item)
 
 		anno.UpdateAutoRule(item)
 		anno.UpdateManualRule(item)
