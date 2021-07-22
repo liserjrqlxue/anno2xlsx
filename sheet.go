@@ -51,9 +51,22 @@ func addCnv2Sheet(
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	for _, item := range cnvDb {
-		item["gender"] = strings.Split(gender, ",")[0]
-		if item["cn"] == "" {
-			item["cn"] = item["Copy_Num"]
+		if *wesim {
+			if item["chromosome"] == "" {
+				item["chromosome"] = item["Chr"]
+			}
+			if item["start"] == "" {
+				item["start"] = item["Start"]
+			}
+			if item["end"] == "" {
+				item["end"] = item["End"]
+			}
+			if item["cn"] == "" {
+				item["cn"] = item["Copy_Num"]
+			}
+			if gender != "" {
+				item["gender"] = strings.Split(gender, ",")[0]
+			}
 		}
 		sample := item["Sample"]
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
