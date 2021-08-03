@@ -62,7 +62,11 @@ func addCnv2Sheet(
 				item["end"] = item["End"]
 			}
 			if item["cn"] == "" {
-				item["cn"] = item["Copy_Num"]
+				if item["Copy_Num"] != "" {
+					item["cn"] = item["Copy_Num"]
+				} else if item["Copy_Number"] != "" {
+					item["cn"] = item["Copy_Number"]
+				}
 			}
 			if gender != "" {
 				item["gender"] = strings.Split(gender, ",")[0]
