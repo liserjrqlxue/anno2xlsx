@@ -11,6 +11,7 @@ import (
 	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v3"
@@ -373,7 +374,7 @@ func loadData() (data []map[string]string) {
 			d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
 			data = append(data, d...)
 		} else {
-			d, _ := simple_util.File2MapArray(f, "\t", isComment)
+			d, _ := textUtil.File2MapArray(f, "\t", isComment)
 			data = append(data, d...)
 		}
 	}
