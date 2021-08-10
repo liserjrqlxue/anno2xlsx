@@ -651,6 +651,8 @@ func PrimerDesign(item map[string]string) string {
 		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
 		if item["Depth"] == "" && Adepth > 0 {
 			item["Depth"] = fmt.Sprintf("%.0f", float64(Adepth)/Aratio)
+		} else {
+			item["Depth"] = strings.Split(item["Depth"], ";")[0]
 		}
 	}
 
