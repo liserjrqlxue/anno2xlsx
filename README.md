@@ -64,3 +64,57 @@ buildHPO -chpo chpo-2021.json -g2p genes_to_phenotype.txt -output db/gene2chpo.t
 2. 输入文件`MutationName`与流程`bgicg_anno.pl`结果不一致
 3. 流程`bgicg_anno.pl`有更新，但是数据库未同步更新
 4. 位点用与现有配置不同的数据库注释导致的注释结果不一致
+
+# 特性
+## 结合性处理
+1. 格式转换
+```go
+func zygosityFormat(zygosity string) string {
+	zygosity = strings.Replace(zygosity, "het-ref", "Het", -1)
+	zygosity = strings.Replace(zygosity, "het-alt", "Het", -1)
+	zygosity = strings.Replace(zygosity, "hom-alt", "Hom", -1)
+	zygosity = strings.Replace(zygosity, "hem-alt", "Hemi", -1)
+	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
+	return zygosity
+}
+```
+2. Het->Hom修正
+```go
+var aRatio,err=strconv.ParseFloat(item["A.Ratio"],64)
+if err!=nil{
+    aRatio=0
+}
+...
+func zygosityFix(zygosity string,aRatio float64)string{
+	if zygosity=="Het"&&aRatio>=0.85{
+		return "Hom"
+	}
+	return zygosity
+}
+```
+3. Hom->Hemi修正
+```go
+func hemiPAR(item map[string]string, gender string) {
+	var chromosome = item["#Chr"]
+	if isChrXY.MatchString(chromosome) && isMale.MatchString(gender) {
+		start, e := strconv.Atoi(item["Start"])
+		simpleUtil.CheckErr(e, "Start")
+		stop, e := strconv.Atoi(item["Stop"])
+		simpleUtil.CheckErr(e, "Stop")
+		if !inPAR(chromosome, start, stop) && withHom.MatchString(item["Zygosity"]) {
+			zygosity := strings.Split(item["Zygosity"], ";")
+			genders := strings.Split(gender, ",")
+			if len(genders) <= len(zygosity) {
+				for i := range genders {
+					if isMale.MatchString(genders[i]) && isHom.MatchString(zygosity[i]) {
+						zygosity[i] = strings.Replace(zygosity[i], "Hom", "Hemi", 1)
+					}
+				}
+				item["Zygosity"] = strings.Join(zygosity, ";")
+			} else {
+				log.Fatalf("conflict gender[%s]and Zygosity[%s]\n", gender, item["Zygosity"])
+			}
+		}
+	}
+}
+```

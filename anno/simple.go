@@ -259,6 +259,11 @@ func UpdateSnv(item map[string]string, gender string) {
 	item["MutationNameLite"] = getMNlite(item)
 	// Zygosity format
 	item["Zygosity"] = zygosityFormat(item["Zygosity"])
+	var aRatio, err = strconv.ParseFloat(item["A.Ratio"], 64)
+	if err != nil {
+		aRatio = 0
+	}
+	item["Zygosity"] = zygosityFix(item["Zygosity"], aRatio)
 	hemiPAR(item, gender)
 }
 
@@ -483,6 +488,13 @@ func zygosityFormat(zygosity string) string {
 	zygosity = strings.Replace(zygosity, "hom-alt", "Hom", -1)
 	zygosity = strings.Replace(zygosity, "hem-alt", "Hemi", -1)
 	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
+	return zygosity
+}
+
+func zygosityFix(zygosity string, aRatio float64) string {
+	if zygosity == "Het" && aRatio >= 0.85 {
+		return "Hom"
+	}
 	return zygosity
 }
 
