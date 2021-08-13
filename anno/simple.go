@@ -257,7 +257,11 @@ func UpdateSnv(item map[string]string, gender string) {
 	updatePos(item)
 	item["pHGVS"] = getPhgvs(item)
 	item["MutationNameLite"] = getMNlite(item)
-	// Zygosity format
+	UpdateZygosity(item, gender)
+}
+
+//UpdateZygosity
+func UpdateZygosity(item map[string]string, gender string) {
 	item["Zygosity"] = zygosityFormat(item["Zygosity"])
 	var aRatio, err = strconv.ParseFloat(item["A.Ratio"], 64)
 	if err != nil {
