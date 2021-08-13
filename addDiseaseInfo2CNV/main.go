@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/liserjrqlxue/goUtil/fmtUtil"
+	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
@@ -98,7 +99,7 @@ func init() {
 	flag.Parse()
 	if *cpuprofile != "" {
 		var f = osUtil.Create(*cpuprofile)
-		simple_util.CheckErr(pprof.StartCPUProfile(f))
+		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
 		defer pprof.StopCPUProfile()
 	}
 	if *input == "" {
@@ -129,12 +130,12 @@ func init() {
 func main() {
 	version.LogVersion()
 	var out = osUtil.Create(*output)
-	defer simple_util.DeferClose(out)
+	defer simpleUtil.DeferClose(out)
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
 	// parser etc/config.json
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
 
 	cnvDb, _ := simple_util.LongFile2MapArray(*input, "\t", nil)
 	titles := textUtil.File2Array(*title)

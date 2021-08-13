@@ -12,8 +12,6 @@ import (
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
-
-	simple_util "github.com/liserjrqlxue/simple-util"
 )
 
 func loadFilterStat(filterStat string, quality map[string]string) {
@@ -23,27 +21,18 @@ func loadFilterStat(filterStat string, quality map[string]string) {
 	var db = make(map[string]float64)
 	filters := strings.Split(filterStat, ",")
 	for _, filter := range filters {
-		fDb, err := simple_util.File2Map(filter, "\t", false)
-		simple_util.CheckErr(err)
-		numberOfReads, err := strconv.ParseFloat(fDb["Number of Reads:"], 32)
-		simple_util.CheckErr(err)
-		GCfq1, err := strconv.ParseFloat(fDb["GC(%) of fq1:"], 32)
-		simple_util.CheckErr(err)
-		GCfq2, err := strconv.ParseFloat(fDb["GC(%) of fq2:"], 32)
-		simple_util.CheckErr(err)
-		Q20fq1, err := strconv.ParseFloat(fDb["Q20(%) of fq1:"], 32)
-		simple_util.CheckErr(err)
-		Q20fq2, err := strconv.ParseFloat(fDb["Q20(%) of fq2:"], 32)
-		simple_util.CheckErr(err)
-		Q30fq1, err := strconv.ParseFloat(fDb["Q30(%) of fq1:"], 32)
-		simple_util.CheckErr(err)
-		Q30fq2, err := strconv.ParseFloat(fDb["Q30(%) of fq2:"], 32)
-		simple_util.CheckErr(err)
+		var fDb = simpleUtil.HandleError(textUtil.File2Map(filter, "\t", false)).(map[string]string)
+		var numberOfReads = simpleUtil.HandleError(strconv.ParseFloat(fDb["Number of Reads:"], 32)).(float64)
+		var GCfq1 = simpleUtil.HandleError(strconv.ParseFloat(fDb["GC(%) of fq1:"], 32)).(float64)
+		var GCfq2 = simpleUtil.HandleError(strconv.ParseFloat(fDb["GC(%) of fq2:"], 32)).(float64)
+		var Q20fq1 = simpleUtil.HandleError(strconv.ParseFloat(fDb["Q20(%) of fq1:"], 32)).(float64)
+		var Q20fq2 = simpleUtil.HandleError(strconv.ParseFloat(fDb["Q20(%) of fq2:"], 32)).(float64)
+		var Q30fq1 = simpleUtil.HandleError(strconv.ParseFloat(fDb["Q30(%) of fq1:"], 32)).(float64)
+		var Q30fq2 = simpleUtil.HandleError(strconv.ParseFloat(fDb["Q30(%) of fq2:"], 32)).(float64)
 		fDb["Discard Reads related to low qual:"] = strings.TrimSpace(fDb["Discard Reads related to low qual:"])
 		var lowQualReads = 0.0
 		if fDb["Discard Reads related to low qual:"] != "" {
-			lowQualReads, err = strconv.ParseFloat(strings.TrimSpace(fDb["Discard Reads related to low qual:"]), 32)
-			simple_util.CheckErr(err)
+			lowQualReads = simpleUtil.HandleError(strconv.ParseFloat(strings.TrimSpace(fDb["Discard Reads related to low qual:"]), 32)).(float64)
 		}
 
 		db["numberOfReads"] += numberOfReads
@@ -87,7 +76,7 @@ var isBamPath = regexp.MustCompile(`^## Files : (\S+)`)
 func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 	var kinshipHash = make(map[string]map[string]string)
 	if kinship != "" {
-		kinshipHash = simple_util.File2MapMap(kinship, "样品ID", "\t")
+		kinshipHash, _ = textUtil.File2MapMap(kinship, "样品ID", "\t", nil)
 	}
 	sep := "\t"
 	if isWGS {
