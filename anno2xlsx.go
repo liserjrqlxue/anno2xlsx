@@ -9,6 +9,7 @@ import (
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/version"
 	"github.com/tealeg/xlsx/v3"
 )
 
@@ -27,7 +28,7 @@ func (xt *xlsxTemplate) save() error {
 }
 
 func init() {
-	logVersion()
+	version.LogVersion()
 
 	flag.Parse()
 	checkFlag()
@@ -39,7 +40,7 @@ func init() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file         : %v\n", *logfile)
-	logVersion()
+	version.LogVersion()
 
 	// 解析配置
 	parseToml()

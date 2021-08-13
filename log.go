@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"github.com/liserjrqlxue/simple-util"
@@ -76,19 +75,4 @@ func logTime0(message string) {
 	var trim = 3*8 - 1
 	var str = simple_util.FormatWidth(trim, message, ' ')
 	log.Printf("%s\ttook %7.3fs to run.\n", str, ts[step].Sub(ts[0]).Seconds())
-}
-
-// version
-var (
-	buildStamp string
-	gitHash    string
-	goVersion  string
-)
-
-func logVersion() {
-	log.Printf("Git Commit Hash  : %s\n", gitHash)
-	log.Printf("UTC Build Time   : %s\n", buildStamp)
-	log.Printf("Golang Version   : %s\n", goVersion)
-	var hostName, err = os.Hostname()
-	log.Printf("Runtime hostname : %s%v\n", hostName, err)
 }
