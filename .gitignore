@@ -1,5 +1,10 @@
 # build
 anno2xlsx
+MT/MT
+addDiseaseInfo2CNV/addDiseaseInfo2CNV
+addDiseaseInfo2SNV/addDiseaseInfo2SNV
+buildDb/buildDb
+snv2xlsx/snv2xlsx
 
 # Binaries for programs and plugins
 *.exe
@@ -16,8 +21,7 @@ anno2xlsx
 
 # Out of repo
 backup/
-基因库-更新版基因特征谱-加动态突变-20190110.xlsx*
-全外疾病背景更新V3*
+db/
 
 # JetBrains GoLangd
 .idea
