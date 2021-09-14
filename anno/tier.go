@@ -37,6 +37,7 @@ var FuncInfo = map[string]int{
 var (
 	isHgmd    = regexp.MustCompile("DM")
 	isClinvar = regexp.MustCompile("Pathogenic|Likely_pathogenic")
+	isPhoenix = regexp.MustCompile("P")
 	//newlineReg = regexp.MustCompile(`\n+`)
 	isDenovo  = regexp.MustCompile(`^(Hom|Het|Hemi);NA;NA`)
 	noProband = regexp.MustCompile(`^NA`)
@@ -83,7 +84,7 @@ func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[st
 }
 
 func checkHGMDClinVar(item map[string]string, stats map[string]int, AFlist []string) {
-	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) {
+	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) || isPhoenix.MatchString(item["Phoenix Tag"]) {
 		stats["HGMD/ClinVar"]++
 		if checkAF(item, AFlist, 0.05) {
 			stats["HGMD/ClinVar isAF"]++
