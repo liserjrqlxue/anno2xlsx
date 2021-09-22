@@ -25,10 +25,18 @@ func addFile2Row(file string, row *xlsx.Row) (rows []string) {
 
 func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	var sheet = xlsxUtil.AddSheet(excel, sheetName)
-	sheet.AddRow().AddCell().SetString("SampleID")
+	var row = sheet.AddRow()
+	if row.GetHeight() == 0 {
+		row.SetHeight(14)
+	}
+	row.AddCell().SetString("SampleID")
 
 	for _, sample := range sampleList {
-		sheet.AddRow().AddCell().SetString(sample)
+		row = sheet.AddRow()
+		if row.GetHeight() == 0 {
+			row.SetHeight(14)
+		}
+		row.AddCell().SetString(sample)
 	}
 }
 
@@ -37,7 +45,10 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 	simple_util.CheckErr(err)
 
 	for _, key := range qualityColumn {
-		row := sheet.AddRow()
+		var row = sheet.AddRow()
+		if row.GetHeight() == 0 {
+			row.SetHeight(14)
+		}
 		row.AddCell().SetString(key)
 		for _, item := range qualitys {
 			row.AddCell().SetString(item[key])
