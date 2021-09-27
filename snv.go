@@ -7,14 +7,14 @@ import (
 	"strings"
 
 	"github.com/liserjrqlxue/acmg2015"
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
-	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
-	simple_util "github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v3"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 )
 
 // add filter_variants
@@ -374,7 +374,7 @@ func annotate4(item map[string]string) {
 func loadData() (data []map[string]string) {
 	for _, f := range snvs {
 		if isGz.MatchString(f) {
-			d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
+			d, _ := textUtil.Gz2MapArray(f, "\t", isComment)
 			data = append(data, d...)
 		} else {
 			d, _ := textUtil.File2MapArray(f, "\t", isComment)
