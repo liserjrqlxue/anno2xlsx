@@ -228,6 +228,26 @@ func getMNlite(item map[string]string) string {
 	return item["MutationName"]
 }
 
+func homRatio(item map[string]string, threshold float64) {
+	var aRatio = strings.Split(item["A.Ratio"], ";")
+	var zygositys = strings.Split(item["Zygosity"], ";")
+	if len(aRatio) <= len(zygositys) {
+		for i := range aRatio {
+			var zygosity = zygositys[i]
+			if zygosity == "Het" {
+				var ratio, err = strconv.ParseFloat(aRatio[i], 64)
+				if err != nil {
+					ratio = 0
+				}
+				if ratio >= threshold {
+					zygositys[i] = "Hom"
+				}
+			}
+		}
+	}
+	item["Zygosity"] = strings.Join(zygositys, ";")
+}
+
 func hemiPAR(item map[string]string, gender string) {
 	var chromosome = item["#Chr"]
 	if isChrXY.MatchString(chromosome) && isMale.MatchString(gender) {
@@ -236,8 +256,8 @@ func hemiPAR(item map[string]string, gender string) {
 		stop, e := strconv.Atoi(item["Stop"])
 		simpleUtil.CheckErr(e, "Stop")
 		if !inPAR(chromosome, start, stop) && withHom.MatchString(item["Zygosity"]) {
-			zygosity := strings.Split(item["Zygosity"], ";")
-			genders := strings.Split(gender, ",")
+			var zygosity = strings.Split(item["Zygosity"], ";")
+			var genders = strings.Split(gender, ",")
 			if len(genders) <= len(zygosity) {
 				for i := range genders {
 					if isMale.MatchString(genders[i]) && isHom.MatchString(zygosity[i]) {
@@ -260,14 +280,12 @@ func UpdateSnv(item map[string]string, gender string) {
 	UpdateZygosity(item, gender)
 }
 
-//UpdateZygosity
+var homRatioThreshold = 0.85
+
+//UpdateZygosity format, fix hom and fix hemi
 func UpdateZygosity(item map[string]string, gender string) {
 	item["Zygosity"] = zygosityFormat(item["Zygosity"])
-	var aRatio, err = strconv.ParseFloat(item["A.Ratio"], 64)
-	if err != nil {
-		aRatio = 0
-	}
-	item["Zygosity"] = zygosityFix(item["Zygosity"], aRatio)
+	homRatio(item, homRatioThreshold)
 	hemiPAR(item, gender)
 }
 
@@ -492,13 +510,6 @@ func zygosityFormat(zygosity string) string {
 	zygosity = strings.Replace(zygosity, "hom-alt", "Hom", -1)
 	zygosity = strings.Replace(zygosity, "hem-alt", "Hemi", -1)
 	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
-	return zygosity
-}
-
-func zygosityFix(zygosity string, aRatio float64) string {
-	if zygosity == "Het" && aRatio >= 0.85 {
-		return "Hom"
-	}
 	return zygosity
 }
 
@@ -990,9 +1001,9 @@ func Format(item map[string]string) {
 }
 
 //UpdateDisease add disease info to item
-func UpdateDisease(geneID string, item, gDiseaseDbColumn map[string]string, geneDiseaseDb map[string]map[string]string) {
+func UpdateDisease(geneID string, item, gDiseaseDbColumn map[string]string, gDiseaseDbs map[string]map[string]string) {
 	// 基因-疾病
-	gDiseaseDb := geneDiseaseDb[geneID]
+	gDiseaseDb := gDiseaseDbs[geneID]
 	for key, value := range gDiseaseDbColumn {
 		item[value] = gDiseaseDb[key]
 	}
