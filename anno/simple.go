@@ -280,12 +280,12 @@ func UpdateSnv(item map[string]string, gender string) {
 	UpdateZygosity(item, gender)
 }
 
-var homRatioThreshold = 0.85
+var HomFixRatioThreshold = 0.85
 
 //UpdateZygosity format, fix hom and fix hemi
 func UpdateZygosity(item map[string]string, gender string) {
 	item["Zygosity"] = zygosityFormat(item["Zygosity"])
-	homRatio(item, homRatioThreshold)
+	homRatio(item, HomFixRatioThreshold)
 	hemiPAR(item, gender)
 }
 
