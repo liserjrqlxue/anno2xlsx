@@ -388,7 +388,7 @@ func saveExcel() {
 			logTime("save Tier2")
 
 			// Tier3 excel
-			if !*noTier3 {
+			if outputTier3 {
 				simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
 				logTime("save Tier3")
 			}

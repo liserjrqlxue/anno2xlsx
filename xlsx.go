@@ -3,17 +3,20 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/tealeg/xlsx/v3"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 func prepareExcel() {
 	prepareTier1()
 	prepareTier2()
-	prepareTier3()
+	if outputTier3 {
+		prepareTier3()
+	}
 	logTime("load template")
 }
 
@@ -110,16 +113,14 @@ func prepareTier2() {
 }
 
 func prepareTier3() {
-	if !*noTier3 {
-		// create Tier3.xlsx
-		tier3Xlsx = xlsx.NewFile()
-		tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
-		tier3Titles = addFile2Row(
-			anno.GuessPath(
-				TomlTree.Get("template.tier3.title").(string),
-				etcPath,
-			),
-			tier3Sheet.AddRow(),
-		)
-	}
+	// create Tier3.xlsx
+	tier3Xlsx = xlsx.NewFile()
+	tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
+	tier3Titles = addFile2Row(
+		anno.GuessPath(
+			TomlTree.Get("template.tier3.title").(string),
+			etcPath,
+		),
+		tier3Sheet.AddRow(),
+	)
 }

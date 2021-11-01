@@ -19,6 +19,7 @@ import (
 
 // add filter_variants
 func addFV() {
+	anno.HomFixRatioThreshold = homFixRatioThreshold
 	// anno
 	if *snv != "" {
 		var data = loadData()
@@ -39,7 +40,7 @@ func cycle1(data []map[string]string) {
 	for _, item := range data {
 		annotate1(item)
 		cycle1Count++
-		if cycle1Count%1000 == 0 {
+		if cycle1Count%20000 == 0 {
 			log.Printf("cycle1 progress %d/%d", cycle1Count, len(data))
 		}
 	}
@@ -122,12 +123,12 @@ func cycle2(data []map[string]string) {
 			}
 		}
 		// add to tier3
-		if !*noTier3 {
+		if outputTier3 {
 			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
 		}
 		cycle2Count++
-		if cycle2Count%1000 == 0 {
-			log.Printf("cycle1 progress %d/%d", cycle2Count, len(data))
+		if cycle2Count%50000 == 0 {
+			log.Printf("cycle2 progress %d/%d", cycle2Count, len(data))
 		}
 	}
 	log.Printf("Tier1 Count : %d\n", tier1Count)

@@ -6,13 +6,14 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis"
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/goUtil/fmtUtil"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/pelletier/go-toml"
+
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
 func parseCfg() {
@@ -56,6 +57,15 @@ func parseToml() {
 
 	acmgDb = filepath.Join(etcPath, TomlTree.Get("acmg.list").(string))
 	openRedis()
+
+	var tier3 = TomlTree.Get("tier3")
+	if tier3 != nil {
+		outputTier3 = tier3.(bool)
+	}
+	var homRatio = TomlTree.Get("homFixRatioThreshold")
+	if homRatio != nil {
+		homFixRatioThreshold = homRatio.(float64)
+	}
 }
 
 func openRedis() {

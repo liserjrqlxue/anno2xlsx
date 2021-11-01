@@ -142,3 +142,7 @@ var tier1Count int
 // log
 var cycle1Count int
 var cycle2Count int
+
+// flag to var
+var outputTier3 = false
+var homFixRatioThreshold = 0.85

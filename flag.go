@@ -213,11 +213,6 @@ var (
 		false,
 		"if wesim, output result.tsv",
 	)
-	noTier3 = flag.Bool(
-		"noTier3",
-		false,
-		"if not output Tier3.xlsx",
-	)
 	mt = flag.Bool(
 		"mt",
 		false,

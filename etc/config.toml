@@ -1,3 +1,6 @@
+tier3 = true
+homFixRatioThreshold = 0.78
+
 [annotation.hpo]
 file = "gene2hpo.txt"
 mainKey = "entre-gene-id"
