@@ -338,6 +338,23 @@ func annotate2IM(item map[string]string) {
 		} else {
 			item["IsACMG59"] = "N"
 		}
+
+		var inheritance = strings.Split(item["ModeInheritance"], "\n")
+		var disease []string
+		if isEnProduct[*productID] {
+			disease = strings.Split(item["DiseaseNameEN"], "\n")
+		} else {
+			disease = strings.Split(item["DiseaseNameCH"], "\n")
+		}
+		if len(disease) == len(inheritance) {
+			for i, text := range disease {
+				inheritance[i] = text + "/" + inheritance[i]
+			}
+		} else {
+			log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
+		}
+		item["DiseaseName/ModeInheritance"] = strings.Join(inheritance, "<br>")
+
 		if *trio {
 			zygosity := strings.Split(item["Zygosity"], ";")
 			zygosity = append(zygosity, "NA", "NA")
