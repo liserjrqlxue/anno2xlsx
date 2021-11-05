@@ -93,17 +93,6 @@ func UpdateSnvTier1(item map[string]string) {
 	item["纯合，半合"] = item["GnomAD HomoAlt Count"] // + "|" + dataHash["GnomAD HemiAlt Count"]
 
 	item["历史样本检出个数"] = item["sampleMut"] + "/" + item["sampleAll"]
-
-	// remove index
-	for _, k := range [2]string{"GeneralizationEN", "GeneralizationCH"} {
-		sep := "\n\n"
-		key := strings.Split(item[k], sep)
-		for i := range key {
-			key[i] = indexReg.ReplaceAllLiteralString(key[i], "")
-		}
-		item[k] = strings.Join(key, sep)
-	}
-
 }
 
 //Score2Pred add _pred for scores
