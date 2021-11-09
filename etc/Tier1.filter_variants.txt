@@ -153,6 +153,7 @@ REVEL_score
 VarType
 Depth
 AutoPVS1 Adjusted Strength
+AutoPVS1 Cirterion
 cHGVS_org
 MTmut
 MT_AC_hom
