@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/pelletier/go-toml"
 	"github.com/tealeg/xlsx/v3"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -35,17 +36,19 @@ var inheritDb = make(map[string]map[string]int)
 
 var tier1GeneList = make(map[string]bool)
 
+var qualityColumn []string
+
 // WESIM
 var (
-	resultColumn, qualityColumn []string
-	resultFile, qcFile          *os.File
+	resultColumn, qcColumn, cnvColumn       []string
+	resultFile, qcFile, exonFile, largeFile *os.File
 )
 
 var qualitys []map[string]string
 var qualityKeyMap = make(map[string]string)
 
 // tier2
-var isEnProduct map[string]bool
+var isEnProduct = make(map[string]bool)
 
 var transEN = map[string]string{
 	"是":    "Yes",
@@ -87,21 +90,28 @@ var (
 )
 
 var (
-	logFile             *os.File
-	defaultConfig       map[string]interface{}
-	tier2TemplateInfo   templateInfo
-	tier2               xlsxTemplate
-	err                 error
-	ts                  = []time.Time{time.Now()}
-	step                = 0
-	sampleMap           = make(map[string]bool)
-	stats               = make(map[string]int)
-	tier1Xlsx           = xlsx.NewFile()
+	logFile           *os.File
+	defaultConfig     map[string]interface{}
+	tier2TemplateInfo templateInfo
+	tier2             xlsxTemplate
+	err               error
+	ts                = []time.Time{time.Now()}
+	step              = 0
+	sampleMap         = make(map[string]bool)
+	stats             = make(map[string]int)
+
+	tier1Xlsx           *xlsx.File
 	filterVariantsTitle []string
+	exonCnvTitle        []string
+	largeCnvTitle       []string
 	tier3Titles         []string
-	tier3Xlsx           = xlsx.NewFile()
-	tier3Sheet          *xlsx.Sheet
+
+	tier3Xlsx  *xlsx.File
+	tier3Sheet *xlsx.Sheet
 )
+
+// TomlTree Global toml config
+var TomlTree *toml.Tree
 
 // database
 var (
@@ -116,3 +126,23 @@ var (
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
 )
+
+// ACMG
+var (
+	acmgDb string
+)
+
+// find duplicate
+var countVar = make(map[string]int)
+var duplicateVar = make(map[string][]map[string]string)
+var deleteVar = make(map[string]bool)
+var transcriptLevel = make(map[string]int)
+var tier1Count int
+
+// log
+var cycle1Count int
+var cycle2Count int
+
+// flag to var
+var outputTier3 = false
+var homFixRatioThreshold = 0.85

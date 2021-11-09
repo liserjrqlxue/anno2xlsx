@@ -10,11 +10,6 @@ import (
 
 // flag
 var (
-	academic = flag.Bool(
-		"academic",
-		false,
-		"if non-commercial use",
-	)
 	cfg = flag.String(
 		"cfg",
 		filepath.Join(etcPath, "config.toml"),
@@ -54,26 +49,6 @@ var (
 		"transInfo",
 		"",
 		"info of transcript",
-	)
-	save = flag.Bool(
-		"save",
-		true,
-		"if save to excel",
-	)
-	trio = flag.Bool(
-		"trio",
-		false,
-		"if standard trio mode",
-	)
-	trio2 = flag.Bool(
-		"trio2",
-		false,
-		"if no standard trio mode but proband-father-mother",
-	)
-	couple = flag.Bool(
-		"couple",
-		false,
-		"if couple mode",
 	)
 	list = flag.String(
 		"list",
@@ -139,60 +114,10 @@ var (
 		"SEQ2000",
 		"redis key:[SEQ2000|SEQ500|Hiseq]",
 	)
-	cnvFilter = flag.Bool(
-		"cnvFilter",
-		false,
-		"if filter cnv result",
-	)
-	wgs = flag.Bool(
-		"wgs",
-		false,
-		"if anno wgs",
-	)
 	config = flag.String(
 		"config",
 		filepath.Join(etcPath, "config.json"),
 		"default config file, config will be overwrite by flag",
-	)
-	filterVariants = flag.String(
-		"filter_variants",
-		filepath.Join(etcPath, "Tier1.filter_variants.txt"),
-		"overwrite template/tier1.xlsx filter_variants sheet columns' title",
-	)
-	exonCnv = flag.String(
-		"exon_cnv",
-		filepath.Join(etcPath, "Tier1.exon_cnv.txt"),
-		"overwrite template/tier1.xlsx exon_cnv sheet columns' title",
-	)
-	largeCnv = flag.String(
-		"large_cnv",
-		filepath.Join(etcPath, "Tier1.large_cnv.txt"),
-		"overwrite template/tier1.xlsx large_cnv sheet columns' title",
-	)
-	tier3Title = flag.String(
-		"tier3Title",
-		filepath.Join(etcPath, "Tier3.总表.txt"),
-		"overwrite template/tier3.xlsx 总表 sheet columns' title",
-	)
-	wesim = flag.Bool(
-		"wesim",
-		false,
-		"if wesim, output result.tsv",
-	)
-	acmg = flag.Bool(
-		"acmg",
-		false,
-		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
-	)
-	autoPVS1 = flag.Bool(
-		"autoPVS1",
-		false,
-		"if use autoPVS1 for acmg",
-	)
-	acmgDb = flag.String(
-		"acmgDb",
-		filepath.Join(etcPath, "acmg.db.list.txt"),
-		"acmg db list",
 	)
 	cpuprofile = flag.String(
 		"cpuprofile",
@@ -203,21 +128,6 @@ var (
 		"memprofile",
 		"",
 		"mem profile",
-	)
-	noTier3 = flag.Bool(
-		"noTier3",
-		false,
-		"if not output Tier3.xlsx",
-	)
-	debug = flag.Bool(
-		"debug",
-		false,
-		"if print some log",
-	)
-	allGene = flag.Bool(
-		"allgene",
-		false,
-		"if not filter gene",
 	)
 	extra = flag.String(
 		"extra",
@@ -238,6 +148,70 @@ var (
 		"filterStat",
 		"",
 		"filter.stat files to calculate reads QC, comma as sep",
+	)
+)
+
+// bool flag
+var (
+	academic = flag.Bool(
+		"academic",
+		false,
+		"if non-commercial use",
+	)
+	acmg = flag.Bool(
+		"acmg",
+		false,
+		"if use new ACMG, fix PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7",
+	)
+	allGene = flag.Bool(
+		"allgene",
+		false,
+		"if not filter gene",
+	)
+	autoPVS1 = flag.Bool(
+		"autoPVS1",
+		false,
+		"if use autoPVS1 for acmg",
+	)
+	cnvAnnot = flag.Bool(
+		"cnvAnnot",
+		false,
+		"if UpdateCnvAnnot",
+	)
+	cnvFilter = flag.Bool(
+		"cnvFilter",
+		false,
+		"if filter cnv result",
+	)
+	couple = flag.Bool(
+		"couple",
+		false,
+		"if couple mode",
+	)
+	save = flag.Bool(
+		"save",
+		true,
+		"if save to excel",
+	)
+	trio = flag.Bool(
+		"trio",
+		false,
+		"if standard trio mode",
+	)
+	trio2 = flag.Bool(
+		"trio2",
+		false,
+		"if no standard trio mode but proband-father-mother",
+	)
+	wgs = flag.Bool(
+		"wgs",
+		false,
+		"if anno wgs",
+	)
+	wesim = flag.Bool(
+		"wesim",
+		false,
+		"if wesim, output result.tsv",
 	)
 	mt = flag.Bool(
 		"mt",

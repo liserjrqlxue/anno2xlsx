@@ -283,7 +283,7 @@ func main() {
 
 		item["自动化判断"] = acmg2015.PredACMG2015(item, false)
 
-		anno.UpdateSnv(item, *gender, false)
+		anno.UpdateSnv(item, *gender)
 
 		// 突变频谱
 		item["突变频谱"] = geneDb[gene]

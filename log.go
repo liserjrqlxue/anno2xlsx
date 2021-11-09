@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"github.com/liserjrqlxue/simple-util"
@@ -62,23 +61,18 @@ func logTierStats(stats map[string]int) {
 	log.Printf("  Tier3             Count : %7d\n", stats["Tier3"])
 }
 
-func logTime(timeList []time.Time, step1, step2 int, message string) {
-	trim := 3*8 - 1
-	str := simple_util.FormatWidth(trim, message, ' ')
-	log.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
+func logTime(message string) {
+	ts = append(ts, time.Now())
+	step++
+	var trim = 3*8 - 1
+	var str = simple_util.FormatWidth(trim, message, ' ')
+	log.Printf("%s\ttook %7.3f/%7.3fs to run.\n", str, ts[step].Sub(ts[step-1]).Seconds(), ts[step].Sub(ts[0]).Seconds())
 }
 
-// version
-var (
-	buildStamp string
-	gitHash    string
-	goVersion  string
-)
-
-func logVersion() {
-	log.Printf("Git Commit Hash  : %s\n", gitHash)
-	log.Printf("UTC Build Time   : %s\n", buildStamp)
-	log.Printf("Golang Version   : %s\n", goVersion)
-	var hostName, err = os.Hostname()
-	log.Printf("Runtime hostname : %s%v\n", hostName, err)
+func logTime0(message string) {
+	ts = append(ts, time.Now())
+	step++
+	var trim = 3*8 - 1
+	var str = simple_util.FormatWidth(trim, message, ' ')
+	log.Printf("%s\ttook %7.3fs to run.\n", str, ts[step].Sub(ts[0]).Seconds())
 }

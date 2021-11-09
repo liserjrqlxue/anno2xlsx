@@ -5,11 +5,11 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/tealeg/xlsx/v3"
 
@@ -19,60 +19,123 @@ import (
 
 // add filter_variants
 func addFV() {
+	anno.HomFixRatioThreshold = homFixRatioThreshold
 	// anno
 	if *snv != "" {
-		var step0 = step
 		var data = loadData()
 
 		stats["Total"] = len(data)
 
 		cycle1(data)
+		delDupVar(data)
 		cycle2(data)
 		// WGS
 		wgsCycle(data)
 
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step0, step, "update info")
+		logTime("update info")
 	}
 }
 
 func cycle1(data []map[string]string) {
 	for _, item := range data {
 		annotate1(item)
+		cycle1Count++
+		if cycle1Count%20000 == 0 {
+			log.Printf("cycle1 progress %d/%d", cycle1Count, len(data))
+		}
 	}
 	logTierStats(stats)
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load snv cycle 1")
+	logTime("load snv cycle 1")
+}
+
+func delDupVar(data []map[string]string) {
+	for _, item := range data {
+		if item["Tier"] == "Tier1" {
+			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
+			if countVar[key] > 1 {
+				duplicateVar[key] = append(duplicateVar[key], item)
+			}
+		}
+	}
+	for key, items := range duplicateVar {
+		var maxFunc = 0
+		for _, item := range items {
+			var score = anno.FuncInfo[item["Function"]]
+			if score > maxFunc {
+				maxFunc = score
+			}
+		}
+		var minTrans = 0
+		for _, item := range items {
+			var transcript = item["Transcript"]
+			var score = anno.FuncInfo[item["Function"]]
+			if score < maxFunc {
+				item["delete"] = "Y"
+				deleteVar[key+"\t"+transcript] = true
+				countVar[key]--
+			} else {
+				if transcriptLevel[transcript] > 0 {
+					if minTrans == 0 {
+						minTrans = transcriptLevel[transcript]
+					}
+					if minTrans > transcriptLevel[transcript] {
+						minTrans = transcriptLevel[transcript]
+					}
+				}
+			}
+		}
+		if minTrans > 0 {
+			for _, item := range items {
+				var transcript = item["Transcript"]
+				if item["delete"] != "Y" && transcriptLevel[transcript] != minTrans {
+					item["delete"] = "Y"
+					deleteVar[key+"\t"+transcript] = true
+					countVar[key]--
+					log.Printf("Delete:%s\t%s\n", key, transcript)
+				}
+			}
+		}
+	}
 }
 
 func cycle2(data []map[string]string) {
 	for _, item := range data {
 		if item["Tier"] == "Tier1" {
-			annotate2(item)
-
-			// Tier1 Sheet
-			xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
-
-			if !*wgs {
-				addTier2Row(tier2, item)
+			anno.InheritCheck(item, inheritDb)
+		}
+	}
+	for _, item := range data {
+		if item["Tier"] == "Tier1" {
+			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
+			if !deleteVar[key] {
+				tier1Count++
+				annotate2(item)
+				// Tier1 Sheet
+				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
+				if !*wgs {
+					addTier2Row(tier2, item)
+				}
 			} else {
-				tier1Db[item["MutationName"]] = true
-				tier1GeneList[item["Gene Symbol"]] = true
+				if *wgs {
+					tier1Db[item["MutationName"]] = true
+					tier1GeneList[item["Gene Symbol"]] = true
+				}
 			}
 		}
 		// add to tier3
-		if !*noTier3 {
+		if outputTier3 {
 			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
 		}
+		cycle2Count++
+		if cycle2Count%50000 == 0 {
+			log.Printf("cycle2 progress %d/%d", cycle2Count, len(data))
+		}
 	}
+	log.Printf("Tier1 Count : %d\n", tier1Count)
 	if *wesim {
 		simpleUtil.CheckErr(resultFile.Close())
 	}
-	ts = append(ts, time.Now())
-	step++
-	logTime(ts, step-1, step, "load snv cycle 2")
+	logTime("load snv cycle 2")
 }
 
 func wgsCycle(data []map[string]string) {
@@ -101,9 +164,7 @@ func wgsCycle(data []map[string]string) {
 				anno.InheritCheck(item, inheritDb)
 			}
 		}
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "load snv cycle 3")
+		logTime("load snv cycle 3")
 		for _, item := range data {
 			annotate4(item)
 
@@ -121,9 +182,7 @@ func wgsCycle(data []map[string]string) {
 				}
 			}
 		}
-		ts = append(ts, time.Now())
-		step++
-		logTime(ts, step-1, step, "load snv cycle 4")
+		logTime("load snv cycle 4")
 	}
 }
 
@@ -159,11 +218,14 @@ func annotate1(item map[string]string) {
 
 	// ues acmg of go
 	if *acmg {
+		if item["cHGVS_org"] == "" {
+			item["cHGVS_org"] = item["cHGVS"]
+		}
 		acmg2015.AddEvidences(item)
 	}
 	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
-	anno.UpdateSnv(item, *gender, *debug)
+	anno.UpdateSnv(item, *gender)
 
 	// 引物设计
 	item["exonCount"] = exonCount[item["Transcript"]]
@@ -185,18 +247,20 @@ func annotate1(item map[string]string) {
 	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
-		anno.UpdateSnvTier1(item)
 		if *ifRedis {
 			anno.UpdateRedis(item, redisDb, *seqType)
 		}
+		anno.UpdateSnvTier1(item)
 
 		anno.UpdateAutoRule(item)
 		anno.UpdateManualRule(item)
 	}
 
-	// 遗传相符
 	// only for Tier1
-	annotate1Tier1(item)
+	if item["Tier"] == "Tier1" {
+		// 遗传相符
+		annotate1Tier1(item)
+	}
 
 	stats[item["#Chr"]]++
 	if isHom.MatchString(item["Zygosity"]) {
@@ -220,21 +284,21 @@ func getMhgvs(item map[string]string) string {
 }
 
 func annotate1Tier1(item map[string]string) {
-	if item["Tier"] == "Tier1" {
-		anno.InheritCheck(item, inheritDb)
-		tier1GeneList[item["Gene Symbol"]] = true
-		if anno.FuncInfo[item["Function"]] >= 3 {
-			stats["Tier1LoF"]++
-		}
-		if isHom.MatchString(item["Zygosity"]) {
-			stats["Tier1Hom"]++
-		}
-		stats["Tier1"+item["VarType"]]++
-
-		if *academic {
-			revel.anno(item)
-		}
+	tier1GeneList[item["Gene Symbol"]] = true
+	if anno.FuncInfo[item["Function"]] >= 3 {
+		stats["Tier1LoF"]++
 	}
+	if isHom.MatchString(item["Zygosity"]) {
+		stats["Tier1Hom"]++
+	}
+	stats["Tier1"+item["VarType"]]++
+
+	if *academic {
+		revel.anno(item)
+	}
+
+	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
+	countVar[key]++
 }
 
 func annotate2(item map[string]string) {
@@ -259,6 +323,11 @@ func annotate2(item map[string]string) {
 
 	// WESIM
 	annotate2IM(item)
+	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
+	if countVar[key] > 1 {
+		log.Printf("Duplicate:%s\t%s\t%s\t%s\n", key, item["Transcript"], item["cHGVS"], item["Function"])
+		duplicateVar[key] = append(duplicateVar[key], item)
+	}
 }
 
 func annotate2IM(item map[string]string) {
@@ -269,6 +338,23 @@ func annotate2IM(item map[string]string) {
 		} else {
 			item["IsACMG59"] = "N"
 		}
+
+		var inheritance = strings.Split(item["ModeInheritance"], "\n")
+		var disease []string
+		if isEnProduct[*productID] {
+			disease = strings.Split(item["DiseaseNameEN"], "\n")
+		} else {
+			disease = strings.Split(item["DiseaseNameCH"], "\n")
+		}
+		if len(disease) == len(inheritance) {
+			for i, text := range disease {
+				inheritance[i] = text + "/" + inheritance[i]
+			}
+		} else {
+			log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
+		}
+		item["DiseaseName/ModeInheritance"] = strings.Join(inheritance, "<br>")
+
 		if *trio {
 			zygosity := strings.Split(item["Zygosity"], ";")
 			zygosity = append(zygosity, "NA", "NA")
@@ -301,4 +387,18 @@ func annotate4(item map[string]string) {
 		}
 		item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 	}
+}
+
+func loadData() (data []map[string]string) {
+	for _, f := range snvs {
+		if isGz.MatchString(f) {
+			d, _ := textUtil.Gz2MapArray(f, "\t", isComment)
+			data = append(data, d...)
+		} else {
+			d, _ := textUtil.File2MapArray(f, "\t", isComment)
+			data = append(data, d...)
+		}
+	}
+	logTime("load anno file")
+	return
 }

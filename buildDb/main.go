@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	AES "github.com/liserjrqlxue/crypto/aes"
+	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/xuri/excelize/v2"
 )
 
 // os
@@ -130,7 +132,6 @@ func main() {
 		}
 		fmt.Printf("encode sheet:[%s]\n", *sheetName)
 		sheet2db(inputFh, sheet, geneIDkeys, skip, codeKeyBytes)
-
 	}
 }
 
@@ -139,14 +140,36 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	var rows = simpleUtil.HandleError(inputFh.GetRows(sheet)).([][]string)
 	fmt.Printf("rows:\t%d\t%v\n", len(rows), len(rows) == *rowCount)
 	var outputFile = *prefix + *output + "." + sheet + *suffix
+	var geneList = *prefix + *output + "." + sheet + "geneList.txt"
+	var geneListFH = osUtil.Create(geneList)
+	defer simpleUtil.DeferClose(geneListFH)
 	var d []byte
 	var data, _ = simpleUtil.Slice2MapMapArrayMerge1(rows, *key, *mergeSep, skip)
-	for key := range data {
-		if !geneIDkeys[key] {
-			fmt.Printf("key:[%s] not contain in %s\n", key, *geneID)
+	var gene2id = make(map[string]string)
+	for id := range data {
+		if !geneIDkeys[id] {
+			fmt.Printf("id:[%s] not contain in %s\n", id, *geneID)
 			valid = false
 		}
+		var geneSymbols = strings.Split(data[id]["Gene/Locus"], *mergeSep)
+		sort.Strings(geneSymbols)
+		for _, gene := range geneSymbols {
+			if gene2id[gene] == "" {
+				gene2id[gene] = id
+			} else if gene2id[gene] != id {
+				fmt.Printf("conflict gene id [%s]vs.[%s] of [%s]\n", id, gene2id[gene], gene)
+			}
+		}
 	}
+	var genes = make([]string, 0, len(gene2id))
+	for s := range gene2id {
+		genes = append(genes, s)
+	}
+	sort.Strings(genes)
+	for _, gene := range genes {
+		simpleUtil.HandleError(fmt.Fprintf(geneListFH, "%s\t%s\n", gene, gene2id[gene]))
+	}
+
 	d = simpleUtil.HandleError(json.MarshalIndent(data, "", "  ")).([]byte)
 	fmt.Printf("keys:\t%d\t%v\n", len(data), len(data) == *keyCount)
 	AES.Encode2File(outputFile, d, code)

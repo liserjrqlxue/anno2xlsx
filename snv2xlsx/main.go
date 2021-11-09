@@ -17,7 +17,6 @@ import (
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
-	"github.com/liserjrqlxue/simple-util"
 	"github.com/liserjrqlxue/version"
 	"github.com/pelletier/go-toml"
 	"github.com/tealeg/xlsx/v3"
@@ -33,7 +32,6 @@ var (
 	dbPath  = filepath.Join(exPath, "..", "db")
 )
 
-// flag
 var (
 	cfg = flag.String(
 		"cfg",
@@ -125,16 +123,6 @@ var (
 		false,
 		"if use autoPVS1 for acmg",
 	)
-	acmgDb = flag.String(
-		"acmgDb",
-		filepath.Join(etcPath, "acmg.db.list.txt"),
-		"acmg db list",
-	)
-	debug = flag.Bool(
-		"debug",
-		false,
-		"if print some log",
-	)
 	tag = flag.String(
 		"tag",
 		"",
@@ -202,8 +190,8 @@ func init() {
 		*logfile = *prefix + ".log"
 	}
 	logFile, err := os.Create(*logfile)
-	simple_util.CheckErr(err)
-	defer simple_util.DeferClose(logFile)
+	simpleUtil.CheckErr(err)
+	defer simpleUtil.DeferClose(logFile)
 	log.SetOutput(logFile)
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Printf("Log file:%v \n", *logfile)
@@ -242,21 +230,21 @@ func init() {
 
 	if *ifRedis {
 		if *redisAddr == "" {
-			*redisAddr = anno.GetStrVal("redisServer", defaultConfig)
+			*redisAddr = tomlCfg.Get("redis.addr").(string)
 		}
-		redisDb = redis.NewClient(&redis.Options{
-			Addr: *redisAddr,
-		})
-		pong, e := redisDb.Ping().Result()
-		log.Println("connect redis:", pong, e)
-		if e != nil {
-			log.Fatalf("Error connect redis[%+v]\n", e)
-		}
+		redisDb = redis.NewClient(
+			&redis.Options{
+				Addr:     *redisAddr,
+				Password: tomlCfg.Get("redis.pass").(string),
+			},
+		)
+		log.Printf("Connect [%s]:%s\n", redisDb.String(), simpleUtil.HandleError(redisDb.Ping().Result()).(string))
 	}
 
 	if *acmg {
 		acmg2015.AutoPVS1 = *autoPVS1
-		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(*acmgDb, "\t", false)).(map[string]string)
+		var acmgDb = filepath.Join(etcPath, tomlCfg.Get("acmg.list").(string))
+		var acmgCfg = simpleUtil.HandleError(textUtil.File2Map(acmgDb, "\t", false)).(map[string]string)
 		for k, v := range acmgCfg {
 			acmgCfg[k] = anno.GuessPath(v, dbPath)
 		}
@@ -305,10 +293,10 @@ func main() {
 		var data []map[string]string
 		for _, f := range snvs {
 			if isGz.MatchString(f) {
-				d, _ := simple_util.Gz2MapArray(f, "\t", isComment)
+				d, _ := textUtil.Gz2MapArray(f, "\t", isComment)
 				data = append(data, d...)
 			} else {
-				d, _ := simple_util.File2MapArray(f, "\t", isComment)
+				d, _ := textUtil.File2MapArray(f, "\t", isComment)
 				data = append(data, d...)
 			}
 		}
@@ -379,7 +367,7 @@ func updateSNV(item map[string]string, stats map[string]int) {
 
 	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
-	anno.UpdateSnv(item, *gender, *debug)
+	anno.UpdateSnv(item, *gender)
 
 	// 引物设计
 	item["exonCount"] = exonCount[item["Transcript"]]
@@ -409,9 +397,7 @@ func updateSNV(item map[string]string, stats map[string]int) {
 }
 
 func logTime(timeList []time.Time, step1, step2 int, message string) {
-	trim := 3*8 - 1
-	str := simple_util.FormatWidth(trim, message, ' ')
-	fmt.Printf("%s\ttook %7.3fs to run.\n", str, timeList[step2].Sub(timeList[step1]).Seconds())
+	fmt.Printf("%s\ttook %7.3fs to run.\n", message, timeList[step2].Sub(timeList[step1]).Seconds())
 }
 
 func addFile2Row(file string, row *xlsx.Row) (rows []string) {

@@ -150,6 +150,10 @@ dcDescription
 是否报告
 Tier
 REVEL_score
+VarType
+Depth
+AutoPVS1 Adjusted Strength
+cHGVS_org
 MTmut
 MT_AC_hom
 MT_AC_het

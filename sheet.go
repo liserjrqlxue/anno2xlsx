@@ -2,9 +2,13 @@ package main
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
+	"github.com/liserjrqlxue/goUtil/fmtUtil"
+	"github.com/liserjrqlxue/goUtil/osUtil"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
@@ -21,10 +25,18 @@ func addFile2Row(file string, row *xlsx.Row) (rows []string) {
 
 func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	var sheet = xlsxUtil.AddSheet(excel, sheetName)
-	sheet.AddRow().AddCell().SetString("SampleID")
+	var row = sheet.AddRow()
+	if row.GetHeight() == 0 {
+		row.SetHeight(14)
+	}
+	row.AddCell().SetString("SampleID")
 
 	for _, sample := range sampleList {
-		sheet.AddRow().AddCell().SetString(sample)
+		row = sheet.AddRow()
+		if row.GetHeight() == 0 {
+			row.SetHeight(14)
+		}
+		row.AddCell().SetString(sample)
 	}
 }
 
@@ -33,7 +45,10 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 	simple_util.CheckErr(err)
 
 	for _, key := range qualityColumn {
-		row := sheet.AddRow()
+		var row = sheet.AddRow()
+		if row.GetHeight() == 0 {
+			row.SetHeight(14)
+		}
 		row.AddCell().SetString(key)
 		for _, item := range qualitys {
 			row.AddCell().SetString(item[key])
@@ -43,10 +58,31 @@ func addQCSheet(excel *xlsx.File, sheetName string, qualityColumn []string, qual
 
 func addCnv2Sheet(
 	sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool, filterSize, filterGene bool, stats map[string]int,
-	key string) {
+	key, gender string, cnvFile *os.File) {
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	for _, item := range cnvDb {
+		if *wesim {
+			if item["chromosome"] == "" {
+				item["chromosome"] = strings.TrimLeft(item["Chr"], "chr")
+			}
+			if item["start"] == "" {
+				item["start"] = item["Start"]
+			}
+			if item["end"] == "" {
+				item["end"] = item["End"]
+			}
+			if item["cn"] == "" {
+				if item["Copy_Num"] != "" {
+					item["cn"] = item["Copy_Num"]
+				} else if item["Copy_Number"] != "" {
+					item["cn"] = item["Copy_Number"]
+				}
+			}
+			if gender != "" {
+				item["gender"] = strings.Split(gender, ",")[0]
+			}
+		}
 		sample := item["Sample"]
 		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
 		if sampleMap[sample] {
@@ -68,7 +104,9 @@ func addCnv2Sheet(
 			// 突变频谱
 			spectrumDb.Annos(item, "\n", geneIDs)
 
-			anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+			if *cnvAnnot {
+				anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+			}
 
 			item["OMIM"] = item["OMIM_Phenotype_ID"]
 			stats[key]++
@@ -90,7 +128,17 @@ func addCnv2Sheet(
 				}
 			}
 			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
+			if *wesim {
+				var cnvArray []string
+				for _, key := range cnvColumn {
+					cnvArray = append(cnvArray, item[key])
+				}
+				fmtUtil.FprintStringArray(cnvFile, cnvArray, "\t")
+			}
 		}
+	}
+	if *wesim {
+		simpleUtil.CheckErr(cnvFile.Close())
 	}
 }
 
@@ -201,4 +249,150 @@ func appendLOHs(excel *xlsxUtil.File, lohs, lohSheetName string, sampleList []st
 		}
 		excel.AppendSheet(*xlsxUtil.OpenFile(loh).File.Sheet[lohSheetName], sampleID+"-loh")
 	}
+}
+
+func addExon() {
+	if *exon != "" {
+		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
+		var paths []string
+		for _, path := range strings.Split(*exon, ",") {
+			if osUtil.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
+		}
+		addCnv2Sheet(
+			tier1Xlsx.Sheet["exon_cnv"], exonCnvTitle, paths, sampleMap,
+			false, *cnvFilter, stats, "exonCNV", *gender, exonFile,
+		)
+		logTime("add exon cnv")
+	}
+}
+
+func addLarge() {
+	if *large != "" {
+		var paths []string
+		var pathMap = make(map[string]bool)
+		for _, path := range strings.Split(*large, ",") {
+			if osUtil.FileExists(path) {
+				pathMap[path] = true
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
+		}
+		for path := range pathMap {
+			paths = append(paths, path)
+		}
+		addCnv2Sheet(
+			tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap,
+			*cnvFilter, false, stats, "largeCNV", *gender, largeFile,
+		)
+		logTime("add large cnv")
+	}
+	if *smn != "" {
+		var paths []string
+		for _, path := range strings.Split(*smn, ",") {
+			if osUtil.FileExists(path) {
+				paths = append(paths, path)
+			} else {
+				log.Printf("ERROR:not exists or not a file:%v \n", path)
+			}
+		}
+		addSmnResult(tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap)
+		logTime("add SMN1 result")
+	}
+}
+
+func addExtra() {
+	// extra sheet
+	if *extra != "" {
+		extraArray := strings.Split(*extra, ",")
+		extraSheetArray := strings.Split(*extraSheetName, ",")
+		if len(extraArray) != len(extraSheetArray) {
+			log.Printf(
+				"extra files not equal length to sheetnames:%+vvs.%+v",
+				extraArray,
+				extraSheetArray,
+			)
+		} else {
+			for i := range extraArray {
+				if strings.HasSuffix(extraArray[i], "xlsx") {
+					simpleUtil.HandleError(
+						tier1Xlsx.AppendSheet(
+							*xlsxUtil.OpenFile(extraArray[i]).File.Sheet[extraSheetArray[i]],
+							extraSheetArray[i],
+						),
+					)
+				} else {
+					xlsxUtil.AddSlice2Sheet(
+						textUtil.File2Slice(extraArray[i], "\t"),
+						xlsxUtil.AddSheet(tier1Xlsx, extraSheetArray[i]),
+					)
+				}
+			}
+		}
+	}
+}
+
+func addQC() {
+	parseQC()
+	// QC Sheet
+	updateQC(stats, qualitys[0])
+	addQCSheet(tier1Xlsx, "quality", qualityColumn, qualitys)
+	logTime("add qc")
+}
+
+func addLOH() {
+	// append loh sheet
+	if *loh != "" {
+		appendLOHs(&xlsxUtil.File{File: tier1Xlsx}, *loh, *lohSheet, sampleList)
+	}
+}
+
+func fillSheet() {
+	parseList()
+	addExon()
+	addLarge()
+	addExtra()
+	addFamInfoSheet(tier1Xlsx, "fam_info", sampleList)
+	addFV()
+	addLOH()
+	// need stats
+	addQC()
+}
+func saveExcel() {
+	if *save {
+		if *wgs && *snv != "" {
+			simpleUtil.CheckErr(wgsXlsx.Save(*prefix + ".WGS.xlsx"))
+			logTime("save WGS")
+		}
+
+		// Tier1 excel
+		tagStr := ""
+		if *tag != "" {
+			tagStr = textUtil.File2Array(*tag)[0]
+		}
+		var tier1Output string
+		if isSMN1 && !*wesim {
+			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
+		} else {
+			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
+		}
+		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
+		logTime("save Tier1")
+
+		if *snv != "" {
+			// Tier2 excel
+			simpleUtil.CheckErr(tier2.save(), "Tier2 save fail")
+			logTime("save Tier2")
+
+			// Tier3 excel
+			if outputTier3 {
+				simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
+				logTime("save Tier3")
+			}
+		}
+	}
+	logTime0("total work")
 }
