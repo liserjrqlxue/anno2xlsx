@@ -161,3 +161,4 @@ MT_AC_het
 MT_AF_hom
 MT_AF_het
 MT_AN
+DiseaseName/ModeInheritance
