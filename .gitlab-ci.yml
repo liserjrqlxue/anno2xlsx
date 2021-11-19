@@ -32,7 +32,7 @@ github:
   script:
     #- git remote add github git@github.com:liserjrqlxue/anno2xlsx.git
     - Get-Location
-    - Get-ChildItem ~/.ssh/
+    - ssh-keygen
     - git pull origin master
     - git push github --all
     - git push github --tags
