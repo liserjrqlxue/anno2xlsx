@@ -11,6 +11,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	simple_util "github.com/liserjrqlxue/simple-util"
+	"github.com/pelletier/go-toml"
 	"github.com/tealeg/xlsx/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
@@ -49,15 +50,15 @@ var (
 		false,
 		"if no standard trio mode but proband-father-mother",
 	)
-	geneDiseaseDbFile = flag.String(
-		"geneDisease",
-		"",
-		"database of 基因-疾病数据库",
-	)
 	specVarList = flag.String(
 		"specVarList",
 		"",
 		"特殊位点库",
+	)
+	cfg = flag.String(
+		"cfg",
+		filepath.Join(exPath, "..", "etc", "config.toml"),
+		"toml config document",
 	)
 	config = flag.String(
 		"config",
@@ -83,11 +84,14 @@ var (
 // 特殊位点库
 var specVarDb = make(map[string]bool)
 
+// TomlTree Global toml config
+var TomlTree *toml.Tree
+
 // 基因-疾病
 var (
-	codeKey       []byte
-	geneList      = make(map[string]bool)
-	geneDiseaseDb = make(map[string]map[string]string)
+	aesCode   = "c3d112d6a47a0a04aad2b9d2d2cad266"
+	geneList  = make(map[string]bool)
+	diseaseDb anno.EncodeDb
 )
 
 // 遗传相符
@@ -117,18 +121,20 @@ func init() {
 	if *specVarList == "" {
 		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
 	}
-	if *geneDiseaseDbFile == "" {
-		*geneDiseaseDbFile = anno.GetPath("geneDiseaseDbFile", dbPath, defaultConfig)
-	}
 
 	// 特殊位点库
 	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
+
+	TomlTree = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 	// 基因-疾病
-	codeKey = []byte("c3d112d6a47a0a04aad2b9d2d2cad266")
-	geneDiseaseDb = simple_util.Json2MapMap(simple_util.File2Decode(*geneDiseaseDbFile, codeKey))
-	for key := range geneDiseaseDb {
+	diseaseDb.Load(
+		TomlTree.Get("annotation.Gene.disease").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
+	for key := range diseaseDb.Db {
 		geneList[key] = true
 	}
 	for k, v := range gene2id {
