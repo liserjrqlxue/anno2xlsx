@@ -31,8 +31,8 @@ github:
   stage: deploy
   script:
     #- git remote add github git@github.com:liserjrqlxue/anno2xlsx.git
-    - echo $PWD
-    - ls ~/.ssh/
+    - Get-Location
+    - Get-ChildItem ~/.ssh/
     - git pull origin master
     - git push github --all
     - git push github --tags
