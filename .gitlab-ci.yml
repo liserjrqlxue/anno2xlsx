@@ -31,5 +31,6 @@ github:
   stage: deploy
   script:
     #- git remote add github git@github.com:liserjrqlxue/anno2xlsx.git
+    - git pull
     - git push github --all
     - git push github --tags
