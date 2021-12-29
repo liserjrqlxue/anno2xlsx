@@ -5,6 +5,7 @@ addDiseaseInfo2CNV/addDiseaseInfo2CNV
 addDiseaseInfo2SNV/addDiseaseInfo2SNV
 buildDb/buildDb
 snv2xlsx/snv2xlsx
+tier1tags/tier1tags
 
 # Binaries for programs and plugins
 *.exe
