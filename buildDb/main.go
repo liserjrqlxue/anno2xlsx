@@ -148,7 +148,7 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	var gene2id = make(map[string]string)
 	for id := range data {
 		if !geneIDkeys[id] {
-			fmt.Printf("id:[%s] not contain in %s\n", id, *geneID)
+			fmt.Printf("id:[%s][%s] not contain in %s\n", id, data[id]["Gene/Locus"], *geneID)
 			valid = false
 		}
 		var geneSymbols = strings.Split(data[id]["Gene/Locus"], *mergeSep)
