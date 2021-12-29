@@ -162,3 +162,10 @@ MT_AF_hom
 MT_AF_het
 MT_AN
 DiseaseName/ModeInheritance
+产前表型-英文
+产前表型-中文
+受累系统
+文献遗传模式
+文献致病性分类
+文献PMID
+其它文献格式

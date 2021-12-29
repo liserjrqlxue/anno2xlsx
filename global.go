@@ -125,6 +125,8 @@ var (
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
+	// 产前数据库
+	prenatalDb anno.EncodeDb
 )
 
 // ACMG

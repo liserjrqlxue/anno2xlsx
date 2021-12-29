@@ -35,6 +35,12 @@ func loadDb() {
 		dbPath,
 		[]byte(aesCode),
 	)
+	// 产前数据库
+	prenatalDb.Load(
+		TomlTree.Get("annotation.Gene.prenatal").(*toml.Tree),
+		dbPath,
+		[]byte(aesCode),
+	)
 	// 基因-疾病
 	diseaseDb.Load(
 		TomlTree.Get("annotation.Gene.disease").(*toml.Tree),

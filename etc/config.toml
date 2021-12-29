@@ -64,6 +64,29 @@ title = [
     "OMIM_Phenotype_ID",
 ]
 
+[annotation.Gene.prenatal]
+file = "产前数据库.json.aes"
+type = "json"
+codeKey = "****"
+titleKey = [
+    "产前表型-英文",
+    "产前表型-中文",
+    "受累系统",
+    "文献遗传模式",
+    "文献致病性分类",
+    "文献PMID",
+    "其它文献格式",
+]
+title = [
+    "产前表型-英文",
+    "产前表型-中文",
+    "受累系统",
+    "文献遗传模式",
+    "文献致病性分类",
+    "文献PMID",
+    "其它文献格式",
+]
+
 [acmg]
 list = "acmg.db.list.txt"
 59gene = "ACMG59Gene.list"

@@ -210,6 +210,8 @@ func annotate1(item map[string]string) {
 	diseaseDb.Anno(item, id)
 	// 突变频谱
 	spectrumDb.Anno(item, id)
+	// 产前数据库
+	prenatalDb.Anno(item, id)
 
 	item["Gene"] = item["Omim Gene"]
 	item["OMIM"] = item["OMIM_Phenotype_ID"]
