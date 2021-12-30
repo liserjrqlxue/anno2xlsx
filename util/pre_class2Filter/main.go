@@ -26,7 +26,7 @@ var (
 	out = flag.String(
 		"o",
 		"",
-		"output",
+		"output, default is -in",
 	)
 	v = flag.Bool(
 		"v",
@@ -41,10 +41,13 @@ func main() {
 		version.Version()
 		os.Exit(0)
 	}
-	if *in == "" || *add == "" || *out == "" {
+	if *in == "" || *add == "" {
 		version.Version()
 		flag.Usage()
-		log.Fatalln("-i/-a/-o required!")
+		log.Fatalln("-i/-a required!")
+	}
+	if *out == "" {
+		*out = *in
 	}
 	var input, title = textUtil.File2MapArray(*in, "\t", nil)
 	var adds, _ = textUtil.File2MapArray(*add, "\t", nil)
