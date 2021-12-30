@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 
 	"github.com/liserjrqlxue/goUtil/fmtUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
+	"github.com/liserjrqlxue/version"
 )
 
 var (
@@ -26,11 +28,21 @@ var (
 		"",
 		"output",
 	)
+	v = flag.Bool(
+		"v",
+		false,
+		"print Version",
+	)
 )
 
 func main() {
 	flag.Parse()
+	if *v {
+		version.Version()
+		os.Exit(0)
+	}
 	if *in == "" || *add == "" || *out == "" {
+		version.Version()
 		flag.Usage()
 		log.Fatalln("-i/-a/-o required!")
 	}

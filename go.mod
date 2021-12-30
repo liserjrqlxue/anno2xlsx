@@ -10,7 +10,7 @@ require (
 	github.com/liserjrqlxue/crypto v0.1.3
 	github.com/liserjrqlxue/goUtil v0.0.42
 	github.com/liserjrqlxue/simple-util v1.0.3
-	github.com/liserjrqlxue/version v1.1.1
+	github.com/liserjrqlxue/version v1.1.2-0.20211230031507-65f5a514e52d
 	github.com/onsi/gomega v1.16.0 // indirect
 	github.com/pelletier/go-toml v1.9.4
 	github.com/tealeg/xlsx/v2 v2.0.1

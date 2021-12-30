@@ -59,8 +59,8 @@ github.com/liserjrqlxue/goUtil v0.0.42/go.mod h1:hoo/F7/16xI2EH7PNbWCwzbLt/KBf/u
 github.com/liserjrqlxue/parse-gff3 v0.0.0-20190425064232-1e45be11c625/go.mod h1:efSusdcQFEgS0KR9q8YNiwWt7GYOwxLPZDm+pwVgJq0=
 github.com/liserjrqlxue/simple-util v1.0.3 h1:QgVsD6I8HRyye40WgMtlAxgl0K5gRiwpKII/BU93jDU=
 github.com/liserjrqlxue/simple-util v1.0.3/go.mod h1:c08LJTVwEdE+jDx8N7vONZMklHw4MlT0gqmivF2qN+Q=
-github.com/liserjrqlxue/version v1.1.1 h1:/yKWKzN37uo7+e3ttyBcnybt67dY1e98pakzsZeC2WE=
-github.com/liserjrqlxue/version v1.1.1/go.mod h1:ehGb4dnPYw3TyHsCE/Fna5pOiWYUB1I3PPiZYE5Kc4I=
+github.com/liserjrqlxue/version v1.1.2-0.20211230031507-65f5a514e52d h1:x6XR0UDMzsbOTXW06dUxhYEp1ZyzmZyc2oR/l0ETzAw=
+github.com/liserjrqlxue/version v1.1.2-0.20211230031507-65f5a514e52d/go.mod h1:ehGb4dnPYw3TyHsCE/Fna5pOiWYUB1I3PPiZYE5Kc4I=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwdSHYgviHp1DAtfrULt5eUgsSMsZf+YrPgl8=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
