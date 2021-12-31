@@ -33,4 +33,15 @@ GeneralizationEN
 GeneralizationCH
 SystemSort
 Primer
+Mutation_spectrum
 HGMD content
+HGMD_PMID
+EXON_history
+EXON_history_overlap
+Total_EXON_num
+EXON_history_ratio
+EXON_history_overlap_ratio
+Seg_ratio
+Seg_ratio_exon
+GC_Content
+GC_exon
