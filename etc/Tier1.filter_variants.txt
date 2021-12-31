@@ -150,6 +150,8 @@ dcDescription
 是否报告
 Tier
 REVEL_score
+PHGDTag
+PHGDRef
 VarType
 Depth
 AutoPVS1 Adjusted Strength
