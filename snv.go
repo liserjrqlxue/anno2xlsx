@@ -105,6 +105,7 @@ func cycle2(data []map[string]string) {
 		}
 	}
 	for _, item := range data {
+		item["ClinVar Significance"] = anno.AddClnsigConf(item)
 		if item["Tier"] == "Tier1" {
 			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
 			if !deleteVar[key] {

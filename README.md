@@ -38,6 +38,20 @@ skip sheet:[更新备注]
 
 ```
 
+```
+PS C:\Users\wangyaoshen\GolandProjects\anno2xlsx\buildDb> .\buildDb.exe -input ..\db\全外基因疾病list-2021.Q2-2021.12.09-产前汇总版.xlsx -sheet 全外 -rowCount 6783 -keyCount 4556 -key 'ncbi gene id'
+sheet name:     全外
+key column:     ncbi gene id
+encode sheet:[全外]
+rows:   6783    true
+2021/12/29 18:28:05 Skip merge warn of []
+keys:   4556    true
+write 2707619 byte to ..\db\全外基因疾病list-2021.Q2-2021.12.09-产前汇总版.xlsx.全外.json.aes
+[全外] checked: true
+skip sheet:[产前]
+skip sheet:[HPO提取]
+```
+
 ## CHPO
 
 ```shell
@@ -118,3 +132,7 @@ func hemiPAR(item map[string]string, gender string) {
 	}
 }
 ```
+## ClinVar
+`ClinVar Significance`=`CLNSIG`
+or
+`ClinVar Significance`=`CLNSIG`:`CLNSIGCONF`
