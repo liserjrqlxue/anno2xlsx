@@ -2,6 +2,7 @@ package anno
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -35,6 +36,23 @@ func (db *AnnoDb) Anno(item map[string]string, key string) {
 	if ok {
 		for k, v := range db.titleMap {
 			item[v] = info[k]
+		}
+	}
+}
+
+func (db *AnnoDb) Annos(item map[string]string, sep string, keys []string) {
+	var tmp = make(map[string][]string)
+	for i := range keys {
+		var info, ok = db.db[keys[i]]
+		for k, v := range db.titleMap {
+			if ok {
+				tmp[v] = append(tmp[v], info[k])
+			} else {
+				tmp[v] = append(tmp[v], "")
+			}
+		}
+		for _, v := range db.titleMap {
+			item[v] = strings.Join(tmp[v], sep)
 		}
 	}
 }
