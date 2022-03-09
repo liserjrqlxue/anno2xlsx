@@ -1012,7 +1012,7 @@ var AFlist = []string{
 }
 
 func AddClnsigConf(item map[string]string) string {
-	if item["CLNSIGCONF"] == "" {
+	if item["CLNSIGCONF"] == "" || item["CLNSIGCONF"] == "." {
 		return item["ClinVar Significance"]
 	} else {
 		return item["ClinVar Significance"] + ":" + item["CLNSIGCONF"]
