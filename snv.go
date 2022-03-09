@@ -115,6 +115,9 @@ func cycle2(data []map[string]string) {
 				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
 				if !*wgs {
 					addTier2Row(tier2, item)
+				} else {
+					tier1Db[item["MutationName"]] = true
+					tier1GeneList[item["Gene Symbol"]] = true
 				}
 			} else {
 				if *wgs {
