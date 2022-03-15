@@ -390,6 +390,7 @@ func saveExcel() {
 
 			// Tier3 excel
 			if outputTier3 {
+				simpleUtil.CheckErr(tier3SW.Flush())
 				simpleUtil.CheckErr(tier3Xlsx.SaveAs(*prefix + ".Tier3.xlsx"))
 				logTime("save Tier3")
 			}
