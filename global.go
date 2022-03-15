@@ -9,6 +9,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/pelletier/go-toml"
 	"github.com/tealeg/xlsx/v3"
+	"github.com/xuri/excelize/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
@@ -106,8 +107,9 @@ var (
 	largeCnvTitle       []string
 	tier3Titles         []string
 
-	tier3Xlsx  *xlsx.File
-	tier3Sheet *xlsx.Sheet
+	tier3Xlsx  *excelize.File
+	tier3SW    *excelize.StreamWriter
+	tier3RowID = 1
 )
 
 // TomlTree Global toml config
