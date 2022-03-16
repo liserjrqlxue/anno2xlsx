@@ -7,14 +7,13 @@ import (
 	"strings"
 
 	"github.com/liserjrqlxue/acmg2015"
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/tealeg/xlsx/v3"
-
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
-	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 )
 
 // add filter_variants
@@ -128,7 +127,8 @@ func cycle2(data []map[string]string) {
 		}
 		// add to tier3
 		if outputTier3 {
-			xlsxUtil.AddMap2Row(item, tier3Titles, tier3Sheet.AddRow())
+			SteamWriterSetStringMap2Row(tier3SW, 1, tier3RowID, item, tier3Titles)
+			tier3RowID++
 		}
 		cycle2Count++
 		if cycle2Count%50000 == 0 {

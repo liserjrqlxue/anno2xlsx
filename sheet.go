@@ -13,6 +13,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/liserjrqlxue/simple-util"
 	"github.com/tealeg/xlsx/v3"
+	"github.com/xuri/excelize/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
@@ -389,10 +390,29 @@ func saveExcel() {
 
 			// Tier3 excel
 			if outputTier3 {
-				simpleUtil.CheckErr(tier3Xlsx.Save(*prefix + ".Tier3.xlsx"))
+				simpleUtil.CheckErr(tier3SW.Flush())
+				simpleUtil.CheckErr(tier3Xlsx.SaveAs(*prefix + ".Tier3.xlsx"))
 				logTime("save Tier3")
 			}
 		}
 	}
 	logTime0("total work")
+}
+
+func SteamWriterSetString2Row(sw *excelize.StreamWriter, col, row int, rows []string) {
+	var values = make([]interface{}, len(rows))
+	for i, s := range rows {
+		values[i] = s
+	}
+	var axis = simpleUtil.HandleError(excelize.CoordinatesToCellName(col, row)).(string)
+	simpleUtil.CheckErr(sw.SetRow(axis, values))
+}
+
+func SteamWriterSetStringMap2Row(sw *excelize.StreamWriter, col, row int, item map[string]string, keys []string) {
+	var values = make([]interface{}, len(keys))
+	for i, s := range keys {
+		values[i] = item[s]
+	}
+	var axis = simpleUtil.HandleError(excelize.CoordinatesToCellName(col, row)).(string)
+	simpleUtil.CheckErr(sw.SetRow(axis, values))
 }

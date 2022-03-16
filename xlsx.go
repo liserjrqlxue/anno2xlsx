@@ -7,6 +7,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
 	"github.com/tealeg/xlsx/v3"
+	"github.com/xuri/excelize/v2"
 
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
@@ -114,13 +115,15 @@ func prepareTier2() {
 
 func prepareTier3() {
 	// create Tier3.xlsx
-	tier3Xlsx = xlsx.NewFile()
-	tier3Sheet = xlsxUtil.AddSheet(tier3Xlsx, "总表")
-	tier3Titles = addFile2Row(
+	tier3Xlsx = excelize.NewFile()
+	tier3Xlsx.SetSheetName("Sheet1", "总表")
+	tier3SW = simpleUtil.HandleError(tier3Xlsx.NewStreamWriter("总表")).(*excelize.StreamWriter)
+	tier3Titles = textUtil.File2Array(
 		anno.GuessPath(
 			TomlTree.Get("template.tier3.title").(string),
 			etcPath,
 		),
-		tier3Sheet.AddRow(),
 	)
+	SteamWriterSetString2Row(tier3SW, 1, tier3RowID, tier3Titles)
+	tier3RowID++
 }
