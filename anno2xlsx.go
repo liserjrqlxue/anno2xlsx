@@ -67,6 +67,10 @@ func main() {
 	// 保存excel
 	saveExcel()
 
+	if *qc != "" {
+		writeBytes(select2json(qualitys[0], qualityColumn), *prefix+".quality."+qualitys[0]["样本编号"]+".json")
+	}
+
 	// pprof.WriteHeapProfile
 	if *memprofile != "" {
 		var f = osUtil.Create(*memprofile)
