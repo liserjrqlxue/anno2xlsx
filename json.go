@@ -8,7 +8,7 @@ import (
 )
 
 func map2json(item map[string]string) []byte {
-	var b, e = json.Marshal(item)
+	var b, e = json.MarshalIndent(item, "", "  ")
 	simpleUtil.CheckErr(e)
 	return b
 }
