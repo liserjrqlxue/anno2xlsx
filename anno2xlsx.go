@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"log"
 	_ "net/http/pprof"
@@ -73,10 +72,7 @@ func main() {
 		writeBytes(select2json(qualitys[0], qualityColumn), *prefix+".quality."+qualitys[0]["样本编号"]+".json")
 	}
 	if *snv != "" {
-		writeBytes(
-			simpleUtil.HandleError(json.MarshalIndent(tier1Data, "", "  ")).([]byte),
-			*prefix+".tier1.json",
-		)
+		writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
 	}
 
 	// pprof.WriteHeapProfile

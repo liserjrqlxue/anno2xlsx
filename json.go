@@ -16,8 +16,16 @@ func jsonMarshal(t interface{}) []byte {
 	return buffer.Bytes()
 }
 
+func jsonMarshalIndent(t interface{}, prefix, indent string) []byte {
+	var buf bytes.Buffer
+	simpleUtil.CheckErr(
+		json.Indent(&buf, jsonMarshal(t), prefix, indent),
+	)
+	return buf.Bytes()
+}
+
 func select2json(item map[string]string, keys []string) []byte {
-	return jsonMarshal(selectMap(item, keys))
+	return jsonMarshalIndent(selectMap(item, keys), "", "  ")
 }
 
 func writeBytes(b []byte, fileName string) {
