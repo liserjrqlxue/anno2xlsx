@@ -67,6 +67,14 @@ func main() {
 	// 保存excel
 	saveExcel()
 
+	// json
+	if *qc != "" {
+		writeBytes(select2json(qualitys[0], qualityJsonColumn), *prefix+".quality."+qualitys[0]["样本编号"]+".json")
+	}
+	if *snv != "" {
+		writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
+	}
+
 	// pprof.WriteHeapProfile
 	if *memprofile != "" {
 		var f = osUtil.Create(*memprofile)

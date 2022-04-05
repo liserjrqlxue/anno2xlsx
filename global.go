@@ -150,3 +150,8 @@ var cycle2Count int
 // flag to var
 var outputTier3 = false
 var homFixRatioThreshold = 0.85
+
+// json
+//var tier1Json *os.File
+var tier1Data []map[string]string
+var qualityJsonColumn []string

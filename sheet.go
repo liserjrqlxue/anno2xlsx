@@ -341,6 +341,7 @@ func addQC() {
 	// QC Sheet
 	updateQC(stats, qualitys[0])
 	addQCSheet(tier1Xlsx, "quality", qualityColumn, qualitys)
+
 	logTime("add qc")
 }
 

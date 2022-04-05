@@ -112,6 +112,7 @@ func cycle2(data []map[string]string) {
 				annotate2(item)
 				// Tier1 Sheet
 				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
+				tier1Data = append(tier1Data, selectMap(item, filterVariantsTitle))
 				if !*wgs {
 					addTier2Row(tier2, item)
 				} else {
