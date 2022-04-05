@@ -1,20 +1,23 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 )
 
-func map2json(item map[string]string) []byte {
-	var b, e = json.MarshalIndent(item, "", "  ")
-	simpleUtil.CheckErr(e)
-	return b
+func jsonMarshal(t interface{}) []byte {
+	buffer := &bytes.Buffer{}
+	encoder := json.NewEncoder(buffer)
+	encoder.SetEscapeHTML(false)
+	simpleUtil.CheckErr(encoder.Encode(t))
+	return buffer.Bytes()
 }
 
 func select2json(item map[string]string, keys []string) []byte {
-	return map2json(selectMap(item, keys))
+	return jsonMarshal(selectMap(item, keys))
 }
 
 func writeBytes(b []byte, fileName string) {
