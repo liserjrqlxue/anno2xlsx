@@ -2,9 +2,6 @@
   "geneSymbol.transcript": "geneSymbol.transcript.txt",
   "specVarList": "spec.var.lite.list",
   "transInfo": "trans.exonCount.json.new.json",
-  "TIPdb": "线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db",
-  "MTdisease": "线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db",
-  "MTAFdb": "线粒体突变频率库-fll-20190522.xlsx.线粒体突变频率库-20190521.json.db",
   "Acmg59Gene":"ACMG59Gene.list",
   "qualityColumn":[
     "样本编号",

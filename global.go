@@ -82,12 +82,9 @@ var acmg59Gene = make(map[string]bool)
 
 // WGS
 var (
-	wgsXlsx   *xlsx.File
-	TIPdb     = make(map[string]variant)
-	MTdisease = make(map[string]variant)
-	MTAFdb    = make(map[string]variant)
-	MTTitle   []string
-	tier1Db   = make(map[string]bool)
+	wgsXlsx *xlsx.File
+	MTTitle []string
+	tier1Db = make(map[string]bool)
 )
 
 var (
