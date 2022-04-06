@@ -167,48 +167,6 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 	}
 }
 
-//Variant struct for anno info
-type variant struct {
-	Chr   string                 `json:"Chromosome"`
-	Ref   string                 `json:"Ref"`
-	Alt   string                 `json:"Alt"`
-	Start int                    `json:"Start"`
-	End   int                    `json:"End"`
-	Info  map[string]interface{} `json:"Info"`
-}
-
-func addMTRow(sheet *xlsx.Sheet, item map[string]string) {
-	ref := item["Ref"]
-	alt := item["Call"]
-	if ref == "." {
-		ref = ""
-	}
-	if alt == "." {
-		alt = ""
-	}
-	key := strings.Join([]string{"MT", item["Start"], item["Stop"], ref, alt}, "\t")
-	mut, ok := TIPdb[key]
-	if ok {
-		for _, str := range []string{"Mito TIP"} {
-			item[str] = mut.Info[str].(string)
-		}
-	}
-	mut, ok = MTdisease[key]
-	if ok {
-		for _, str := range []string{"Disease", "pmid", "title", "Status"} {
-			item[str] = mut.Info[str].(string)
-		}
-	}
-	mut, ok = MTAFdb[key]
-	if ok {
-		for _, str := range []string{"# in HG branch with variant", "Total # HG branch seqs", "Fequency in HG branch(%)"} {
-			item[str] = strconv.FormatFloat(mut.Info[str].(float64), 'f', 5, 64)
-		}
-
-	}
-	xlsxUtil.AddMap2Row(item, MTTitle, sheet.AddRow())
-}
-
 func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
 	tier2Row := tier2.sheet.AddRow()
 	for _, str := range tier2.title {

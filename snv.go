@@ -9,7 +9,6 @@ import (
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
-	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
@@ -153,13 +152,6 @@ func wgsCycle(data []map[string]string) {
 		var intronSheet = xlsxUtil.AddSheet(wgsXlsx, "intron")
 		xlsxUtil.AddArray2Row(filterVariantsTitle, intronSheet.AddRow())
 
-		TIPdbPath := anno.GetPath("TIPdb", dbPath, defaultConfig)
-		jsonUtil.JsonFile2Data(TIPdbPath, &TIPdb)
-		MTdiseasePath := anno.GetPath("MTdisease", dbPath, defaultConfig)
-		jsonUtil.JsonFile2Data(MTdiseasePath, &MTdisease)
-		MTAFdbPath := anno.GetPath("MTAFdb", dbPath, defaultConfig)
-		jsonUtil.JsonFile2Data(MTAFdbPath, &MTAFdb)
-
 		inheritDb = make(map[string]map[string]int)
 		for _, item := range data {
 			anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, anno.AFlist)
@@ -174,7 +166,7 @@ func wgsCycle(data []map[string]string) {
 			annotate4(item)
 
 			if *wgs && isMT.MatchString(item["#Chr"]) {
-				addMTRow(MTSheet, item)
+				xlsxUtil.AddMap2Row(item, MTTitle, MTSheet.AddRow())
 			}
 			if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
 				addTier2Row(tier2, item)
@@ -247,6 +239,9 @@ func annotate1(item map[string]string) {
 	}
 
 	anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
+	if *allTier1 {
+		item["Tier"] = "Tier1"
+	}
 	if *mt && isMT.MatchString(item["#Chr"]) {
 		item["Tier"] = "Tier1"
 		item["MTmut"] = getMhgvs(item)
