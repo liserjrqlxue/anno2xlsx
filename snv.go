@@ -247,6 +247,9 @@ func annotate1(item map[string]string) {
 	}
 
 	anno.AddTier(item, stats, geneList, specVarDb, *trio, false, *allGene, anno.AFlist)
+	if *allTier1 {
+		item["Tier"] = "Tier1"
+	}
 	if *mt && isMT.MatchString(item["#Chr"]) {
 		item["Tier"] = "Tier1"
 		item["MTmut"] = getMhgvs(item)
