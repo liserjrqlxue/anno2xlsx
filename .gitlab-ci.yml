@@ -33,8 +33,16 @@ github:
     #- git remote add github git@github.com:liserjrqlxue/anno2xlsx.git
     - Get-Location
     #- ssh-keygen
+    # develop
+    - git checkout develop
+    - git pull
+    #- git pull origin master
+    - git push github --all
+    - git push github --tags
+    # master
     - git checkout master
     - git pull
     #- git pull origin master
     - git push github --all
     - git push github --tags
+    
