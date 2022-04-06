@@ -167,16 +167,6 @@ func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string
 	}
 }
 
-//Variant struct for anno info
-type variant struct {
-	Chr   string                 `json:"Chromosome"`
-	Ref   string                 `json:"Ref"`
-	Alt   string                 `json:"Alt"`
-	Start int                    `json:"Start"`
-	End   int                    `json:"End"`
-	Info  map[string]interface{} `json:"Info"`
-}
-
 func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
 	tier2Row := tier2.sheet.AddRow()
 	for _, str := range tier2.title {
