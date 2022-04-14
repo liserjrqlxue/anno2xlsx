@@ -39,3 +39,11 @@ func selectMap(item map[string]string, keys []string) map[string]string {
 	}
 	return selectItem
 }
+
+func convertMap(item map[string]string, keys map[string]string) map[string]string {
+	var selectItem = make(map[string]string)
+	for k, v := range keys {
+		selectItem[k] = item[v]
+	}
+	return selectItem
+}

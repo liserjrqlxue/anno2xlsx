@@ -1,0 +1,69 @@
+---
+# pandoc .\README.md --metadata-file=.\metadata.yaml --pdf-engine=xelatex -T README --columns=50 -s --shift-heading-level-by=-1 --highlight-style=tango -p -o .\README.pdf -N
+
+# metadata
+title: anno2xlsx
+subtitle: v2.11.0
+author: 王垚燊
+date: \today
+#abstract: 输出文件格式说明
+#keywords: QC
+#subject: QC check
+
+# LaTeX
+## Layout
+#block-headings: true
+documentclass: ctexart
+classoption:
+  #- twocolumn
+  #- landscape
+
+#\setCJKmainfont[]{"FZLanTingHeiS-R-GB"}
+header-includes: |
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+  \usepackage{titlesec}
+  \newcommand{\sectionbreak}{\clearpage}
+geometry:
+  - top=30mm
+  - left=20mm
+  - heightrounded
+hyperrefoptions:
+  - linktoc=all
+  - pdfwindowui
+  - pdfpagemode=FullScreen
+indent: true
+#linestretch: 1.25
+pagestyle: headings
+papersize: a4
+secnumdepth: 3
+
+## Fonts
+#fontenc: T1
+#fontfamily: libertinus
+#fontfamilyoptions:
+  #- osf
+  #- p
+fontsize: 11pt
+#mainfont, sansfont, monofont, mathfont, CJKmainfont
+#mainfontoptions, sansfontoptions, monofontoptions, mathfontoptions, CJKoptions
+#microtypeoptions
+
+## Links
+colorlinks: true
+linkcolor: red
+#filecolor, citecolor,
+#urlcolor: yellow
+toccolor: blue
+#links-as-notes: ture
+
+## Front matter
+#lof: true
+#lot: true
+thanks:
+toc: true
+toc-depth: 3
+
+## command
+# pandoc -o 输出文件格式.pdf --pdf-engine=xelatex --metadata-file=metadata.yaml --shift-heading-level-by=-1 --highlight-style breezedark -p -N --wrap=auto -T RESULT result.md
+---
