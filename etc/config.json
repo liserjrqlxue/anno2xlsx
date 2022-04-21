@@ -2,9 +2,6 @@
   "geneSymbol.transcript": "geneSymbol.transcript.txt",
   "specVarList": "spec.var.lite.list",
   "transInfo": "trans.exonCount.json.new.json",
-  "TIPdb": "线粒体数据库-fll-20190418.xlsx.MitoTIP-tRNA预测打分.json.db",
-  "MTdisease": "线粒体数据库-fll-20190418.xlsx.疾病-位点库.json.db",
-  "MTAFdb": "线粒体突变频率库-fll-20190522.xlsx.线粒体突变频率库-20190521.json.db",
   "Acmg59Gene":"ACMG59Gene.list",
   "qualityColumn":[
     "样本编号",
@@ -63,6 +60,20 @@
     "large CNV_tier1",
     "亲缘关系",
     "夫妻关系"
+  ],
+  "qualityJsonColumn":[
+    "样本编号",
+    "原始数据产出（Gb）",
+    "目标区长度（Mb）",
+    "目标区覆盖度",
+    "目标区平均深度（X）",
+    "目标区平均深度>4X位点所占比例",
+    "目标区平均深度>10X位点所占比例",
+    "目标区平均深度>20X位点所占比例",
+    "目标区平均深度>30X位点所占比例",
+    "bam文件路径",
+    "核型预测",
+    "线粒体基因组区域平均深度>2000X位点所占比例"
   ],
   "qualityColumnWGS":[
     "样本编号",

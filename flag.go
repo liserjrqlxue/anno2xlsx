@@ -99,11 +99,6 @@ var (
 		"karyotype",
 		"",
 		"karyotype files to fill quality sheet's 核型预测, comma as sep")
-	ifRedis = flag.Bool(
-		"redis",
-		false,
-		"if use redis server",
-	)
 	redisAddr = flag.String(
 		"redisAddr",
 		"",
@@ -168,6 +163,11 @@ var (
 		false,
 		"if not filter gene",
 	)
+	allTier1 = flag.Bool(
+		"filtered",
+		false,
+		"if input filtered vcf, set all to tier1 and no filter",
+	)
 	autoPVS1 = flag.Bool(
 		"autoPVS1",
 		false,
@@ -187,6 +187,11 @@ var (
 		"couple",
 		false,
 		"if couple mode",
+	)
+	ifRedis = flag.Bool(
+		"redis",
+		false,
+		"if use redis server",
 	)
 	save = flag.Bool(
 		"save",

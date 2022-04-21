@@ -5,10 +5,12 @@ import (
 	"log"
 	_ "net/http/pprof"
 	"os"
+	"path/filepath"
 	"runtime/pprof"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/version"
 	"github.com/tealeg/xlsx/v3"
 )
@@ -66,6 +68,22 @@ func main() {
 	fillSheet()
 	// 保存excel
 	saveExcel()
+
+	// json
+	if *qc != "" {
+		var qualityJsonInfo, _ = textUtil.File2MapMap(filepath.Join(etcPath, "quality.json.txt"), "name", "\t", nil)
+		var qualityJsonKeyMap = make(map[string]string)
+		for k, m := range qualityJsonInfo {
+			qualityJsonKeyMap[k] = m["describe"]
+		}
+		writeBytes(
+			jsonMarshalIndent(convertMap(qualitys[0], qualityJsonKeyMap), "", "  "),
+			*prefix+".quality."+qualitys[0]["样本编号"]+".json",
+		)
+	}
+	if *snv != "" {
+		writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
+	}
 
 	// pprof.WriteHeapProfile
 	if *memprofile != "" {
