@@ -9,17 +9,15 @@
 ## AES加密数据库
 ### 例子
 ```
-PS C:\Users\wangyaoshen\go\src\liser.jrqlxue\anno2xlsx\buildDb> .\buildDb.exe  -input '..\db\全外疾病库2020.Q4-2021.2.5V1.xlsx' -sheet '更新后全外背景库（5755疾病OMIMID，4372个基因）' -key 'entry ID' -rowCount 6566 -keyCount 4372
-sheet name:     更新后全外背景库（5755疾病OMIMID，4372个基因）
+❯ .\buildDb.exe -input ..\db\全外疾病库2022.Q1-2022.04.22.xlsx -sheet '更新后全外背景库（6078疾病OMIMID，4667个基因）' -key 'entry ID' -rowCount 7026 -keyCount 4667 -skipWarn 9,10,12,13
+sheet name:     更新后全外背景库（6078疾病OMIMID，4667个基因）
 key column:     entry ID
-encode sheet:[更新后全外背景库（5755疾病OMIMID，4372个基因）]
-rows:   6566    true
-2021/02/05 16:15:42 Skip merge warn of []
-keys:   4372    true
-write 18086646 byte to ..\db\全外疾病库2020.Q4-2021.2.5V1.xlsx.更新后全外背景库（5755疾病OMIMID，4372个基因）.json.aes
-[更新后全外背景库（5755疾病OMIMID，4372个基因）] checked:       true
-skip sheet:[基因+表型OMIM号+遗传模式校对情况统计]
-skip sheet:[Sheet1]
+encode sheet:[更新后全外背景库（6078疾病OMIMID，4667个基因）]
+rows:   7026    true
+2022/04/24 10:40:28 Skip merge warn of [GeneralizationEN GeneralizationCH lab lab-翻译]
+keys:   4667    true
+write 11850306 byte to ..\db\全外疾病库2022.Q1-2022.04.22.xlsx.更新后全外背景库（6078疾病OMIMID，4667个基因）.json.aes
+[更新后全外背景库（6078疾病OMIMID，4667个基因）] checked:       true
 
 ```
 
