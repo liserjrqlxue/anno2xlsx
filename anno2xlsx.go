@@ -2,11 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
+	"strconv"
+	"strings"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
@@ -76,9 +79,25 @@ func main() {
 		for k, m := range qualityJsonInfo {
 			qualityJsonKeyMap[k] = m["describe"]
 		}
+		var qualityJson = make(map[string]string)
+		for k, v := range qualityJsonKeyMap {
+			qualityJson[k] = qualitys[0][v]
+		}
+		qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["targetRegionSize"], 64)).(float64))
+		for _, s := range []string{
+			"targetRegionCoverage",
+			"averageDepthGt4X",
+			"averageDepthGt10X",
+			"averageDepthGt20X",
+			"averageDepthGt30X",
+			"mtTargetRegionGt2000X",
+		} {
+			if !strings.HasSuffix(qualityJson[s], "%") {
+				qualityJson[s] += "%"
+			}
+		}
 		writeBytes(
-			jsonMarshalIndent(convertMap(qualitys[0], qualityJsonKeyMap), "", "  "),
-			*prefix+".quality."+qualitys[0]["样本编号"]+".json",
+			jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality."+qualitys[0]["样本编号"]+".json",
 		)
 	}
 	if *snv != "" {

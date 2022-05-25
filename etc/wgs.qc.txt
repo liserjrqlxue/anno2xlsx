@@ -1,5 +1,6 @@
 样本编号	样本编号
 原始数据产出（Gb）	raw data(G)
+原始数据产出（Mb）	raw data(M)
 目标区长度（bp）	length(2858383468|2835398939)
 目标区覆盖度	coverage >0x(%)
 目标区平均深度（X）	rmdup depth

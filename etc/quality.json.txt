@@ -1,6 +1,6 @@
 name	describe	value type	value example
 sampleID	样本编号	string	depth40_rep1
-rawDataSize	原始数据产出（Gb）	string	124.95
+rawDataSize	原始数据产出（Mb）	string	124.95
 targetRegionSize	目标区长度（bp）	string	2684595047.0
 targetRegionCoverage	目标区覆盖度	string	99.92
 averageDepth	目标区平均深度（X）	string	40.77
