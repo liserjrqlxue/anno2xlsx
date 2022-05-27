@@ -164,7 +164,7 @@ var (
 		"if not filter gene",
 	)
 	allTier1 = flag.Bool(
-		"filtered",
+		"allTier1",
 		false,
 		"if input filtered vcf, set all to tier1 and no filter",
 	)
