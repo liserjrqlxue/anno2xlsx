@@ -84,6 +84,7 @@ func main() {
 			qualityJson[k] = qualitys[0][v]
 		}
 		qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["targetRegionSize"], 64)).(float64))
+		qualityJson["rawDataSize"] = fmt.Sprintf("%.2f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["rawDataSize"], 64)).(float64)*1000)
 		for _, s := range []string{
 			"targetRegionCoverage",
 			"averageDepthGt4X",
