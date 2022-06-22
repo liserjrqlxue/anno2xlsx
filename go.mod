@@ -6,6 +6,8 @@ require (
 	github.com/brentp/bix v0.0.0-20190718140914-00aa7a7f205d
 	github.com/brentp/irelate v0.0.1
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/klauspost/compress v1.15.6 // indirect
+	github.com/klauspost/pgzip v1.2.5
 	github.com/liserjrqlxue/acmg2015 v1.1.18
 	github.com/liserjrqlxue/crypto v0.1.3
 	github.com/liserjrqlxue/goUtil v0.0.42
