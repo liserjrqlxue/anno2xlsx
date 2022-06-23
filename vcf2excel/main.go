@@ -168,7 +168,7 @@ func getInfoInteger(info interfaces.Info, key string) string {
 func getInfoFloat(info interfaces.Info, key string) string {
 	var value, err = info.Get(key)
 	if err == nil && value.(float64) > -1 {
-		return strconv.Itoa(value.(int))
+		return strconv.FormatFloat(value.(float64), 'g', -1, 64)
 	}
 	return ""
 }
