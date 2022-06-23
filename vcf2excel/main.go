@@ -86,12 +86,11 @@ var (
 func printMapRow(w io.Writer, item map[string]string, keys []string, sep string) {
 	var values []string
 	for _, key := range keys {
-		values = append(values, item[key])
+		values = append(values, tab.ReplaceAllString(item[key], "&#9;"))
 	}
 	var line = strings.Join(values, sep)
 	line = crlf.ReplaceAllString(line, "<br/>")
 	line = lf.ReplaceAllString(line, "<br/>")
-	line = tab.ReplaceAllString(line, "&#9;")
 	fmtUtil.Fprintln(w, line)
 }
 
@@ -189,7 +188,7 @@ func main() {
 		var item = make(map[string]string)
 		item["SampleID"] = *id
 		var chromosome = strings.Replace(variant.Chromosome, "chr", "", 1)
-		item["#chr"] = "chr" + chromosome
+		item["#Chr"] = "chr" + chromosome
 		var start = int(variant.Start())
 		item["Start"] = strconv.Itoa(start)
 		item["Stop"] = strconv.Itoa(start + len(variant.Reference))
