@@ -131,15 +131,27 @@ func main() {
 		}
 
 		if csqOk {
-			var csqInfos = simpleUtil.HandleError(variant.Info_.Get("CSQ")).(string)
 			var csqItems []map[string]string
-			for _, csqInfo := range strings.Split(csqInfos, ",") {
-				var csqArray = strings.Split(csqInfo, "|")
+			var csqInfos = simpleUtil.HandleError(variant.Info_.Get("CSQ"))
+			switch csqInfos.(type) {
+			case []string:
+				for _, csqInfo := range csqInfos.([]string) {
+					var csqArray = strings.Split(csqInfo, "|")
+					var csqItem = make(map[string]string)
+					for i, key := range csqKeys {
+						csqItem[key] = csqArray[i]
+					}
+					csqItems = append(csqItems, csqItem)
+				}
+			case string:
+				var csqArray = strings.Split(csqInfos.(string), "|")
 				var csqItem = make(map[string]string)
 				for i, key := range csqKeys {
 					csqItem[key] = csqArray[i]
 				}
 				csqItems = append(csqItems, csqItem)
+			default:
+				fmt.Printf("I don't know about type %T!\n", csqInfos)
 			}
 		}
 	}
