@@ -210,10 +210,10 @@ func main() {
 		item["ExAC AF"] = getInfoFloat(info, "ExAC_AF")
 		item["GnomAD EAS AF"] = getInfoFloat(info, "GnomAD_EAS_AF")
 		item["GnomAD AF"] = getInfoFloat(info, "GnomAD_AF")
-		item["ExAC EAS HomoAlt Count"] = getInfoInteger(info, "ExAC_EAS_Hom")
-		item["ExAC HomoAlt Count"] = getInfoInteger(info, "ExAC_Hom")
-		item["GnomAD EAS HomoAlt Count"] = getInfoInteger(info, "GnomAD_EAS_Hom")
-		item["GnomAD HomoAlt Count"] = getInfoInteger(info, "GnomAD_Hom")
+		item["ExAC EAS HomoAlt Count"] = getInfoFloat(info, "ExAC_EAS_Hom")
+		item["ExAC HomoAlt Count"] = getInfoFloat(info, "ExAC_Hom")
+		item["GnomAD EAS HomoAlt Count"] = getInfoFloat(info, "GnomAD_EAS_Hom")
+		item["GnomAD HomoAlt Count"] = getInfoFloat(info, "GnomAD_Hom")
 
 		if hasSample {
 			var sample = variant.Samples[0]
