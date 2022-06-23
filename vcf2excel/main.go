@@ -95,8 +95,9 @@ func main() {
 		item["Ref"] = variant.Reference
 		item["Call"] = variant.Alternate[0]
 
+		// INFO
 		var info = variant.Info_
-		var rs = getInfoInteger(info, "RS")
+		var rs = getInfoInteger(info, "rsID")
 		if rs != "" {
 			item["rsID"] = "rs" + rs
 		}
