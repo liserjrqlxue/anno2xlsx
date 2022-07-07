@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/brentp/bix v0.0.0-20190718140914-00aa7a7f205d
 	github.com/brentp/irelate v0.0.1
+	github.com/brentp/vcfgo v0.0.0-20190824021612-654ed2e5945d
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/klauspost/compress v1.15.6 // indirect
 	github.com/klauspost/pgzip v1.2.5

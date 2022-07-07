@@ -46,6 +46,7 @@ titleKey = [
     "发病年龄",
     "imprinted gene/Expressed Allele",
     "Phenotype MIM number",
+    "reference",
 ]
 title = [
     "DiseaseNameEN",
@@ -62,6 +63,7 @@ title = [
     "Onset age",
     "imprinted gene",
     "OMIM_Phenotype_ID",
+    "reference",
 ]
 
 [annotation.Gene.prenatal]
