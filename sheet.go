@@ -106,7 +106,7 @@ func addCnv2Sheet(
 			spectrumDb.Annos(item, "\n", geneIDs)
 
 			if *cnvAnnot {
-				anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+				anno.UpdateCnvAnnot(gene, sheet.Name, item, gene2id, diseaseDb.Db)
 			}
 
 			item["OMIM"] = item["OMIM_Phenotype_ID"]

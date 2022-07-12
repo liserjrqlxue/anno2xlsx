@@ -168,7 +168,7 @@ func main() {
 
 		item["OMIM"] = item["OMIM_Phenotype_ID"]
 
-		anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+		anno.UpdateCnvAnnot(gene, *cnvType, item, gene2id, diseaseDb.Db)
 
 		var array []string
 		for _, key := range titles {

@@ -59,10 +59,14 @@ type omimDisease struct {
 }
 
 //UpdateCnvAnnot update annot of cnv
-func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb map[string]map[string]string) {
+func UpdateCnvAnnot(geneLst, key string, item, gene2id map[string]string, geneDisDb map[string]map[string]string) {
 	var genes = strings.Split(geneLst, ";")
 	var exonMap = getExonMap(item)
 	var cnvAnnots []geneInfo
+	var primerMap map[string]string
+	if key == "exon_cnv" {
+		_, primerMap = ExonPrimer(item)
+	}
 	for _, gene := range genes {
 		var geneID, ok0 = gene2id[gene]
 		if !ok0 {
@@ -90,6 +94,9 @@ func UpdateCnvAnnot(geneLst string, item, gene2id map[string]string, geneDisDb m
 			OmimGeneID:   strings.Split(singleGeneDb["Gene/Locus MIM number"], "\n")[0],
 			Location:     strings.Split(singleGeneDb["Location"], "\n")[0],
 			OmimDiseases: nil,
+		}
+		if key == "exon_cnv" {
+			cnvAnnot.Primer = primerMap[gene]
 		}
 		cnvAnnot.OmimDiseases = singelGeneDb2OmimDiseases(singleGeneDb)
 		cnvAnnots = append(cnvAnnots, cnvAnnot)
