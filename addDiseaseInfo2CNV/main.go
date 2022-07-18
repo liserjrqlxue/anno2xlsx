@@ -78,6 +78,11 @@ var (
 		"",
 		"mem profile",
 	)
+	warn = flag.Bool(
+		"warn",
+		false,
+		"warn gene id lost rather than fatal",
+	)
 )
 
 var tomlCfg *toml.Tree
@@ -155,7 +160,11 @@ func main() {
 			var id, ok = gene2id[g]
 			if !ok {
 				if g != "-" && g != "." {
-					log.Fatalf("can not find gene id of [%s]\n", gene)
+					if *warn {
+						log.Printf("can not find gene id of [%s]:[%s]\n", g, gene)
+					} else {
+						log.Fatalf("can not find gene id of [%s]:[%s]\n", g, gene)
+					}
 				}
 			}
 			geneIDs = append(geneIDs, id)
