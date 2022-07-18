@@ -213,6 +213,11 @@ var (
 		false,
 		"if no standard trio mode but proband-father-mother",
 	)
+	warn = flag.Bool(
+		"warn",
+		false,
+		"warn gene id lost rather than fatal",
+	)
 	wgs = flag.Bool(
 		"wgs",
 		false,

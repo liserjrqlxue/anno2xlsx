@@ -94,7 +94,11 @@ func addCnv2Sheet(
 				var id, ok = gene2id[g]
 				if !ok {
 					if g != "-" && g != "." {
-						log.Fatalf("can not find gene id of [%s]\n", gene)
+						if *warn {
+							log.Printf("can not find gene id of [%s]:[%s]\n", g, gene)
+						} else {
+							log.Fatalf("can not find gene id of [%s]:[%s]\n", g, gene)
+						}
 					}
 				}
 				geneIDs = append(geneIDs, id)
