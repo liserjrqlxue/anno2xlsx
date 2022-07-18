@@ -101,7 +101,7 @@ func main() {
 			jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality."+qualitys[0]["样本编号"]+".json",
 		)
 	}
-	if *snv != "" {
+	if *snv != "" && *outJson {
 		writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
 	}
 

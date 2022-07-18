@@ -193,6 +193,11 @@ var (
 		false,
 		"if use redis server",
 	)
+	outJson = flag.Bool(
+		"json",
+		false,
+		"if output tier1.json",
+	)
 	save = flag.Bool(
 		"save",
 		true,
