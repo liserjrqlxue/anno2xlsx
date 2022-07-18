@@ -178,6 +178,7 @@ func main() {
 		log.Fatalf("CSQ Description not support:[%s]\n", csqDescription)
 	}
 
+	fmtUtil.FprintStringArray(outF, filterVariantsTitle, "\t")
 	// variant
 	for {
 		var variant = rdr.Read()
@@ -270,6 +271,21 @@ func main() {
 			}
 			item["geneID"] = geneId
 
+			csqItem["Transcript"] = csqItem["Feature"]
+			// HGVS
+			csqItem["gHGVS"] = strings.Split(csqItem["HGVSg"], ",")[0]
+			if csqItem["HGVSc"] != "" {
+				csqItem["cHGVS"] = strings.Split(csqItem["HGVSc"], ":")[1]
+				item["MutationName"] = fmt.Sprintf("%s(%s):%s", csqItem["Feature"], csqItem["SYMBOL"], csqItem["cHGVS"])
+				csqItem["HGVSp"] = strings.ReplaceAll(csqItem["HGVSp"], "%3D", "=")
+				if csqItem["HGVSp"] != "" {
+					csqItem["pHGVS"] = strings.Split(csqItem["HGVSp"], ":")[1]
+					item["MutationName"] += "(" + csqItem["pHGVS"] + ")"
+				}
+			} else {
+				item["MutationName"] = csqItem["gHGVS"]
+			}
+
 			// anno
 			chpo.Anno(csqItem, geneId)
 			diseaseDb.Anno(csqItem, geneId)
@@ -300,19 +316,6 @@ func main() {
 				log.Printf("unkown VARIANT_CLASS:[%s]\n", csqItem["VARIANT_CLASS"])
 			}
 
-			// HGVS
-			csqItem["gHGVS"] = strings.Split(csqItem["HGVSg"], ",")[0]
-			if csqItem["HGVSc"] != "" {
-				csqItem["cHGVS"] = strings.Split(csqItem["HGVSc"], ":")[1]
-				item["MutationName"] = fmt.Sprintf("%s(%s):%s", csqItem["Feature"], csqItem["SYMBOL"], csqItem["cHGVS"])
-				csqItem["HGVSp"] = strings.ReplaceAll(csqItem["HGVSp"], "%3D", "=")
-				if csqItem["HGVSp"] != "" {
-					csqItem["pHGVS"] = strings.Split(csqItem["HGVSp"], ":")[1]
-					item["MutationName"] += "(" + csqItem["pHGVS"] + ")"
-				}
-			} else {
-				item["MutationName"] = csqItem["gHGVS"]
-			}
 			printMapRow(outF, csqItem, filterVariantsTitle, "\t")
 		}
 	}
