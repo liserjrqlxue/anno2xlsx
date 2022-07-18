@@ -73,36 +73,38 @@ func main() {
 	saveExcel()
 
 	// json
-	if *qc != "" {
-		var qualityJsonInfo, _ = textUtil.File2MapMap(filepath.Join(etcPath, "quality.json.txt"), "name", "\t", nil)
-		var qualityJsonKeyMap = make(map[string]string)
-		for k, m := range qualityJsonInfo {
-			qualityJsonKeyMap[k] = m["describe"]
-		}
-		var qualityJson = make(map[string]string)
-		for k, v := range qualityJsonKeyMap {
-			qualityJson[k] = qualitys[0][v]
-		}
-		qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["targetRegionSize"], 64)).(float64))
-		qualityJson["rawDataSize"] = fmt.Sprintf("%.2f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["rawDataSize"], 64)).(float64)*1000)
-		for _, s := range []string{
-			"targetRegionCoverage",
-			"averageDepthGt4X",
-			"averageDepthGt10X",
-			"averageDepthGt20X",
-			"averageDepthGt30X",
-			"mtTargetRegionGt2000X",
-		} {
-			if !strings.HasSuffix(qualityJson[s], "%") {
-				qualityJson[s] += "%"
+	if *outJson {
+		if *qc != "" {
+			var qualityJsonInfo, _ = textUtil.File2MapMap(filepath.Join(etcPath, "quality.json.txt"), "name", "\t", nil)
+			var qualityJsonKeyMap = make(map[string]string)
+			for k, m := range qualityJsonInfo {
+				qualityJsonKeyMap[k] = m["describe"]
 			}
+			var qualityJson = make(map[string]string)
+			for k, v := range qualityJsonKeyMap {
+				qualityJson[k] = qualitys[0][v]
+			}
+			qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["targetRegionSize"], 64)).(float64))
+			qualityJson["rawDataSize"] = fmt.Sprintf("%.2f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["rawDataSize"], 64)).(float64)*1000)
+			for _, s := range []string{
+				"targetRegionCoverage",
+				"averageDepthGt4X",
+				"averageDepthGt10X",
+				"averageDepthGt20X",
+				"averageDepthGt30X",
+				"mtTargetRegionGt2000X",
+			} {
+				if !strings.HasSuffix(qualityJson[s], "%") {
+					qualityJson[s] += "%"
+				}
+			}
+			writeBytes(
+				jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality."+qualitys[0]["样本编号"]+".json",
+			)
 		}
-		writeBytes(
-			jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality."+qualitys[0]["样本编号"]+".json",
-		)
-	}
-	if *snv != "" && *outJson {
-		writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
+		if *snv != "" {
+			writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
+		}
 	}
 
 	// pprof.WriteHeapProfile
