@@ -162,6 +162,7 @@ func wgsCycle(data []map[string]string) {
 			}
 		}
 		logTime("load snv cycle 3")
+		var extraIntronCount = 0
 		for _, item := range data {
 			annotate4(item)
 
@@ -172,6 +173,7 @@ func wgsCycle(data []map[string]string) {
 				addTier2Row(tier2, item)
 
 				if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
+					extraIntronCount++
 					intronRow := intronSheet.AddRow()
 					for _, str := range filterVariantsTitle {
 						intronRow.AddCell().SetString(item[str])
@@ -179,6 +181,7 @@ func wgsCycle(data []map[string]string) {
 				}
 			}
 		}
+		log.Printf("add %d extra intron variant for wgs", extraIntronCount)
 		logTime("load snv cycle 4")
 	}
 }
