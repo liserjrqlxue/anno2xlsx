@@ -116,12 +116,10 @@ func cycle2(data []map[string]string) {
 					addTier2Row(tier2, item)
 				} else {
 					tier1Db[item["MutationName"]] = true
-					tier1GeneList[item["Gene Symbol"]] = true
 				}
 			} else {
 				if *wgs {
 					tier1Db[item["MutationName"]] = true
-					tier1GeneList[item["Gene Symbol"]] = true
 				}
 			}
 		}
@@ -166,10 +164,10 @@ func wgsCycle(data []map[string]string) {
 		for _, item := range data {
 			annotate4(item)
 
-			if *wgs && isMT.MatchString(item["#Chr"]) {
+			if isMT.MatchString(item["#Chr"]) {
 				xlsxUtil.AddMap2Row(item, MTTitle, MTSheet.AddRow())
 			}
-			if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
+			if item["Tier"] == "Tier1" {
 				addTier2Row(tier2, item)
 
 				if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
@@ -289,7 +287,6 @@ func getMhgvs(item map[string]string) string {
 }
 
 func annotate1Tier1(item map[string]string) {
-	tier1GeneList[item["Gene Symbol"]] = true
 	if anno.FuncInfo[item["Function"]] >= 3 {
 		stats["Tier1LoF"]++
 	}
