@@ -170,7 +170,7 @@ func wgsCycle(data []map[string]string) {
 			if item["Tier"] == "Tier1" {
 				addTier2Row(tier2, item)
 
-				if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
+				if item["Function"] != "no-change" && !tier1Db[item["MutationName"]] {
 					extraIntronCount++
 					intronRow := intronSheet.AddRow()
 					for _, str := range filterVariantsTitle {
