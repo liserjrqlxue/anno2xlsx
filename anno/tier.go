@@ -116,6 +116,8 @@ func checkHGMDClinVar(item map[string]string, stats map[string]int, AFlist []str
 	}
 }
 
+var inhouseAF = 0.05
+
 func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
 	gene := item["Gene Symbol"]
 	// Tier
@@ -134,8 +136,8 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					item["Tier"] = "Tier1"
 					stats["isFunction"]++
 					//}
-				} else if isWGS && item["Function"] == "intron" {
-					if checkAF(item, []string{"inhouse_AF"}, 0.01) {
+				} else if isWGS && item["Function"] != "no-change" {
+					if checkAF(item, []string{"inhouse_AF"}, inhouseAF) {
 						item["Tier"] = "Tier1"
 						stats["isFunction"]++
 					} else {
@@ -176,8 +178,8 @@ func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList 
 				item["Tier"] = "Tier1"
 				stats["Function"]++
 				stats["Denovo Function"]++
-			} else if isWGS && item["Function"] == "intron" {
-				if checkAF(item, []string{"inhouse_AF"}, 0.01) {
+			} else if isWGS && item["Function"] != "no-change" {
+				if checkAF(item, []string{"inhouse_AF"}, inhouseAF) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["Denovo Function"]++
@@ -228,8 +230,8 @@ func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneLis
 				stats["Function"]++
 				stats["noDenovo Function"]++
 				//}
-			} else if isWGS && item["Function"] == "intron" {
-				if checkAF(item, []string{"inhouse_AF"}, 0.01) {
+			} else if isWGS && item["Function"] != "no-change" {
+				if checkAF(item, []string{"inhouse_AF"}, inhouseAF) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["noDenovo Function"]++
