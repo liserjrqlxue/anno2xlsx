@@ -9,6 +9,9 @@ import (
 	"github.com/liserjrqlxue/simple-util"
 )
 
+// in-house WGS AF threshold
+var inhouseAF = 0.01
+
 // FuncInfo classify function
 // Tier1 >1
 // LoF 3
@@ -115,8 +118,6 @@ func checkHGMDClinVar(item map[string]string, stats map[string]int, AFlist []str
 		}
 	}
 }
-
-var inhouseAF = 0.05
 
 func checkTierSingle(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
 	gene := item["Gene Symbol"]
