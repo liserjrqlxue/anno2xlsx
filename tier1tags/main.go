@@ -97,9 +97,6 @@ var (
 // 遗传相符
 var inheritDb = make(map[string]map[string]int)
 
-// Tier1
-var tier1GeneList = make(map[string]bool)
-
 var defaultConfig map[string]interface{}
 
 func init() {
