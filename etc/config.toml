@@ -20,6 +20,19 @@ mainKey = "MTmut"
 titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
 title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
 
+[annotation.Mutation.PrePregnancy]
+file = "PrePregnancy.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "Evidence New + Check",
+    "Auto ACMG + Check",
+]
+title = [
+    "孕前证据项",
+    "孕前致病性",
+]
+
 [annotation.Gene.spectrum]
 file = "基因突变谱.json.aes"
 type = "json"

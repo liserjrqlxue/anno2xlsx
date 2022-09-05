@@ -68,6 +68,8 @@ var (
 	isComment = regexp.MustCompile(`^##`)
 	isMT      = regexp.MustCompile(`MT|chrM`)
 	isHom     = regexp.MustCompile(`^Hom`)
+	cHGVSalt  = regexp.MustCompile(`alt: (\S+) \)`)
+	cHGVSstd  = regexp.MustCompile(`std: (\S+) \)`)
 )
 
 var redisDb *redis.Client
@@ -124,6 +126,9 @@ var (
 	geneList  = make(map[string]bool)
 	// 产前数据库
 	prenatalDb anno.EncodeDb
+	// 孕前数据库
+	prePregnancyDb anno.EncodeDb
+	ppCode         = "118b09d39a5d3ecd56f9bd4f351dd6d6"
 )
 
 // ACMG
