@@ -241,6 +241,11 @@ func annotate1(item map[string]string) {
 	item["exonCount"] = exonCount[item["Transcript"]]
 	item["引物设计"] = anno.PrimerDesign(item)
 
+	// flank + HGVSc
+	if item["HGVSc"] != "" {
+		item["flank"] += " " + item["HGVSc"]
+	}
+
 	// 变异来源
 	if *trio2 {
 		item["变异来源"] = anno.InheritFrom2(item, sampleList)
