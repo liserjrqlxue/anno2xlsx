@@ -92,16 +92,24 @@ func zygosityFormat(zygosity string) string {
 ```
 2. Het->Hom修正
 ```go
-var aRatio,err=strconv.ParseFloat(item["A.Ratio"],64)
-if err!=nil{
-    aRatio=0
-}
-...
-func zygosityFix(zygosity string,aRatio float64)string{
-	if zygosity=="Het"&&aRatio>=0.85{
-		return "Hom"
+func homRatio(item map[string]string, threshold float64) {
+	var aRatio = strings.Split(item["A.Ratio"], ";")
+	var zygositys = strings.Split(item["Zygosity"], ";")
+	if len(aRatio) <= len(zygositys) {
+		for i := range aRatio {
+			var zygosity = zygositys[i]
+			if zygosity == "Het" {
+				var ratio, err = strconv.ParseFloat(aRatio[i], 64)
+				if err != nil {
+					ratio = 0
+				}
+				if ratio >= threshold {
+					zygositys[i] = "Hom"
+				}
+			}
+		}
 	}
-	return zygosity
+	item["Zygosity"] = strings.Join(zygositys, ";")
 }
 ```
 3. Hom->Hemi修正
