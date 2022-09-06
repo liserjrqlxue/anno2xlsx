@@ -138,7 +138,10 @@ func hemiPAR(item map[string]string, gender string) {
 	}
 }
 ```
-## ClinVar
-`ClinVar Significance`=`CLNSIG`
-or
-`ClinVar Significance`=`CLNSIG`:`CLNSIGCONF`
+## 复用拼接字段
+因下游数据库结构新增字段开发工作量大，部分额外字段拼接进已有字段内
+
+| 复用字段                   | 拼接字段         | 连接字符串 | 是否可选拼接 |
+|------------------------|--------------|-------|--------|
+| `ClinVar Significance` | `CLNSIGCONF` | ':'   | 是      |
+| `flank`                | `HGVSc`      | ' '   | 是      |
