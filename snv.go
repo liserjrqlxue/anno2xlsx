@@ -116,12 +116,10 @@ func cycle2(data []map[string]string) {
 					addTier2Row(tier2, item)
 				} else {
 					tier1Db[item["MutationName"]] = true
-					tier1GeneList[item["Gene Symbol"]] = true
 				}
 			} else {
 				if *wgs {
 					tier1Db[item["MutationName"]] = true
-					tier1GeneList[item["Gene Symbol"]] = true
 				}
 			}
 		}
@@ -162,16 +160,18 @@ func wgsCycle(data []map[string]string) {
 			}
 		}
 		logTime("load snv cycle 3")
+		var extraIntronCount = 0
 		for _, item := range data {
 			annotate4(item)
 
-			if *wgs && isMT.MatchString(item["#Chr"]) {
+			if isMT.MatchString(item["#Chr"]) {
 				xlsxUtil.AddMap2Row(item, MTTitle, MTSheet.AddRow())
 			}
-			if tier1GeneList[item["Gene Symbol"]] && item["Tier"] == "Tier1" {
+			if item["Tier"] == "Tier1" {
 				addTier2Row(tier2, item)
 
-				if item["Function"] == "intron" && !tier1Db[item["MutationName"]] {
+				if item["Function"] != "no-change" && !tier1Db[item["MutationName"]] {
+					extraIntronCount++
 					intronRow := intronSheet.AddRow()
 					for _, str := range filterVariantsTitle {
 						intronRow.AddCell().SetString(item[str])
@@ -179,6 +179,7 @@ func wgsCycle(data []map[string]string) {
 				}
 			}
 		}
+		log.Printf("add %d extra intron variant for wgs", extraIntronCount)
 		logTime("load snv cycle 4")
 	}
 }
@@ -286,7 +287,6 @@ func getMhgvs(item map[string]string) string {
 }
 
 func annotate1Tier1(item map[string]string) {
-	tier1GeneList[item["Gene Symbol"]] = true
 	if anno.FuncInfo[item["Function"]] >= 3 {
 		stats["Tier1LoF"]++
 	}

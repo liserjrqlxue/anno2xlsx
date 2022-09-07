@@ -691,8 +691,8 @@ func PrimerDesign(item map[string]string) string {
 	return primer
 }
 
-//exomePrimer return 引物设计 for exon cnv
-func exomePrimer(item map[string]string) (primer string) {
+//ExonPrimer return 引物设计 for exon cnv
+func ExonPrimer(item map[string]string) (primer string, primerMap map[string]string) {
 	var genes = strings.Split(item["OMIM_Gene"], ";")
 	var exons = strings.Split(item["OMIM_exon"], ";")
 	var t string
@@ -702,26 +702,26 @@ func exomePrimer(item map[string]string) (primer string) {
 		t = "DEL"
 	}
 	var primers []string
+	primerMap = make(map[string]string)
 	for i, gene := range genes {
 		if gene == "" || gene == "-" {
 			continue
 		}
-		primers = append(
-			primers,
-			strings.Join(
-				[]string{
-					gene, gene2trans[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
-				},
-				";",
-			),
+		var genePrimer = strings.Join(
+			[]string{
+				gene, gene2trans[gene], exons[i] + " " + t, "-", exons[i], "-", "-", "-", "-", "-", "-", "-", "-",
+			},
+			";",
 		)
+		primers = append(primers, genePrimer)
+		primerMap[gene] = genePrimer
 	}
 	primer = strings.Join(primers, "\n")
 	return
 }
 
-//largePrimer return 引物设计 for large cnv
-func largePrimer(item map[string]string) (primer string) {
+//LargePrimer return 引物设计 for large cnv
+func LargePrimer(item map[string]string) (primer string) {
 	summary := item["Summary"]
 	infos := strings.SplitN(summary, "[", 2)
 	primer = strings.Replace(infos[0], ",", "", -1)
@@ -733,9 +733,9 @@ func largePrimer(item map[string]string) (primer string) {
 //CnvPrimer return 引物设计 for cnv
 func CnvPrimer(item map[string]string, cnvType string) (primer string) {
 	if cnvType == "exon_cnv" {
-		primer = exomePrimer(item)
+		primer, _ = ExonPrimer(item)
 	} else if cnvType == "large_cnv" {
-		primer = largePrimer(item)
+		primer = LargePrimer(item)
 	}
 	return
 }

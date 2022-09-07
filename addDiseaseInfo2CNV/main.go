@@ -78,6 +78,11 @@ var (
 		"",
 		"mem profile",
 	)
+	warn = flag.Bool(
+		"warn",
+		false,
+		"warn gene id lost rather than fatal",
+	)
 )
 
 var tomlCfg *toml.Tree
@@ -96,6 +101,7 @@ var (
 var isLF = regexp.MustCompile(`\n`)
 
 func init() {
+	version.LogVersion()
 	flag.Parse()
 	if *cpuprofile != "" {
 		var f = osUtil.Create(*cpuprofile)
@@ -128,7 +134,6 @@ func init() {
 }
 
 func main() {
-	version.LogVersion()
 	var out = osUtil.Create(*output)
 	defer simpleUtil.DeferClose(out)
 
@@ -155,7 +160,11 @@ func main() {
 			var id, ok = gene2id[g]
 			if !ok {
 				if g != "-" && g != "." {
-					log.Fatalf("can not find gene id of [%s]\n", gene)
+					if *warn {
+						log.Printf("can not find gene id of [%s]:[%s]\n", g, gene)
+					} else {
+						log.Fatalf("can not find gene id of [%s]:[%s]\n", g, gene)
+					}
 				}
 			}
 			geneIDs = append(geneIDs, id)
@@ -168,7 +177,7 @@ func main() {
 
 		item["OMIM"] = item["OMIM_Phenotype_ID"]
 
-		anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+		anno.UpdateCnvAnnot(gene, *cnvType, item, gene2id, diseaseDb.Db)
 
 		var array []string
 		for _, key := range titles {

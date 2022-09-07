@@ -35,8 +35,6 @@ var specVarDb = make(map[string]bool)
 // 遗传相符
 var inheritDb = make(map[string]map[string]int)
 
-var tier1GeneList = make(map[string]bool)
-
 var qualityColumn []string
 
 // WESIM

@@ -9,28 +9,43 @@ import (
 	"github.com/liserjrqlxue/simple-util"
 )
 
+// in-house WGS AF threshold
+var inhouseAF = 0.01
+
 // FuncInfo classify function
 // Tier1 >1
 // LoF 3
+// VEP: cds-indel span splice+-10 splice+-20
 var FuncInfo = map[string]int{
-	"splice-3":     3,
-	"splice-5":     3,
-	"init-loss":    3,
-	"alt-start":    3,
-	"frameshift":   3,
-	"nonsense":     3,
-	"stop-gain":    3,
-	"stop-loss":    2,
-	"span":         3,
-	"missense":     2,
-	"cds-del":      2,
-	"cds-indel":    2,
-	"cds-ins":      2,
-	"splice-10":    2,
-	"splice+10":    2,
-	"coding-synon": 1,
-	"splice-20":    1,
-	"splice+20":    1,
+	"splice-3":                3,
+	"splice_acceptor_variant": 3,
+	"splice-5":                3,
+	"splice_donor_variant":    3,
+	"init-loss":               3,
+	"start_lost":              3,
+	"alt-start":               3,
+	"start_retained_variant":  3,
+	"frameshift":              3,
+	"frameshift_variant":      3,
+	"nonsense":                3,
+	"stop-gain":               3,
+	"stop_gained":             3,
+	"span":                    3,
+	"stop-loss":               2,
+	"stop_lost":               2,
+	"missense":                2,
+	"missense_variant":        2,
+	"cds-del":                 2,
+	"inframe_deletion":        2,
+	"cds-indel":               2,
+	"cds-ins":                 2,
+	"inframe_insertion":       2,
+	"splice-10":               2,
+	"splice+10":               2,
+	"coding-synon":            1,
+	"synonymous_variant":      1,
+	"splice-20":               1,
+	"splice+20":               1,
 }
 
 // regexp
@@ -122,8 +137,8 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					item["Tier"] = "Tier1"
 					stats["isFunction"]++
 					//}
-				} else if isWGS && item["Function"] == "intron" {
-					if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+				} else if isWGS && item["Function"] != "no-change" {
+					if checkAF(item, []string{"inhouse_AF"}, inhouseAF) {
 						item["Tier"] = "Tier1"
 						stats["isFunction"]++
 					} else {
@@ -164,8 +179,8 @@ func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList 
 				item["Tier"] = "Tier1"
 				stats["Function"]++
 				stats["Denovo Function"]++
-			} else if isWGS && item["Function"] == "intron" {
-				if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+			} else if isWGS && item["Function"] != "no-change" {
+				if checkAF(item, []string{"inhouse_AF"}, inhouseAF) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["Denovo Function"]++
@@ -216,8 +231,8 @@ func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneLis
 				stats["Function"]++
 				stats["noDenovo Function"]++
 				//}
-			} else if isWGS && item["Function"] == "intron" {
-				if checkAF(item, []string{"inhouse_AF"}, 0.1) {
+			} else if isWGS && item["Function"] != "no-change" {
+				if checkAF(item, []string{"inhouse_AF"}, inhouseAF) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["noDenovo Function"]++

@@ -94,7 +94,11 @@ func addCnv2Sheet(
 				var id, ok = gene2id[g]
 				if !ok {
 					if g != "-" && g != "." {
-						log.Fatalf("can not find gene id of [%s]\n", gene)
+						if *warn {
+							log.Printf("can not find gene id of [%s]:[%s]\n", g, gene)
+						} else {
+							log.Fatalf("can not find gene id of [%s]:[%s]\n", g, gene)
+						}
 					}
 				}
 				geneIDs = append(geneIDs, id)
@@ -106,7 +110,7 @@ func addCnv2Sheet(
 			spectrumDb.Annos(item, "\n", geneIDs)
 
 			if *cnvAnnot {
-				anno.UpdateCnvAnnot(gene, item, gene2id, diseaseDb.Db)
+				anno.UpdateCnvAnnot(gene, sheet.Name, item, gene2id, diseaseDb.Db)
 			}
 
 			item["OMIM"] = item["OMIM_Phenotype_ID"]

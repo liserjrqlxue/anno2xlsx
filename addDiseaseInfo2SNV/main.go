@@ -90,6 +90,7 @@ var (
 var isLF = regexp.MustCompile(`\n`)
 
 func init() {
+	version.LogVersion()
 	flag.Parse()
 	if *cpuprofile != "" {
 		var f = osUtil.Create(*cpuprofile)
@@ -126,7 +127,6 @@ func init() {
 	)
 }
 func main() {
-	version.LogVersion()
 	var out = osUtil.Create(*output)
 	defer simple_util.DeferClose(out)
 

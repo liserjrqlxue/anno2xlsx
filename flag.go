@@ -164,7 +164,7 @@ var (
 		"if not filter gene",
 	)
 	allTier1 = flag.Bool(
-		"filtered",
+		"allTier1",
 		false,
 		"if input filtered vcf, set all to tier1 and no filter",
 	)
@@ -193,6 +193,11 @@ var (
 		false,
 		"if use redis server",
 	)
+	outJson = flag.Bool(
+		"json",
+		false,
+		"if output tier1.json",
+	)
 	save = flag.Bool(
 		"save",
 		true,
@@ -207,6 +212,11 @@ var (
 		"trio2",
 		false,
 		"if no standard trio mode but proband-father-mother",
+	)
+	warn = flag.Bool(
+		"warn",
+		false,
+		"warn gene id lost rather than fatal",
 	)
 	wgs = flag.Bool(
 		"wgs",

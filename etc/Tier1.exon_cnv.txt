@@ -45,3 +45,4 @@ Seg_ratio
 Seg_ratio_exon
 GC_Content
 GC_exon
+reference
