@@ -124,8 +124,6 @@ var (
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
-	// 产前数据库
-	prenatalDb anno.EncodeDb
 	// 孕前数据库
 	prePregnancyDb anno.EncodeDb
 	ppCode         = "118b09d39a5d3ecd56f9bd4f351dd6d6"

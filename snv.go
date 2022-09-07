@@ -208,8 +208,6 @@ func annotate1(item map[string]string) {
 	diseaseDb.Anno(item, id)
 	// 突变频谱
 	spectrumDb.Anno(item, id)
-	// 产前数据库
-	prenatalDb.Anno(item, id)
 
 	// 孕前数据库
 	var key1 = item["Transcript"] + ":" + item["cHGVS"]

@@ -79,8 +79,6 @@ var (
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
-	// 产前数据库
-	prenatalDb anno.EncodeDb
 )
 
 func printMapRow(w io.Writer, item map[string]string, keys []string, sep string) {
@@ -117,12 +115,6 @@ func main() {
 	// 突变频谱
 	spectrumDb.Load(
 		TomlTree.Get("annotation.Gene.spectrum").(*toml.Tree),
-		dbPath,
-		[]byte(aesCode),
-	)
-	// 产前数据库
-	prenatalDb.Load(
-		TomlTree.Get("annotation.Gene.prenatal").(*toml.Tree),
 		dbPath,
 		[]byte(aesCode),
 	)
@@ -290,7 +282,6 @@ func main() {
 			chpo.Anno(csqItem, geneId)
 			diseaseDb.Anno(csqItem, geneId)
 			spectrumDb.Anno(csqItem, geneId)
-			prenatalDb.Anno(csqItem, geneId)
 
 			//anno.ParseSpliceAI(csqItem)
 			csqItem["cHGVS_org"] = csqItem["HGVSc"]
