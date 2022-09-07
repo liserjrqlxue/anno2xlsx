@@ -908,6 +908,7 @@ var supportTag = []string{
 	"3",
 	"4",
 	"5",
+	"6",
 }
 
 // UpdateFunction convert intron to [splice+10,splice-10,splice+20,splice-20]

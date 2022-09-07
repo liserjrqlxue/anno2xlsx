@@ -28,6 +28,15 @@ func loadDb() {
 			dbPath,
 		)
 	}
+	// 孕前数据库
+	if *pp {
+		prePregnancyDb.Load(
+			TomlTree.Get("annotation.Mutation.PrePregnancy").(*toml.Tree),
+			dbPath,
+			[]byte(ppCode),
+		)
+
+	}
 
 	// 突变频谱
 	spectrumDb.Load(

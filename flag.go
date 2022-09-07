@@ -233,6 +233,11 @@ var (
 		false,
 		"force all MT variant to Tier1",
 	)
+	pp = flag.Bool(
+		"pp",
+		false,
+		"is use PrePregnancy db",
+	)
 )
 
 func checkFlag() {

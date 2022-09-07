@@ -211,6 +211,16 @@ func annotate1(item map[string]string) {
 	// 产前数据库
 	prenatalDb.Anno(item, id)
 
+	// 孕前数据库
+	var key1 = item["Transcript"] + ":" + item["cHGVS"]
+	var key2 = item["Transcript"] + ":" + cHgvsAlt(item["cHGVS"])
+	var key3 = item["Transcript"] + ":" + cHgvsStd(item["cHGVS"])
+	if !prePregnancyDb.Anno(item, key1) {
+		if !prePregnancyDb.Anno(item, key2) {
+			prePregnancyDb.Anno(item, key3)
+		}
+	}
+
 	item["Gene"] = item["Omim Gene"]
 	item["OMIM"] = item["OMIM_Phenotype_ID"]
 
@@ -230,6 +240,11 @@ func annotate1(item map[string]string) {
 	// 引物设计
 	item["exonCount"] = exonCount[item["Transcript"]]
 	item["引物设计"] = anno.PrimerDesign(item)
+
+	// flank + HGVSc
+	if item["HGVSc"] != "" {
+		item["flank"] += " " + item["HGVSc"]
+	}
 
 	// 变异来源
 	if *trio2 {
@@ -403,4 +418,18 @@ func loadData() (data []map[string]string) {
 	}
 	logTime("load anno file")
 	return
+}
+
+func cHgvsAlt(cHgvs string) string {
+	if m := cHGVSalt.FindStringSubmatch(cHgvs); m != nil {
+		return m[1]
+	}
+	return cHgvs
+}
+
+func cHgvsStd(cHgvs string) string {
+	if m := cHGVSstd.FindStringSubmatch(cHgvs); m != nil {
+		return m[1]
+	}
+	return cHgvs
 }

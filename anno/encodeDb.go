@@ -35,13 +35,14 @@ func (db *EncodeDb) Load(cfg *toml.Tree, dbPath string, codeKey []byte) {
 	}
 }
 
-func (db *EncodeDb) Anno(item map[string]string, key string) {
+func (db *EncodeDb) Anno(item map[string]string, key string) bool {
 	var info, ok = db.Db[key]
 	if ok {
 		for k, v := range db.titleMap {
 			item[v] = info[k]
 		}
 	}
+	return ok
 }
 
 func (db *EncodeDb) Annos(item map[string]string, sep string, keys []string) {
