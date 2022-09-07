@@ -36,13 +36,13 @@ github:
     # develop
     - git checkout develop
     - git pull
-    - git pull github
-    #- git pull origin master
+    - git pull github develop
     - git push github --all
     - git push github --tags
     # master
     - git checkout master
     - git pull
+    - git pull github master
     #- git pull origin master
     - git push github --all
     - git push github --tags
