@@ -157,12 +157,6 @@ Depth
 AutoPVS1 Adjusted Strength
 AutoPVS1 Criterion
 cHGVS_org
-MTmut
-MT_AC_hom
-MT_AC_het
-MT_AF_hom
-MT_AF_het
-MT_AN
 DiseaseName/ModeInheritance
 reference
 孕前证据项
