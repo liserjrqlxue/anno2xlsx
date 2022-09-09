@@ -968,7 +968,7 @@ func FloatFormat(item map[string]string) {
 		if e != nil {
 			log.Printf("can not ParseFloat:%s[%s]\n", key, value)
 		} else {
-			item[key] = strconv.FormatFloat(floatValue, 'f', -1, 64)
+			item[key] = strconv.FormatFloat(floatValue, 'f', 6, 64)
 		}
 	}
 }
