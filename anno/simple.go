@@ -946,8 +946,14 @@ func updateFunction(function, cHGVS string) string {
 
 var floatFormatArray = []string{
 	"GnomAD AF",
-	//"GnomAD EAS AF",
+	"GnomAD EAS AF",
 	"ExAC AF",
+	"ExAC EAS AF",
+	"1000G AF",
+	"1000G EAS AF",
+	"ESP6500 AF",
+	"PVFD AF",
+	"dbSNP Allele Freq",
 }
 
 //FloatFormat warp strconv.FormatFloat
