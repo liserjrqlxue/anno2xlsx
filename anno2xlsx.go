@@ -84,8 +84,15 @@ func main() {
 			for k, v := range qualityJsonKeyMap {
 				qualityJson[k] = qualitys[0][v]
 			}
-			qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["targetRegionSize"], 64)).(float64))
-			qualityJson["rawDataSize"] = fmt.Sprintf("%.2f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["rawDataSize"], 64)).(float64)*1000)
+			var targetRegionSize, rawDataSize float64
+			targetRegionSize, err = strconv.ParseFloat(qualityJson["targetRegionSize"], 64)
+			if err == nil {
+				qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", targetRegionSize)
+			}
+			rawDataSize, err = strconv.ParseFloat(qualityJson["rawDataSize"], 64)
+			if err == nil {
+				qualityJson["rawDataSize"] = fmt.Sprintf("%.2f", rawDataSize*1000)
+			}
 			for _, s := range []string{
 				"targetRegionCoverage",
 				"averageDepthGt4X",
