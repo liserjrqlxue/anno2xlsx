@@ -15,9 +15,6 @@ import (
 )
 
 func loadFilterStat(filterStat string, quality map[string]string) {
-	if filterStat == "" {
-		return
-	}
 	var db = make(map[string]float64)
 	filters := strings.Split(filterStat, ",")
 	for _, filter := range filters {
@@ -82,8 +79,7 @@ func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 	if isWGS {
 		sep = ": "
 	}
-	file := strings.Split(files, ",")
-	for i, in := range file {
+	for i, in := range strings.Split(files, ",") {
 		report := textUtil.File2Array(in)
 		for _, line := range report {
 			if isSharp.MatchString(line) {
@@ -144,7 +140,32 @@ func parseQC() {
 		}
 
 		logTime("load coverage.report")
-		loadFilterStat(*filterStat, qualitys[0])
+		if *filterStat != "" {
+			loadFilterStat(*filterStat, qualitys[0])
+		}
+		if *imQc != "" {
+			parseIMQC(*imQc, qualitys)
+		}
+	}
+}
+
+func parseIMQC(files string, qualitys []map[string]string) {
+	var imqc = make(map[string]map[string]string)
+	for _, s := range strings.Split(files, ",") {
+		var qc, _ = textUtil.File2MapMap(s, "sampleID", "\t", nil)
+		for s, m := range qc {
+			imqc[s] = m
+		}
+	}
+	for _, quality := range qualitys {
+		var sampleID = quality["样本编号"]
+		var qc, ok = imqc[sampleID]
+		if ok {
+			quality["Q20 碱基的比例"] = qc["Q20_clean"] + "%"
+			quality["Q30 碱基的比例"] = qc["Q30_clean"] + "%"
+			quality["测序数据的 GC 含量"] = qc["GC_clean"] + "%"
+			quality["低质量 reads 比例"] = qc["lowQual"] + "%"
+		}
 	}
 }
 

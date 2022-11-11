@@ -90,6 +90,11 @@ var (
 		"",
 		"coverage.report file to fill quality sheet, comma as sep, same order with -list",
 	)
+	imQc = flag.String(
+		"imqc",
+		"",
+		"QC.txt file to fill quality sheet, comma as sep, key from -list",
+	)
 	kinship = flag.String(
 		"kinship",
 		"",
