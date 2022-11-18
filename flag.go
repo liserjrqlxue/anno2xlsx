@@ -10,6 +10,11 @@ import (
 
 // flag
 var (
+	assembly = flag.String(
+		"assembly",
+		"hg19",
+		"reference assembly",
+	)
 	cfg = flag.String(
 		"cfg",
 		filepath.Join(etcPath, "config.toml"),
@@ -93,7 +98,7 @@ var (
 	imQc = flag.String(
 		"imqc",
 		"",
-		"QC.txt file to fill quality sheet, comma as sep, key from -list",
+		"wesim QC.txt file to fill quality sheet, comma as sep, key from -list",
 	)
 	kinship = flag.String(
 		"kinship",
