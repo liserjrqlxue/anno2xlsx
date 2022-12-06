@@ -106,7 +106,7 @@ func main() {
 				}
 			}
 			writeBytes(
-				jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality."+qualitys[0]["样本编号"]+".json",
+				jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality.json",
 			)
 		}
 		if *snv != "" {
