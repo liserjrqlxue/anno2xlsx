@@ -230,8 +230,8 @@ func annotate1(item map[string]string) {
 			item["cHGVS_org"] = item["cHGVS"]
 		}
 		acmg2015.AddEvidences(item)
+		item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 	}
-	item["自动化判断"] = acmg2015.PredACMG2015(item, *autoPVS1)
 
 	anno.UpdateSnv(item, *gender)
 
