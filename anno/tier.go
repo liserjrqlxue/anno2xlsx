@@ -135,7 +135,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					stats["isFunction"]++
 					//}
 				} else if isWGS && item["Function"] != "no-change" {
-					if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAF) {
+					if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 						item["Tier"] = "Tier1"
 						stats["isFunction"]++
 					} else {
@@ -177,7 +177,7 @@ func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList 
 				stats["Function"]++
 				stats["Denovo Function"]++
 			} else if isWGS && item["Function"] != "no-change" {
-				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAF) {
+				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["Denovo Function"]++
@@ -229,7 +229,7 @@ func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneLis
 				stats["noDenovo Function"]++
 				//}
 			} else if isWGS && item["Function"] != "no-change" {
-				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAF) {
+				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["noDenovo Function"]++

@@ -69,6 +69,20 @@ func parseToml() {
 	if homRatio != nil {
 		homFixRatioThreshold = homRatio.(float64)
 	}
+
+	// update tier1 AF threshold
+	var tier1AFThreshold = TomlTree.Get("tier1.Tier1AFThreshold")
+	if tier1AFThreshold != nil {
+		anno.Tier1AFThreshold = tier1AFThreshold.(float64)
+	}
+	var tier1PLPAFThreshold = TomlTree.Get("tier1.Tier1PLPAFThreshold")
+	if tier1PLPAFThreshold != nil {
+		anno.Tier1PLPAFThreshold = tier1PLPAFThreshold.(float64)
+	}
+	var tier1InHouseAFThreshold = TomlTree.Get("tier1.Tier1InHouseAFThreshold")
+	if tier1InHouseAFThreshold != nil {
+		anno.Tier1InHouseAFThreshold = tier1InHouseAFThreshold.(float64)
+	}
 }
 
 func openRedis() {
