@@ -1,0 +1,8 @@
+package anno
+
+var (
+	Tier1AFThreshold    = 0.01
+	Tier1PLPAFThreshold = 0.05
+	// in-house WGS AF threshold
+	Tier1InHouseAF = 0.01
+)
