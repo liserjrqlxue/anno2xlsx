@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -51,6 +53,10 @@ func init() {
 	parseToml()
 	parseCfg()
 
+	var funcitonLevel = filepath.Join(etcPath, "function.level.json")
+	if osUtil.FileExists(funcitonLevel) {
+		anno.FuncInfo = jsonUtil.JsonFile2MapInt(funcitonLevel)
+	}
 }
 
 func main() {
