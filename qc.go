@@ -146,6 +146,19 @@ func parseQC() {
 		if *imQc != "" {
 			parseIMQC(*imQc, qualitys)
 		}
+		if *mtQc != "" {
+			parseMTQC(*mtQc, qualitys)
+		}
+	}
+}
+
+func parseMTQC(files string, qualitys []map[string]string) {
+	for i, s := range strings.Split(files, ",") {
+		var qc, err = textUtil.File2Map(s, "\t", false)
+		simpleUtil.CheckErr(err)
+		for k, v := range qc {
+			qualitys[i][k] = v
+		}
 	}
 }
 

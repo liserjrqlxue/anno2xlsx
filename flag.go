@@ -100,6 +100,11 @@ var (
 		"",
 		"wesim QC.txt file to fill quality sheet, comma as sep, key from -list",
 	)
+	mtQc = flag.String(
+		"mtqc",
+		"",
+		"MT QC.txt file to fill quality sheet, comma as sep, key from -list",
+	)
 	kinship = flag.String(
 		"kinship",
 		"",
