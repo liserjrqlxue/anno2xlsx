@@ -126,7 +126,12 @@ func parseQC() {
 			for k, v := range qualityKeyMap {
 				quality[k] = quality[v]
 			}
-			quality["核型预测"] = karyotypeMap[quality["样本编号"]]
+			var ok bool
+			quality["核型预测"], ok = karyotypeMap[quality["样本编号"]]
+			if !ok {
+				quality["核型预测"] = "NA"
+			}
+
 			if *wesim {
 				var qcArray []string
 				for _, key := range qcColumn {
