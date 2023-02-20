@@ -132,6 +132,16 @@ func parseQC() {
 				quality["核型预测"] = "NA"
 			}
 
+			// WGS -> WES
+			var rawDataGb, ok1 = quality["原始数据产出（Gb）"]
+			var rawDataMb = quality["原始数据产出（Mb）"]
+			if ok1 && rawDataMb == "" {
+				var rawData, e = strconv.ParseFloat(rawDataGb, 64)
+				if e == nil {
+					quality["原始数据产出（Mb）"] = fmt.Sprintf("%.2f", rawData*1000)
+				}
+			}
+
 			if *wesim {
 				var qcArray []string
 				for _, key := range qcColumn {
