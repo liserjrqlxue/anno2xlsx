@@ -140,7 +140,7 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	var rows = simpleUtil.HandleError(inputFh.GetRows(sheet)).([][]string)
 	fmt.Printf("rows:\t%d\t%v\n", len(rows), len(rows) == *rowCount)
 	var outputFile = *prefix + *output + "." + sheet + *suffix
-	var geneList = *prefix + *output + "." + sheet + "geneList.txt"
+	var geneList = *prefix + *output + "." + sheet + ".geneList.txt"
 	var geneListFH = osUtil.Create(geneList)
 	defer simpleUtil.DeferClose(geneListFH)
 	var d []byte
