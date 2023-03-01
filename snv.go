@@ -185,6 +185,9 @@ func wgsCycle(data []map[string]string) {
 }
 
 func annotate1(item map[string]string) {
+	// inhouse af -> frequency
+	item["frequency"] = item["inhouse_AF"]
+
 	// score to prediction
 	anno.Score2Pred(item)
 
