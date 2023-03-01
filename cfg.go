@@ -29,13 +29,9 @@ func parseCfg() {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
 	}
 	if *wgs {
-		for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
-			qualityColumn = append(qualityColumn, key.(string))
-		}
+		qualityColumn = textUtil.File2Array(filepath.Join(etcPath, "wgs.Tier1.quality.txt"))
 	} else {
-		for _, key := range defaultConfig["qualityColumn"].([]interface{}) {
-			qualityColumn = append(qualityColumn, key.(string))
-		}
+		qualityColumn = textUtil.File2Array(filepath.Join(etcPath, "Tier1.quality.txt"))
 	}
 
 	initIM()

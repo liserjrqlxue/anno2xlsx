@@ -1,0 +1,65 @@
+样本编号
+原始数据产出（Mb）
+目标区长度（bp）
+目标区覆盖度
+目标区平均深度（X）
+目标区平均深度>4X位点所占比例
+目标区平均深度>10X位点所占比例
+目标区平均深度>20X位点所占比例
+目标区平均深度>30X位点所占比例
+bam文件路径
+核型预测
+On target 率
+Duplicate reads 的比例
+Q20 碱基的比例
+Q30 碱基的比例
+测序数据的 GC 含量
+低质量 reads 比例
+罕见变异占比（Tier1/总）
+罕见烈性变异占比 in tier1
+罕见纯合变异占比 in tier1
+纯合变异占比 in all
+chr1纯合变异占比
+chr2纯合变异占比
+chr3纯合变异占比
+chr4纯合变异占比
+chr5纯合变异占比
+chr6纯合变异占比
+chr7纯合变异占比
+chr8纯合变异占比
+chr9纯合变异占比
+chr10纯合变异占比
+chr11纯合变异占比
+chr12纯合变异占比
+chr13纯合变异占比
+chr14纯合变异占比
+chr15纯合变异占比
+chr16纯合变异占比
+chr17纯合变异占比
+chr18纯合变异占比
+chr19纯合变异占比
+chr20纯合变异占比
+chr21纯合变异占比
+chr22纯合变异占比
+chrX纯合变异占比
+SNVs_all
+SNVs_tier1
+Small insertion（包含 dup）_all
+Small insertion（包含 dup）_tier1
+Small deletion_all
+Small deletion_tier1
+exon CNV_all
+exon CNV_tier1
+large CNV_all
+large CNV_tier1
+QC
+NGS_gender
+三倍体
+污染
+污染比例
+深度内含子平均深度
+深度内含子20X覆盖度
+线粒体库内位点检出
+线粒体平均深度
+线粒体20X覆盖度
+动态突变检出致病重复数
