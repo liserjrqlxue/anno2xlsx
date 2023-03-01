@@ -236,7 +236,7 @@ var (
 	wgs = flag.Bool(
 		"wgs",
 		false,
-		"if anno wgs",
+		"if anno wgs, raw data in Gb",
 	)
 	wesim = flag.Bool(
 		"wesim",

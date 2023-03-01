@@ -28,9 +28,6 @@ func parseCfg() {
 	if *transInfo == "" {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
 	}
-	for _, key := range defaultConfig["qualityJsonColumn"].([]interface{}) {
-		qualityJsonColumn = append(qualityJsonColumn, key.(string))
-	}
 	if *wgs {
 		for _, key := range defaultConfig["qualityColumnWGS"].([]interface{}) {
 			qualityColumn = append(qualityColumn, key.(string))

@@ -152,4 +152,3 @@ var homFixRatioThreshold = 0.85
 // json
 //var tier1Json *os.File
 var tier1Data []map[string]string
-var qualityJsonColumn []string
