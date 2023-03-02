@@ -85,7 +85,7 @@ func prepareTier2() {
 		tier2TemplateInfo.note[1] = append(tier2TemplateInfo.note[1], item[1])
 	}
 
-	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName)
+	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName[:31])
 	simpleUtil.CheckErr(err)
 	tier2row := tier2.sheet.AddRow()
 	for i, col := range tier2TemplateInfo.cols {
