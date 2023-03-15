@@ -95,6 +95,7 @@ var (
 	spectrumDb anno.EncodeDb
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
+	chpo      anno.AnnoDb
 )
 
 // \n -> <br/>
@@ -119,6 +120,11 @@ func init() {
 
 	tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 
+	// CHPO
+	chpo.Load(
+		tomlCfg.Get("annotation.hpo").(*toml.Tree),
+		dbPath,
+	)
 	// 突变频谱
 	spectrumDb.Load(
 		tomlCfg.Get("annotation.Gene.spectrum").(*toml.Tree),
@@ -170,6 +176,8 @@ func main() {
 			geneIDs = append(geneIDs, id)
 		}
 
+		// CHPO
+		chpo.Annos(item, "<br/>", geneIDs)
 		// 基因-疾病
 		diseaseDb.Annos(item, "<br/>", geneIDs)
 		// 突变频谱
