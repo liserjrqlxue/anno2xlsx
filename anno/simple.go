@@ -635,34 +635,37 @@ func reverseComplement(s string) string {
 	return string(runes)
 }
 
-var err error
-
 //PrimerDesign return 引物设计
 func PrimerDesign(item map[string]string) string {
-	var transcript = item["Transcript"]
+	var (
+		transcript = item["Transcript"]
+		flank      = item["Flank"]
+		adepth     = strings.Split(item["A.Depth"], ";")[0]
+		aratio     = strings.Split(item["A.Ratio"], ";")[0]
+		pos        string
+		Adepth     int
+		Aratio     float64
+		err        error
+	)
 
-	var pos string
 	if item["VarType"] == "snv" {
 		pos = item["Stop"]
 	} else {
 		pos = item["Start"] + "-" + item["Stop"]
 	}
-	var flank = item["Flank"]
+
 	if item["Strand"] == "-" {
 		flank = reverseComplement(flank)
 	}
 
-	var Adepth int
-	adepth := strings.Split(item["A.Depth"], ";")[0]
 	if reInt.MatchString(adepth) {
 		Adepth, err = strconv.Atoi(adepth)
 		simpleUtil.CheckErr(err, "A.Depth")
 	}
 
-	aratio := strings.Split(item["A.Ratio"], ";")[0]
 	if ratio.MatchString(aratio) && aratio != "0" {
-		Aratio, e := strconv.ParseFloat(aratio, 32)
-		simpleUtil.CheckErr(e)
+		Aratio, err = strconv.ParseFloat(aratio, 32)
+		simpleUtil.CheckErr(err)
 
 		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
 		if item["Depth"] == "" && Adepth > 0 {
@@ -672,7 +675,7 @@ func PrimerDesign(item map[string]string) string {
 		}
 	}
 
-	primer := strings.Join(
+	var primer = strings.Join(
 		[]string{
 			item["Gene Symbol"],
 			transcript,
