@@ -273,7 +273,7 @@ var HomFixRatioThreshold = 0.85
 
 //UpdateZygosity format, fix hom and fix hemi
 func UpdateZygosity(item map[string]string, gender string) {
-	item["Zygosity"] = zygosityFormat(item["Zygosity"])
+	item["Zygosity"] = ZygosityFormat(item["Zygosity"])
 	homRatio(item, HomFixRatioThreshold)
 	hemiPAR(item, gender)
 }
@@ -493,12 +493,16 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 	}
 }
 
-func zygosityFormat(zygosity string) string {
+func ZygosityFormat(zygosity string) string {
 	zygosity = strings.Replace(zygosity, "het-ref", "Het", -1)
 	zygosity = strings.Replace(zygosity, "het-alt", "Het", -1)
 	zygosity = strings.Replace(zygosity, "hom-alt", "Hom", -1)
 	zygosity = strings.Replace(zygosity, "hem-alt", "Hemi", -1)
 	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
+	zygosity = strings.Replace(zygosity, "het", "Het", -1)
+	zygosity = strings.Replace(zygosity, "hom", "Hom", -1)
+	zygosity = strings.Replace(zygosity, "hemi", "Hemi", -1)
+	zygosity = strings.Replace(zygosity, "hem", "Hemi", -1)
 	return zygosity
 }
 
