@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/fmtUtil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -88,6 +89,11 @@ var (
 	)
 )
 
+var (
+	hgnc   map[string]map[string]string
+	annodb map[string]string
+)
+
 func main() {
 	flag.Parse()
 	if *input == "" || *key == "" || *sheetName == "" || *rowCount == 0 || *keyCount == 0 {
@@ -107,6 +113,12 @@ func main() {
 	var geneIDkeys = make(map[string]bool)
 	for _, k := range geneIDdb {
 		geneIDkeys[k[1]] = true
+	}
+
+	hgnc, _ = textUtil.File2MapMap("non_alt_loci_set.txt", "entrez_id", "\t", nil)
+	annodb = make(map[string]string)
+	for _, line := range textUtil.File2Slice(filepath.Join(dbPath, "annodb.gene.id.txt"), "\t") {
+		annodb[line[1]] = line[0]
 	}
 
 	var skip = make(map[int]bool)
@@ -143,6 +155,7 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	var geneList = *prefix + *output + "." + sheet + ".geneList.txt"
 	var geneListFH = osUtil.Create(geneList)
 	defer simpleUtil.DeferClose(geneListFH)
+	fmtUtil.Fprintln(geneListFH, "gene\tgeneID\tgeneInDB\thgncGene\thgncID")
 	var d []byte
 	var data, _ = simpleUtil.Slice2MapMapArrayMerge1(rows, *key, *mergeSep, skip)
 	var gene2id = make(map[string]string)
@@ -167,7 +180,8 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	}
 	sort.Strings(genes)
 	for _, gene := range genes {
-		simpleUtil.HandleError(fmt.Fprintf(geneListFH, "%s\t%s\n", gene, gene2id[gene]))
+		var id = gene2id[gene]
+		simpleUtil.HandleError(fmt.Fprintf(geneListFH, "%s\t%s\t%s\t%s\t%s\n", gene, gene2id[gene], annodb[id], hgnc[id]["symbol"], hgnc[id]["hgnc_id"]))
 	}
 
 	d = simpleUtil.HandleError(json.MarshalIndent(data, "", "  ")).([]byte)
