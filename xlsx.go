@@ -80,7 +80,7 @@ func prepareTier2() {
 		if i > 0 {
 			tier2TemplateInfo.cols = append(tier2TemplateInfo.cols, item[0])
 			tier2TemplateInfo.titles[0] = append(tier2TemplateInfo.titles[0], item[1])
-			tier2TemplateInfo.titles[1] = append(tier2TemplateInfo.titles[0], item[2])
+			tier2TemplateInfo.titles[1] = append(tier2TemplateInfo.titles[1], item[2])
 		}
 	}
 	for _, item := range tier2Infos[1] {
