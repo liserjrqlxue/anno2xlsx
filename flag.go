@@ -10,6 +10,11 @@ import (
 
 // flag
 var (
+	assembly = flag.String(
+		"assembly",
+		"hg19",
+		"reference assembly",
+	)
 	cfg = flag.String(
 		"cfg",
 		filepath.Join(etcPath, "config.toml"),
@@ -89,6 +94,16 @@ var (
 		"qc",
 		"",
 		"coverage.report file to fill quality sheet, comma as sep, same order with -list",
+	)
+	imQc = flag.String(
+		"imqc",
+		"",
+		"wesim QC.txt file to fill quality sheet, comma as sep, key from -list",
+	)
+	mtQc = flag.String(
+		"mtqc",
+		"",
+		"MT QC.txt file to fill quality sheet, comma as sep, key from -list",
 	)
 	kinship = flag.String(
 		"kinship",
@@ -221,7 +236,7 @@ var (
 	wgs = flag.Bool(
 		"wgs",
 		false,
-		"if anno wgs",
+		"if anno wgs, raw data in Gb",
 	)
 	wesim = flag.Bool(
 		"wesim",
@@ -232,6 +247,11 @@ var (
 		"mt",
 		false,
 		"force all MT variant to Tier1",
+	)
+	pp = flag.Bool(
+		"pp",
+		false,
+		"is use PrePregnancy db",
 	)
 )
 

@@ -67,6 +67,9 @@ func prepareTier2() {
 		flag:      "Tier2",
 		sheetName: *productID + "_" + sampleList[0],
 	}
+	if len(tier2.sheetName) > 31 {
+		tier2.sheetName = tier2.sheetName[:31]
+	}
 	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
 	tier2.xlsx = xlsx.NewFile()
 

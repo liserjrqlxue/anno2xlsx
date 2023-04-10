@@ -183,6 +183,12 @@ func tag5(tagMap map[string]bool, item map[string]string) {
 	}
 }
 
+func tag6(tagMap map[string]bool, item map[string]string) {
+	if item["孕前致病性"] != "" {
+		tagMap["6"] = true
+	}
+}
+
 //UpdateTags get Tags of item
 func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio, isTrio2 bool) string {
 	var tagMap = make(map[string]bool)
@@ -191,6 +197,7 @@ func UpdateTags(item map[string]string, specVarDb map[string]bool, isTrio, isTri
 	tag3(tagMap, item)
 	tag4(tagMap, item)
 	tag5(tagMap, item)
+	tag6(tagMap, item)
 	var tags []string
 	for _, t := range supportTag {
 		if tagMap[t] {

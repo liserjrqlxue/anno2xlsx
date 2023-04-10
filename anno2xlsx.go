@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -51,6 +53,10 @@ func init() {
 	parseToml()
 	parseCfg()
 
+	var funcitonLevel = filepath.Join(etcPath, "function.level.json")
+	if osUtil.FileExists(funcitonLevel) {
+		anno.FuncInfo = jsonUtil.JsonFile2MapInt(funcitonLevel)
+	}
 }
 
 func main() {
@@ -84,8 +90,11 @@ func main() {
 			for k, v := range qualityJsonKeyMap {
 				qualityJson[k] = qualitys[0][v]
 			}
-			qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["targetRegionSize"], 64)).(float64))
-			qualityJson["rawDataSize"] = fmt.Sprintf("%.2f", simpleUtil.HandleError(strconv.ParseFloat(qualityJson["rawDataSize"], 64)).(float64)*1000)
+			var targetRegionSize float64
+			targetRegionSize, err = strconv.ParseFloat(qualityJson["targetRegionSize"], 64)
+			if err == nil {
+				qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", targetRegionSize)
+			}
 			for _, s := range []string{
 				"targetRegionCoverage",
 				"averageDepthGt4X",
@@ -99,7 +108,7 @@ func main() {
 				}
 			}
 			writeBytes(
-				jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality."+qualitys[0]["样本编号"]+".json",
+				jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality.json",
 			)
 		}
 		if *snv != "" {

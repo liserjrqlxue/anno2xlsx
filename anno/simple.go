@@ -273,7 +273,7 @@ var HomFixRatioThreshold = 0.85
 
 //UpdateZygosity format, fix hom and fix hemi
 func UpdateZygosity(item map[string]string, gender string) {
-	item["Zygosity"] = zygosityFormat(item["Zygosity"])
+	item["Zygosity"] = ZygosityFormat(item["Zygosity"])
 	homRatio(item, HomFixRatioThreshold)
 	hemiPAR(item, gender)
 }
@@ -493,12 +493,16 @@ func FamilyTag(item map[string]string, inheritDb map[string]map[string]int, tag 
 	}
 }
 
-func zygosityFormat(zygosity string) string {
+func ZygosityFormat(zygosity string) string {
 	zygosity = strings.Replace(zygosity, "het-ref", "Het", -1)
 	zygosity = strings.Replace(zygosity, "het-alt", "Het", -1)
 	zygosity = strings.Replace(zygosity, "hom-alt", "Hom", -1)
 	zygosity = strings.Replace(zygosity, "hem-alt", "Hemi", -1)
 	zygosity = strings.Replace(zygosity, "hemi-alt", "Hemi", -1)
+	zygosity = strings.Replace(zygosity, "het", "Het", -1)
+	zygosity = strings.Replace(zygosity, "hom", "Hom", -1)
+	zygosity = strings.Replace(zygosity, "hemi", "Hemi", -1)
+	zygosity = strings.Replace(zygosity, "hem", "Hemi", -1)
 	return zygosity
 }
 
@@ -635,34 +639,37 @@ func reverseComplement(s string) string {
 	return string(runes)
 }
 
-var err error
-
 //PrimerDesign return 引物设计
 func PrimerDesign(item map[string]string) string {
-	var transcript = item["Transcript"]
+	var (
+		transcript = item["Transcript"]
+		flank      = item["Flank"]
+		adepth     = strings.Split(item["A.Depth"], ";")[0]
+		aratio     = strings.Split(item["A.Ratio"], ";")[0]
+		pos        string
+		Adepth     int
+		Aratio     float64
+		err        error
+	)
 
-	var pos string
 	if item["VarType"] == "snv" {
 		pos = item["Stop"]
 	} else {
 		pos = item["Start"] + "-" + item["Stop"]
 	}
-	var flank = item["Flank"]
+
 	if item["Strand"] == "-" {
 		flank = reverseComplement(flank)
 	}
 
-	var Adepth int
-	adepth := strings.Split(item["A.Depth"], ";")[0]
 	if reInt.MatchString(adepth) {
 		Adepth, err = strconv.Atoi(adepth)
 		simpleUtil.CheckErr(err, "A.Depth")
 	}
 
-	aratio := strings.Split(item["A.Ratio"], ";")[0]
 	if ratio.MatchString(aratio) && aratio != "0" {
-		Aratio, e := strconv.ParseFloat(aratio, 32)
-		simpleUtil.CheckErr(e)
+		Aratio, err = strconv.ParseFloat(aratio, 32)
+		simpleUtil.CheckErr(err)
 
 		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
 		if item["Depth"] == "" && Adepth > 0 {
@@ -672,7 +679,7 @@ func PrimerDesign(item map[string]string) string {
 		}
 	}
 
-	primer := strings.Join(
+	var primer = strings.Join(
 		[]string{
 			item["Gene Symbol"],
 			transcript,
@@ -908,6 +915,7 @@ var supportTag = []string{
 	"3",
 	"4",
 	"5",
+	"6",
 }
 
 // UpdateFunction convert intron to [splice+10,splice-10,splice+20,splice-20]
@@ -945,7 +953,14 @@ func updateFunction(function, cHGVS string) string {
 
 var floatFormatArray = []string{
 	"GnomAD AF",
-	//"GnomAD EAS AF",
+	"GnomAD EAS AF",
+	"ExAC AF",
+	"ExAC EAS AF",
+	"1000G AF",
+	"1000G EAS AF",
+	"ESP6500 AF",
+	"PVFD AF",
+	"dbSNP Allele Freq",
 }
 
 //FloatFormat warp strconv.FormatFloat
@@ -960,7 +975,7 @@ func FloatFormat(item map[string]string) {
 		if e != nil {
 			log.Printf("can not ParseFloat:%s[%s]\n", key, value)
 		} else {
-			item[key] = strconv.FormatFloat(floatValue, 'f', -1, 64)
+			item[key] = strconv.FormatFloat(floatValue, 'f', 6, 64)
 		}
 	}
 }

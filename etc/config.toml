@@ -1,6 +1,11 @@
 tier3 = true
 homFixRatioThreshold = 0.78
 
+[tier1]
+Tier1AFThreshold = 0.01
+Tier1PLPAFThreshold = 0.05
+Tier1InHouseAF = 0.01
+
 [annotation.hpo]
 file = "gene2hpo.txt"
 mainKey = "entre-gene-id"
@@ -19,6 +24,19 @@ file = "gnomad.genomes.v3.1.sites.chrM.reduced_annotations.tsv.db"
 mainKey = "MTmut"
 titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
 title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
+
+[annotation.Mutation.PrePregnancy]
+file = "PrePregnancy.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "Evidence New + Check",
+    "Auto ACMG + Check",
+]
+title = [
+    "孕前证据项",
+    "孕前致病性",
+]
 
 [annotation.Gene.spectrum]
 file = "基因突变谱.json.aes"
@@ -64,27 +82,6 @@ title = [
     "imprinted gene",
     "OMIM_Phenotype_ID",
     "reference",
-]
-
-[annotation.Gene.prenatal]
-file = "产前数据库.json.aes"
-type = "json"
-codeKey = "****"
-titleKey = [
-    "产前表型-英文",
-    "产前表型-中文",
-    "受累系统",
-    "文献致病性分类",
-    "文献PMID",
-    "其它文献格式",
-]
-title = [
-    "产前表型-英文",
-    "产前表型-中文",
-    "受累系统",
-    "文献致病性分类",
-    "文献PMID",
-    "其它文献格式",
 ]
 
 [acmg]

@@ -104,6 +104,7 @@ func addCnv2Sheet(
 				geneIDs = append(geneIDs, id)
 			}
 
+			chpo.Annos(item, "\n", geneIDs)
 			// 基因-疾病
 			diseaseDb.Annos(item, "\n", geneIDs)
 			// 突变频谱

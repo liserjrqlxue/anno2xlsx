@@ -28,16 +28,19 @@ func loadDb() {
 			dbPath,
 		)
 	}
+	// 孕前数据库
+	if *pp {
+		prePregnancyDb.Load(
+			TomlTree.Get("annotation.Mutation.PrePregnancy").(*toml.Tree),
+			dbPath,
+			[]byte(ppCode),
+		)
+
+	}
 
 	// 突变频谱
 	spectrumDb.Load(
 		TomlTree.Get("annotation.Gene.spectrum").(*toml.Tree),
-		dbPath,
-		[]byte(aesCode),
-	)
-	// 产前数据库
-	prenatalDb.Load(
-		TomlTree.Get("annotation.Gene.prenatal").(*toml.Tree),
 		dbPath,
 		[]byte(aesCode),
 	)
@@ -66,5 +69,10 @@ func loadDb() {
 
 	for transcript, level := range simpleUtil.HandleError(textUtil.File2Map(filepath.Join(etcPath, "转录本优先级.txt"), "\t", false)).(map[string]string) {
 		transcriptLevel[transcript] = stringsUtil.Atoi(level)
+	}
+
+	var fpMA, _ = textUtil.File2MapArray(filepath.Join(dbPath, "snvindel假阳性统计.xlsx.Sheet1.txt"), "\t", nil)
+	for _, m := range fpMA {
+		fpDb[m["NM"]+":"+m["c."]] = m
 	}
 }

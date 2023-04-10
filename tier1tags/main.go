@@ -97,9 +97,6 @@ var (
 // 遗传相符
 var inheritDb = make(map[string]map[string]int)
 
-// Tier1
-var tier1GeneList = make(map[string]bool)
-
 var defaultConfig map[string]interface{}
 
 func init() {
@@ -176,10 +173,6 @@ func main() {
 	// cycle 1 find common tier1 gene list
 	var stats = make(map[string]int)
 	for _, item := range data {
-		anno.AddTier(item, stats, geneList, specVarDb, *trio, false, false, anno.AFlist)
-		if item["Tier"] == "Tier1" {
-			tier1GeneList[item["Gene Symbol"]] = true
-		}
 		anno.AddTier(item, stats, geneList, specVarDb, *trio, true, false, anno.AFlist)
 		if item["Tier"] == "Tier1" {
 			anno.InheritCheck(item, inheritDb)
@@ -187,7 +180,7 @@ func main() {
 	}
 	// cycle 2 for 遗传相符
 	for _, item := range data {
-		if item["Tier"] == "Tier1" && tier1GeneList[item["Gene Symbol"]] {
+		if item["Tier"] == "Tier1" {
 			// 遗传相符
 			item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
 			item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)

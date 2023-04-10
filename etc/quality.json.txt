@@ -1,7 +1,7 @@
 name	describe	value type	value example
-sampleID	样本编号	string	depth40_rep1
-rawDataSize	原始数据产出（Gb）	string	124.95
-targetRegionSize	目标区长度（bp）	string	2684595047.0
+sampleId	样本编号	string	depth40_rep1
+rawDataSize	原始数据产出（Mb）	string	124.95
+targetRegionSize	目标区长度（bp）	string	2684595047
 targetRegionCoverage	目标区覆盖度	string	99.92
 averageDepth	目标区平均深度（X）	string	40.77
 averageDepthGt4X	目标区平均深度>4X位点所占比例	string	99.07
@@ -11,3 +11,57 @@ averageDepthGt30X	目标区平均深度>30X位点所占比例	string	85.73
 bamPath	bam文件路径	string	/zfsyt1/B2C_RD/B2C_DEV/20220307-cWGS-task407/wgs_wdl_0322/depth40_rep1/bam_chr
 karyotypePrediction	核型预测	string	46,XX
 mtTargetRegionGt2000X	线粒体基因组区域平均深度>2000X位点所占比例	string	100
+onTarget	On target 率
+duplicateReads	Duplicate reads 的比例
+q20	Q20 碱基的比例
+q30	Q30 碱基的比例
+gc	测序数据的 GC 含量
+lowQualityReads	低质量 reads 比例
+tier1Rare	罕见变异占比（Tier1/总）
+tier1RareStrong	罕见烈性变异占比 in tier1
+tier1RareHom	罕见纯合变异占比 in tier1
+tier1Hom	纯合变异占比 in all
+chr1Hom	chr1纯合变异占比
+chr2Hom	chr2纯合变异占比
+chr3Hom	chr3纯合变异占比
+chr4Hom	chr4纯合变异占比
+chr5Hom	chr5纯合变异占比
+chr6Hom	chr6纯合变异占比
+chr7Hom	chr7纯合变异占比
+chr8Hom	chr8纯合变异占比
+chr9Hom	chr9纯合变异占比
+chr10Hom	chr10纯合变异占比
+chr11Hom	chr11纯合变异占比
+chr12Hom	chr12纯合变异占比
+chr13Hom	chr13纯合变异占比
+chr14Hom	chr14纯合变异占比
+chr15Hom	chr15纯合变异占比
+chr16Hom	chr16纯合变异占比
+chr17Hom	chr17纯合变异占比
+chr18Hom	chr18纯合变异占比
+chr19Hom	chr19纯合变异占比
+chr20Hom	chr20纯合变异占比
+chr21Hom	chr21纯合变异占比
+chr22Hom	chr22纯合变异占比
+chrXHom	chrX纯合变异占比
+snvTotal	SNVs_all
+snvTier1	SNVs_tier1
+smallInsertTotal	Small insertion（包含 dup）_all
+smallInsertTier1	Small insertion（包含 dup）_tier1
+deletionTotal	Small deletion_all
+deletionTier1	Small deletion_tier1
+exonCnvTotal	exon CNV_all
+exonCnvTier1	exon CNV_tier1
+largeCnvTotal	large CNV_all
+largeCnvTier1	large CNV_tier1
+qcResult	QC
+gender	NGS_gender
+triploidPossibility	三倍体
+samplePollute	污染
+samplePolluteRatio	污染比例
+intronAverageDepth	深度内含子平均深度
+intronCoverage20x	深度内含子20X覆盖度
+mitochondrionDetected	线粒体库内位点检出
+mitochondrionAverageDepth	线粒体平均深度
+mitochondrionCoverage20x	线粒体20X覆盖度
+mutationRepeatDetected	动态突变检出致病重复数
