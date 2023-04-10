@@ -152,3 +152,6 @@ var homFixRatioThreshold = 0.85
 // json
 //var tier1Json *os.File
 var tier1Data []map[string]string
+
+// 假阳性
+var fpDb map[string]map[string]string

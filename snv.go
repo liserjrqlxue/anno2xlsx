@@ -187,6 +187,8 @@ func wgsCycle(data []map[string]string) {
 func annotate1(item map[string]string) {
 	// inhouse af -> frequency
 	item["frequency"] = item["inhouse_AF"]
+	// 历史验证假阳次数
+	item["历史验证假阳次数"] = fpDb[item["Transcript"]+":"+strings.Replace(item["cHGVS"], " ", "", -1)]["重复数"]
 
 	// score to prediction
 	anno.Score2Pred(item)

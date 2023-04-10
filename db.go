@@ -70,4 +70,9 @@ func loadDb() {
 	for transcript, level := range simpleUtil.HandleError(textUtil.File2Map(filepath.Join(etcPath, "转录本优先级.txt"), "\t", false)).(map[string]string) {
 		transcriptLevel[transcript] = stringsUtil.Atoi(level)
 	}
+
+	var fpMA, _ = textUtil.File2MapArray(filepath.Join(dbPath, "snvindel假阳性统计.xlsx.Sheet1.txt"), "\t", nil)
+	for _, m := range fpMA {
+		fpDb[m["NM"]+":"+m["c."]] = m
+	}
 }
