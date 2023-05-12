@@ -72,7 +72,7 @@ var (
 func UpdateSnvTier1(item map[string]string) {
 
 	item["一键搜索链接"] = url.QueryEscape(googleKey(item))
-	item["cHGVS"] = cHgvsAlt(item["cHGVS"])
+	item["cHGVS"] = CHgvsAlt(item["cHGVS"])
 
 	// addition
 	item["烈性突变"] = "否"
@@ -765,7 +765,7 @@ var (
 	ivs4     = regexp.MustCompile(`c\.([-*]\d+)([+-]\d+)_([-*]\d+)([+-]\d+)(.*)$`)
 )
 
-func cHgvsAlt(cHgvs string) string {
+func CHgvsAlt(cHgvs string) string {
 	if m := cHGVSalt.FindStringSubmatch(cHgvs); m != nil {
 		return m[1]
 	}
