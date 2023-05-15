@@ -151,8 +151,8 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	var valid = true
 	var rows = simpleUtil.HandleError(inputFh.GetRows(sheet)).([][]string)
 	fmt.Printf("rows:\t%d\t%v\n", len(rows), len(rows) == *rowCount)
-	var outputFile = *prefix + *output + "." + sheet + *suffix
-	var geneList = *prefix + *output + "." + sheet + ".geneList.txt"
+	var outputFile = *prefix + *output + *suffix
+	var geneList = *prefix + *output + ".geneList.txt"
 	var geneListFH = osUtil.Create(geneList)
 	defer simpleUtil.DeferClose(geneListFH)
 	fmtUtil.Fprintln(geneListFH, "gene\tgeneID\tgeneInDB\thgncGene\thgncID")
@@ -182,6 +182,9 @@ func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, 
 	for _, gene := range genes {
 		var id = gene2id[gene]
 		simpleUtil.HandleError(fmt.Fprintf(geneListFH, "%s\t%s\t%s\t%s\t%s\n", gene, gene2id[gene], annodb[id], hgnc[id]["symbol"], hgnc[id]["hgnc_id"]))
+		if gene != hgnc[id]["symbol"] {
+			fmt.Printf("gene vs HGNC disaccord [%s]vs.[%s:%s]\n", gene, hgnc[id]["symbol"], hgnc[id]["hgnc_id"])
+		}
 	}
 
 	d = simpleUtil.HandleError(json.MarshalIndent(data, "", "  ")).([]byte)
