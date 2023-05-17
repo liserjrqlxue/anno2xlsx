@@ -92,7 +92,7 @@ func UpdateSnvTier1(item map[string]string) {
 	item["GnomAD hemi"] = item["GnomAD HemiAlt Count"]
 	item["纯合，半合"] = item["GnomAD HomoAlt Count"] // + "|" + dataHash["GnomAD HemiAlt Count"]
 
-	item["历史样本检出个数"] = item["sampleMut"] + "/" + item["sampleAll"]
+	// item["历史样本检出个数"] = item["sampleMut"] + "/" + item["sampleAll"]
 }
 
 //Score2Pred add _pred for scores
