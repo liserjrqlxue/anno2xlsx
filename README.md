@@ -1,40 +1,33 @@
-
 # anno2xlsx
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/liserjrqlxue/anno2xlsx)
-[![GoDoc](https://godoc.org/github.com/liserjrqlxue/anno2xlsx?status.svg)](https://pkg.go.dev/github.com/liserjrqlxue/anno2xlsx) 
+[![GoDoc](https://godoc.org/github.com/liserjrqlxue/anno2xlsx?status.svg)](https://pkg.go.dev/github.com/liserjrqlxue/anno2xlsx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liserjrqlxue/anno2xlsx)](https://goreportcard.com/report/github.com/liserjrqlxue/anno2xlsx)
 
-
 ## AES加密数据库
-### 例子
-```
-❯ .\buildDb.exe -input ..\db\全外疾病库2022.Q1-2022.04.22.xlsx -sheet '更新后全外背景库（6078疾病OMIMID，4667个基因）' -key 'entry ID' -rowCount 7026 -keyCount 4667 -skipWarn 9,10,12,13
-sheet name:     更新后全外背景库（6078疾病OMIMID，4667个基因）
-key column:     entry ID
-encode sheet:[更新后全外背景库（6078疾病OMIMID，4667个基因）]
-rows:   7026    true
-2022/04/24 10:40:28 Skip merge warn of [GeneralizationEN GeneralizationCH lab lab-翻译]
-keys:   4667    true
-write 11850306 byte to ..\db\全外疾病库2022.Q1-2022.04.22.xlsx.更新后全外背景库（6078疾病OMIMID，4667个基因）.json.aes
-[更新后全外背景库（6078疾病OMIMID，4667个基因）] checked:       true
+
+### 疾病库/基因频谱
+
+```shell
+#!/bin/bash
+wget -N https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/non_alt_loci_set.txt
+stat non_alt_loci_set.txt
+buildDb/buildDb \
+  -prefix db/全外疾病库 \
+  -key 'entry ID' \
+  -input db/backup/全外疾病库2023.Q1-2023.05.17.xlsx \
+  -sheet '更新后全外背景库（6272疾病OMIMID，4787个基因）' \
+  -rowCount 8425 -keyCount 4787
 
 ```
 
-```
-PS C:\Users\wangyaoshen\go\src\liser.jrqlxue\anno2xlsx\buildDb> .\buildDb.exe  -input '..\db\V4.3(2021Q1) 基因库-20210205-统一动态突变重复数.xlsx' -sheet '突变谱汇总' -key 'entrez_id' -rowCount 4327 -keyCount 4326 -skipWarn 6,21,22,23,25,27
-sheet name:     突变谱汇总
-key column:     entrez_id
-encode sheet:[突变谱汇总]
-rows:   4327    true
-2021/02/05 15:18:12 Skip merge warn of [疾病中文名 特殊类型变异 动态突变 突变谱V4 突变谱-V4.1 说明]
-keys:   4326    true
-write 5955447 byte to ..\db\V4.3(2021Q1) 基因库-20210205-统一动态突变重复数.xlsx.突变谱汇总.json.aes
-[突变谱汇总] checked:   true
-skip sheet:[删除的原版基因]
-skip sheet:[更新备注]
+or
 
+```shell
+sh buildDb/buildDb.sh 'db/backup/全外疾病库2023.Q1-2023.05.17.xlsx' '更新后全外背景库（6272疾病OMIMID，4787个基因）' 'entry ID' 8425 4787 db/全外疾病库
 ```
+
+![buildDb.png](docs/buildDb.png)
 
 ## CHPO
 
