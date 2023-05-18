@@ -25,6 +25,17 @@ mainKey = "MTmut"
 titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
 title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
 
+[annotation.Mutation.NBSP]
+file = "NBSP.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "Definition",
+]
+title = [
+    "新生儿致病性",
+]
+
 [annotation.Mutation.PrePregnancy]
 file = "PrePregnancy.json.aes"
 type = "json"
@@ -36,6 +47,19 @@ titleKey = [
 title = [
     "孕前证据项",
     "孕前致病性",
+]
+
+[annotation.Mutation.VIPHL]
+file = "VIPHL.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "criteria",
+    "intepretation",
+]
+title = [
+    "耳聋证据项",
+    "耳聋致病性",
 ]
 
 [annotation.Gene.spectrum]
