@@ -87,6 +87,11 @@ var (
 		filepath.Join(dbPath, "gene.id.txt"),
 		"check key valid",
 	)
+	checkGene = flag.Bool(
+		"checkGene",
+		false,
+		"if check gene",
+	)
 )
 
 var (
@@ -96,9 +101,9 @@ var (
 
 func main() {
 	flag.Parse()
-	if *input == "" || *key == "" || *sheetName == "" || *rowCount == 0 || *keyCount == 0 {
+	if *input == "" || *key == "" || *sheetName == "" {
 		flag.Usage()
-		fmt.Println("-input/-key/-sheet/-rowCount/-keyCount are required!")
+		fmt.Println("-input/-key/-sheet are required!")
 		os.Exit(1)
 	}
 	if *output == "" {
@@ -143,47 +148,51 @@ func main() {
 			continue
 		}
 		fmt.Printf("encode sheet:[%s]\n", *sheetName)
-		sheet2db(inputFh, sheet, geneIDkeys, skip, codeKeyBytes)
+		sheet2db(inputFh, sheet, geneIDkeys, skip, codeKeyBytes, *checkGene)
 	}
 }
 
-func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, skip map[int]bool, code []byte) {
+func sheet2db(inputFh *excelize.File, sheet string, geneIDkeys map[string]bool, skip map[int]bool, code []byte, check bool) {
 	var valid = true
 	var rows = simpleUtil.HandleError(inputFh.GetRows(sheet)).([][]string)
 	fmt.Printf("rows:\t%d\t%v\n", len(rows), len(rows) == *rowCount)
 	var outputFile = *prefix + *output + *suffix
-	var geneList = *prefix + *output + ".geneList.txt"
-	var geneListFH = osUtil.Create(geneList)
-	defer simpleUtil.DeferClose(geneListFH)
-	fmtUtil.Fprintln(geneListFH, "gene\tgeneID\tgeneInDB\thgncGene\thgncID")
 	var d []byte
 	var data, _ = simpleUtil.Slice2MapMapArrayMerge1(rows, *key, *mergeSep, skip)
-	var gene2id = make(map[string]string)
-	for id := range data {
-		if !geneIDkeys[id] {
-			fmt.Printf("id:[%s][%s] not contain in %s\n", id, data[id]["Gene/Locus"], *geneID)
-			valid = false
-		}
-		var geneSymbols = strings.Split(data[id]["Gene/Locus"], *mergeSep)
-		sort.Strings(geneSymbols)
-		for _, gene := range geneSymbols {
-			if gene2id[gene] == "" {
-				gene2id[gene] = id
-			} else if gene2id[gene] != id {
-				fmt.Printf("conflict gene id [%s]vs.[%s] of [%s]\n", id, gene2id[gene], gene)
+
+	if check {
+		var geneList = *prefix + *output + ".geneList.txt"
+		var geneListFH = osUtil.Create(geneList)
+		defer simpleUtil.DeferClose(geneListFH)
+		fmtUtil.Fprintln(geneListFH, "gene\tgeneID\tgeneInDB\thgncGene\thgncID")
+
+		var gene2id = make(map[string]string)
+		for id := range data {
+			if !geneIDkeys[id] {
+				fmt.Printf("id:[%s][%s] not contain in %s\n", id, data[id]["Gene/Locus"], *geneID)
+				valid = false
+			}
+			var geneSymbols = strings.Split(data[id]["Gene/Locus"], *mergeSep)
+			sort.Strings(geneSymbols)
+			for _, gene := range geneSymbols {
+				if gene2id[gene] == "" {
+					gene2id[gene] = id
+				} else if gene2id[gene] != id {
+					fmt.Printf("conflict gene id [%s]vs.[%s] of [%s]\n", id, gene2id[gene], gene)
+				}
 			}
 		}
-	}
-	var genes = make([]string, 0, len(gene2id))
-	for s := range gene2id {
-		genes = append(genes, s)
-	}
-	sort.Strings(genes)
-	for _, gene := range genes {
-		var id = gene2id[gene]
-		simpleUtil.HandleError(fmt.Fprintf(geneListFH, "%s\t%s\t%s\t%s\t%s\n", gene, gene2id[gene], annodb[id], hgnc[id]["symbol"], hgnc[id]["hgnc_id"]))
-		if gene != hgnc[id]["symbol"] {
-			fmt.Printf("gene vs HGNC disaccord [%s]vs.[%s:%s]\n", gene, hgnc[id]["symbol"], hgnc[id]["hgnc_id"])
+		var genes = make([]string, 0, len(gene2id))
+		for s := range gene2id {
+			genes = append(genes, s)
+		}
+		sort.Strings(genes)
+		for _, gene := range genes {
+			var id = gene2id[gene]
+			simpleUtil.HandleError(fmt.Fprintf(geneListFH, "%s\t%s\t%s\t%s\t%s\n", gene, gene2id[gene], annodb[id], hgnc[id]["symbol"], hgnc[id]["hgnc_id"]))
+			if gene != hgnc[id]["symbol"] {
+				fmt.Printf("gene vs HGNC disaccord [%s]vs.[%s:%s]\n", gene, hgnc[id]["symbol"], hgnc[id]["hgnc_id"])
+			}
 		}
 	}
 
