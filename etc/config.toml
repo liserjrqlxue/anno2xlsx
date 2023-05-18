@@ -54,8 +54,8 @@ file = "VIPHL.json.aes"
 type = "json"
 codeKeys = "****"
 titleKey = [
-    "criteria",
-    "intepretation",
+    "HL criteria",
+    "HL interpretation",
 ]
 title = [
     "耳聋证据项",
