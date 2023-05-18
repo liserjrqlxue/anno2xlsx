@@ -28,6 +28,7 @@ func loadDb() {
 			dbPath,
 		)
 	}
+
 	// 孕前数据库
 	if *pp {
 		prePregnancyDb.Load(
@@ -35,7 +36,24 @@ func loadDb() {
 			dbPath,
 			[]byte(ppCode),
 		)
+	}
 
+	// 新生儿数据库
+	if *nb {
+		newBornDb.Load(
+			TomlTree.Get("annotation.Mutation.NBSP").(*toml.Tree),
+			dbPath,
+			[]byte(nbCode),
+		)
+	}
+
+	// 耳聋数据库
+	if *hl {
+		hearingLossDb.Load(
+			TomlTree.Get("annotation.Mutation.VIPHL").(*toml.Tree),
+			dbPath,
+			[]byte(hlCode),
+		)
 	}
 
 	// 突变频谱

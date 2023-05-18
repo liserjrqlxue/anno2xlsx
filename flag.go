@@ -248,10 +248,20 @@ var (
 		false,
 		"force all MT variant to Tier1",
 	)
+	hl = flag.Bool(
+		"hl",
+		false,
+		"if use HearingLoss db",
+	)
+	nb = flag.Bool(
+		"nb",
+		false,
+		"if use NewBorn db",
+	)
 	pp = flag.Bool(
 		"pp",
 		false,
-		"is use PrePregnancy db",
+		"if use PrePregnancy db",
 	)
 )
 
