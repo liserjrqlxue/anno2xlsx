@@ -73,7 +73,6 @@ var (
 		"warn gene id lost rather than fatal",
 	)
 )
-var tomlCfg *toml.Tree
 
 // database
 var (
@@ -106,7 +105,7 @@ func init() {
 		*output = *input + ".tsv"
 	}
 
-	tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
+	var tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 
 	// CHPO
 	chpo.Load(

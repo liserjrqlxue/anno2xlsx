@@ -63,6 +63,9 @@ title = [
     "耳聋致病性",
 ]
 
+[annotation.Gene]
+transcript = "geneSymbol.transcript.txt"
+
 [annotation.Gene.spectrum]
 file = "基因突变谱.json.aes"
 type = "json"

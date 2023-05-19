@@ -217,7 +217,7 @@ func appendLOHs(excel *xlsxUtil.File, lohs, lohSheetName string, sampleList []st
 
 func addExon() {
 	if *exon != "" {
-		anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
+		anno.LoadGeneTrans(anno.GuessPath(TomlTree.Get("annotation.Gene.transcript").(string), dbPath))
 		var paths []string
 		for _, path := range strings.Split(*exon, ",") {
 			if osUtil.FileExists(path) {

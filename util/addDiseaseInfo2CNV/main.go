@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/liserjrqlxue/goUtil/fmtUtil"
-	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
@@ -63,11 +62,6 @@ var (
 		filepath.Join(dbPath, "gene.id.txt"),
 		"gene symbol and ncbi id list",
 	)
-	config = flag.String(
-		"config",
-		filepath.Join(exPath, "..", "etc", "config.json"),
-		"default config file, config will be overwrite by flag",
-	)
 	cpuprofile = flag.String(
 		"cpuprofile",
 		"",
@@ -84,8 +78,6 @@ var (
 		"warn gene id lost rather than fatal",
 	)
 )
-
-var tomlCfg *toml.Tree
 
 // database
 var (
@@ -118,7 +110,7 @@ func init() {
 		*output = *input + ".tsv"
 	}
 
-	tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
+	var tomlCfg = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 
 	// CHPO
 	chpo.Load(
@@ -137,6 +129,8 @@ func init() {
 		dbPath,
 		[]byte(aesCode),
 	)
+
+	anno.LoadGeneTrans(anno.GuessPath(tomlCfg.Get("annotation.Gene.transcript").(string), dbPath))
 }
 
 func main() {
@@ -145,13 +139,8 @@ func main() {
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
-	// parser etc/config.json
-	defaultConfig := jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
-
 	cnvDb, _ := simple_util.LongFile2MapArray(*input, "\t", nil)
 	titles := textUtil.File2Array(*title)
-
-	anno.LoadGeneTrans(anno.GetPath("geneSymbol.transcript", dbPath, defaultConfig))
 
 	fmtUtil.Fprintln(out, strings.Join(titles, "\t"))
 
