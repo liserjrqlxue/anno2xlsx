@@ -19,9 +19,10 @@ import (
 
 // os
 var (
-	ex, _  = os.Executable()
-	exPath = filepath.Dir(ex)
-	dbPath = filepath.Join(exPath, "..", "..", "db")
+	ex, _   = os.Executable()
+	exPath  = filepath.Dir(ex)
+	dbPath  = filepath.Join(exPath, "..", "..", "db")
+	etcPath = filepath.Join(exPath, "..", "..", "etc")
 )
 
 // flag
@@ -38,7 +39,7 @@ var (
 	)
 	columns = flag.String(
 		"columns",
-		filepath.Join(exPath, "..", "template", "Tier1.filter_variants.columns.list"),
+		filepath.Join(etcPath, "Tier1.filter_variants.txt"),
 		"output titles")
 	trio = flag.Bool(
 		"trio",
@@ -57,12 +58,12 @@ var (
 	)
 	cfg = flag.String(
 		"cfg",
-		filepath.Join(exPath, "..", "etc", "config.toml"),
+		filepath.Join(etcPath, "config.toml"),
 		"toml config document",
 	)
 	config = flag.String(
 		"config",
-		filepath.Join(exPath, "..", "etc", "config.json"),
+		filepath.Join(etcPath, "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
 	geneID = flag.String(
