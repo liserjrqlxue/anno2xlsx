@@ -49,7 +49,7 @@ var (
 	)
 	title = flag.String(
 		"title",
-		filepath.Join(exPath, "addition.list"),
+		filepath.Join(exPath, "addition.txt"),
 		"output addition title",
 	)
 	geneID = flag.String(
