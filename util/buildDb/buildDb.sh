@@ -15,7 +15,7 @@ wget -N https://ftp.ebi.ac.uk/pub/databases/genenames/hgnc/tsv/non_alt_loci_set.
 
 stat non_alt_loci_set.txt
 
-buildDb/buildDb \
+util/buildDb/buildDb \
   -prefix $prefix \
   -key "$key" -rowCount "$rowCount" -keyCount "$keyCount" \
   -input "$xlsx" -sheet "$sheetName"

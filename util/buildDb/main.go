@@ -22,7 +22,7 @@ import (
 var (
 	ex, _  = os.Executable()
 	exPath = filepath.Dir(ex)
-	dbPath = filepath.Join(exPath, "..", "db")
+	dbPath = filepath.Join(exPath, "..", "..", "db")
 )
 
 // flag
