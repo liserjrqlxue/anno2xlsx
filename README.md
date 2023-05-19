@@ -136,7 +136,7 @@ func hemiPAR(item map[string]string, gender string) {
 ### `tier1tags`
 
 WGS 使用anno2xlsx过滤后，进行spliceAI注释和过滤，然后重新进行Tier1判断、"遗传相符"和"筛选标签"
-参考 [tier1tags/README.md](tier1tags/README.md)
+参考 [README.md](util/tier1tags/README.md)
 
 #### TO-DO
 
