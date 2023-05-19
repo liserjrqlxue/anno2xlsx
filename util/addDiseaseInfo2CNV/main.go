@@ -27,8 +27,8 @@ import (
 var (
 	ex, _   = os.Executable()
 	exPath  = filepath.Dir(ex)
-	etcPath = filepath.Join(exPath, "..", "etc")
-	dbPath  = filepath.Join(exPath, "..", "db")
+	etcPath = filepath.Join(exPath, "..", "..", "etc")
+	dbPath  = filepath.Join(exPath, "..", "..", "db")
 )
 
 // flag
@@ -55,7 +55,7 @@ var (
 	)
 	title = flag.String(
 		"title",
-		filepath.Join(exPath, "title.list"),
+		filepath.Join(exPath, "title.txt"),
 		"output title",
 	)
 	geneID = flag.String(
