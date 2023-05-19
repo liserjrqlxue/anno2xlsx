@@ -61,11 +61,6 @@ var (
 		filepath.Join(etcPath, "config.toml"),
 		"toml config document",
 	)
-	config = flag.String(
-		"config",
-		filepath.Join(etcPath, "config.json"),
-		"default config file, config will be overwrite by flag",
-	)
 	geneID = flag.String(
 		"geneId",
 		filepath.Join(dbPath, "gene.id.txt"),
@@ -98,8 +93,6 @@ var (
 // 遗传相符
 var inheritDb = make(map[string]map[string]int)
 
-var defaultConfig map[string]interface{}
-
 func init() {
 	flag.Parse()
 	if *snv == "" {
@@ -113,19 +106,16 @@ func init() {
 
 	gene2id = simpleUtil.HandleError(textUtil.File2Map(*geneID, "\t", false)).(map[string]string)
 
-	// parser etc/config.json
-	defaultConfig = simple_util.JsonFile2Interface(*config).(map[string]interface{})
-
-	if *specVarList == "" {
-		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
-	}
+	TomlTree = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 
 	// 特殊位点库
+	if *specVarList == "" {
+		*specVarList = anno.GuessPath(TomlTree.Get("tier1.specVarList").(string), etcPath)
+	}
 	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
 	}
 
-	TomlTree = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 	// 基因-疾病
 	diseaseDb.Load(
 		TomlTree.Get("annotation.Gene.disease").(*toml.Tree),

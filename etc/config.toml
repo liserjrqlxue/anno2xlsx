@@ -5,6 +5,7 @@ homFixRatioThreshold = 0.78
 Tier1AFThreshold = 0.01
 Tier1PLPAFThreshold = 0.05
 Tier1InHouseAF = 0.01
+Tier1SpecVarList = "spec.var.lite.txt"
 
 [annotation.hpo]
 file = "gene2hpo.txt"

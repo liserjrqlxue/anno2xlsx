@@ -1,5 +1,4 @@
 {
   "geneSymbol.transcript": "geneSymbol.transcript.txt",
-  "specVarList": "spec.var.lite.list",
   "transInfo": "trans.exonCount.json.new.json"
 }

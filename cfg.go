@@ -23,7 +23,7 @@ func parseCfg() {
 	initAcmg2015()
 
 	if *specVarList == "" {
-		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
+		*specVarList = anno.GuessPath(TomlTree.Get("tier1.specVarList").(string), etcPath)
 	}
 	if *transInfo == "" {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
