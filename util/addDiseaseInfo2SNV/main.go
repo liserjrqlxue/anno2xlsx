@@ -26,8 +26,8 @@ import (
 var (
 	ex, _   = os.Executable()
 	exPath  = filepath.Dir(ex)
-	etcPath = filepath.Join(exPath, "..", "etc")
-	dbPath  = filepath.Join(exPath, "..", "db")
+	etcPath = filepath.Join(exPath, "..", "..", "etc")
+	dbPath  = filepath.Join(exPath, "..", "..", "db")
 )
 
 // flag
