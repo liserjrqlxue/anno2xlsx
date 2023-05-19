@@ -16,9 +16,10 @@ import (
 
 // os
 var (
-	ex, _  = os.Executable()
-	exPath = filepath.Dir(ex)
-	dbPath = filepath.Join(exPath, "..", "db")
+	ex, _   = os.Executable()
+	exPath  = filepath.Dir(ex)
+	dbPath  = filepath.Join(exPath, "..", "..", "db")
+	etcPath = filepath.Join(exPath, "..", "..", "etc")
 )
 
 var (
@@ -39,7 +40,7 @@ var (
 	)
 	config = flag.String(
 		"config",
-		filepath.Join(exPath, "..", "etc", "config.json"),
+		filepath.Join(etcPath, "config.json"),
 		"default config file, config will be overwrite by flag",
 	)
 	trio = flag.Bool(
