@@ -130,3 +130,14 @@ func hemiPAR(item map[string]string, gender string) {
 ## 注意
 
 - exon cnv输入文件不存在时仅log报错，不中断
+
+## UTIL
+
+### `tier1tags`
+
+WGS 使用anno2xlsx过滤后，进行spliceAI注释和过滤，然后重新进行Tier1判断、"遗传相符"和"筛选标签"
+参考 [tier1tags/README.md](tier1tags/README.md)
+
+#### TO-DO
+
+- [ ] Tier1判断去冗余
