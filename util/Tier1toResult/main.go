@@ -3,22 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/liserjrqlxue/goUtil/osUtil"
+	"github.com/liserjrqlxue/goUtil/simpleUtil"
+	"github.com/tealeg/xlsx/v2"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/simple-util"
-	"github.com/tealeg/xlsx/v2"
-
-	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
+	"github.com/pelletier/go-toml"
 )
 
 // os
 var (
 	ex, _   = os.Executable()
 	exPath  = filepath.Dir(ex)
-	dbPath  = filepath.Join(exPath, "..", "..", "db")
 	etcPath = filepath.Join(exPath, "..", "..", "etc")
 )
 
@@ -38,9 +39,9 @@ var (
 		"filter_variants",
 		"sheetName of input",
 	)
-	config = flag.String(
-		"config",
-		filepath.Join(etcPath, "config.json"),
+	cfg = flag.String(
+		"cfg",
+		filepath.Join(etcPath, "config.toml"),
 		"default config file, config will be overwrite by flag",
 	)
 	trio = flag.Bool(
@@ -51,14 +52,17 @@ var (
 	top = flag.Int(
 		"top",
 		20,
-		"output only top -top item  (exclude Acmg59Gene)",
+		"output only top -top item  (exclude acmgSFGene)",
 	)
 )
 
-var acmg59Gene = make(map[string]bool)
+// TomlTree Global toml config
+var TomlTree *toml.Tree
+
+var acmgSFGene = make(map[string]bool)
 var resultColumn []string
 
-func init() {
+func main() {
 	flag.Parse()
 	if *input == "" {
 		flag.Usage()
@@ -68,29 +72,23 @@ func init() {
 		*prefix = *input
 	}
 
-	defaultConfig := simple_util.JsonFile2Interface(*config).(map[string]interface{})
+	TomlTree = simpleUtil.HandleError(toml.LoadFile(*cfg)).(*toml.Tree)
 
-	acmg59GeneList := textUtil.File2Array(anno.GetPath("Acmg59Gene", dbPath, defaultConfig))
-	for _, gene := range acmg59GeneList {
-		acmg59Gene[gene] = true
+	for _, gene := range textUtil.File2Array(anno.GuessPath(TomlTree.Get("acmg.SF").(string), etcPath)) {
+		acmgSFGene[gene] = true
 	}
-	for _, key := range defaultConfig["resultColumn"].([]interface{}) {
-		resultColumn = append(resultColumn, key.(string))
-	}
+	resultColumn = TomlTree.GetArray("wesim.resultColumn").([]string)
 	if *trio {
 		resultColumn = append(resultColumn, "Genotype of Family Member 1", "Genotype of Family Member 2")
 	}
-}
 
-func main() {
-	xlF, err := xlsx.OpenFile(*input)
+	var xlF, err = xlsx.OpenFile(*input)
 	simple_util.CheckErr(err)
 
-	resultFile, err := os.Create(*prefix + ".result.tsv")
-	simple_util.CheckErr(err)
+	var resultFile = osUtil.Create(*prefix + ".result.tsv")
 	defer simple_util.DeferClose(resultFile)
-	_, err = fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t"))
-	simple_util.CheckErr(err)
+
+	simpleUtil.HandleError(fmt.Fprintln(resultFile, strings.Join(resultColumn, "\t")))
 
 	var title []string
 	var count = 0
@@ -107,7 +105,7 @@ func main() {
 				}
 			}
 			item["IsACMG59"] = "N"
-			if acmg59Gene[item["Gene Symbol"]] {
+			if acmgSFGene[item["Gene Symbol"]] {
 				item["IsACMG59"] = "Y"
 			} else {
 				item["IsACMG59"] = "N"

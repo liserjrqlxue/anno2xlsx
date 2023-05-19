@@ -110,7 +110,7 @@ title = [
 
 [acmg]
 list = "acmg.db.list.txt"
-59gene = "ACMG59Gene.list"
+SF = "ACMG59Gene.list"
 
 [template.tier1]
 filter_variants="Tier1.filter_variants.txt"

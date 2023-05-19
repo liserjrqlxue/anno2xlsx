@@ -95,9 +95,8 @@ func openRedis() {
 
 func initIM() {
 	if *wesim {
-		acmg59GeneList := textUtil.File2Array(anno.GuessPath(TomlTree.Get("acmg.59gene").(string), etcPath))
-		for _, gene := range acmg59GeneList {
-			acmg59Gene[gene] = true
+		for _, gene := range textUtil.File2Array(anno.GuessPath(TomlTree.Get("acmg.SF").(string), etcPath)) {
+			acmgSFGene[gene] = true
 		}
 
 		resultColumn = TomlTree.GetArray("wesim.resultColumn").([]string)

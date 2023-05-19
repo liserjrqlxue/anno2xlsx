@@ -78,7 +78,7 @@ var isSMN1 bool
 
 var snvs []string
 
-var acmg59Gene = make(map[string]bool)
+var acmgSFGene = make(map[string]bool)
 
 // WGS
 var (

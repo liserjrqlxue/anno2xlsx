@@ -353,7 +353,7 @@ func annotate2(item map[string]string) {
 func annotate2IM(item map[string]string) {
 	if *wesim {
 		var zygo = item["Zygosity"]
-		if acmg59Gene[item["Gene Symbol"]] {
+		if acmgSFGene[item["Gene Symbol"]] {
 			item["IsACMG59"] = "Y"
 		} else {
 			item["IsACMG59"] = "N"
