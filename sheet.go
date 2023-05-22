@@ -32,12 +32,12 @@ func addFamInfoSheet(excel *xlsx.File, sheetName string, sampleList []string) {
 	}
 	row.AddCell().SetString("SampleID")
 
-	for _, sample := range sampleList {
+	for _, sampleID := range sampleList {
 		row = sheet.AddRow()
 		if row.GetHeight() == 0 {
 			row.SetHeight(14)
 		}
-		row.AddCell().SetString(sample)
+		row.AddCell().SetString(sampleID)
 	}
 }
 
@@ -63,6 +63,12 @@ func addCnv2Sheet(
 	cnvDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
 
 	for _, item := range cnvDb {
+
+		// 跳过其他样品
+		if !sampleMap[item["Sample"]] {
+			continue
+		}
+
 		if *wesim {
 			if item["chromosome"] == "" {
 				item["chromosome"] = strings.TrimLeft(item["Chr"], "chr")
@@ -84,63 +90,61 @@ func addCnv2Sheet(
 				item["gender"] = strings.Split(gender, ",")[0]
 			}
 		}
-		sample := item["Sample"]
-		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
-		if sampleMap[sample] {
-			var gene = item["OMIM_Gene"]
 
-			var geneIDs []string
-			for _, g := range strings.Split(gene, ";") {
-				var id, ok = gene2id[g]
-				if !ok {
-					if g != "-" && g != "." {
-						if *warn {
-							log.Printf("can not find gene id of [%s]:[%s]\n", g, gene)
-						} else {
-							log.Fatalf("can not find gene id of [%s]:[%s]\n", g, gene)
-						}
+		item["Primer"] = anno.CnvPrimer(item, sheet.Name)
+
+		var gene = item["OMIM_Gene"]
+		var geneIDs []string
+		for _, g := range strings.Split(gene, ";") {
+			var id, ok = gene2id[g]
+			if !ok {
+				if g != "-" && g != "." {
+					if *warn {
+						log.Printf("can not find gene id of [%s]:[%s]\n", g, gene)
+					} else {
+						log.Fatalf("can not find gene id of [%s]:[%s]\n", g, gene)
 					}
 				}
-				geneIDs = append(geneIDs, id)
 			}
+			geneIDs = append(geneIDs, id)
+		}
 
-			chpo.Annos(item, "\n", geneIDs)
-			// 基因-疾病
-			diseaseDb.Annos(item, "\n", geneIDs)
-			// 突变频谱
-			spectrumDb.Annos(item, "\n", geneIDs)
+		chpo.Annos(item, "\n", geneIDs)
+		// 基因-疾病
+		diseaseDb.Annos(item, "\n", geneIDs)
+		// 突变频谱
+		spectrumDb.Annos(item, "\n", geneIDs)
 
-			if *cnvAnnot {
-				anno.UpdateCnvAnnot(gene, sheet.Name, item, gene2id, diseaseDb.Db)
-			}
+		if *cnvAnnot {
+			anno.UpdateCnvAnnot(gene, sheet.Name, item, gene2id, diseaseDb.Db)
+		}
 
-			item["OMIM"] = item["OMIM_Phenotype_ID"]
-			stats[key]++
-			if item["OMIM"] != "" {
-				stats["Tier1"+key]++
-			}
-			if filterGene && item["OMIM"] == "" {
+		item["OMIM"] = item["OMIM_Phenotype_ID"]
+		stats[key]++
+		if item["OMIM"] != "" {
+			stats["Tier1"+key]++
+		}
+		if filterGene && item["OMIM"] == "" {
+			continue
+		}
+		if filterSize {
+			length, err := strconv.ParseFloat(item["Len(Kb)"], 16)
+			if err != nil {
+				log.Printf(
+					"can not ParseFloat of Len(Kb)[%s] for Summary[%s]\n",
+					item["Len(Kb)"], item["Summary"],
+				)
+			} else if length < 1000 {
 				continue
 			}
-			if filterSize {
-				length, err := strconv.ParseFloat(item["Len(Kb)"], 16)
-				if err != nil {
-					log.Printf(
-						"can not ParseFloat of Len(Kb)[%s] for Summary[%s]\n",
-						item["Len(Kb)"], item["Summary"],
-					)
-				} else if length < 1000 {
-					continue
-				}
+		}
+		xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
+		if *wesim {
+			var cnvArray []string
+			for _, key := range cnvColumn {
+				cnvArray = append(cnvArray, item[key])
 			}
-			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
-			if *wesim {
-				var cnvArray []string
-				for _, key := range cnvColumn {
-					cnvArray = append(cnvArray, item[key])
-				}
-				fmtUtil.FprintStringArray(cnvFile, cnvArray, "\t")
-			}
+			fmtUtil.FprintStringArray(cnvFile, cnvArray, "\t")
 		}
 	}
 	if *wesim {
