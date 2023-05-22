@@ -48,18 +48,12 @@ var qualityKeyMap = make(map[string]string)
 
 // tier2
 var isEnProduct = make(map[string]bool)
+var isEN bool
 
 var transEN = map[string]string{
 	"是":    "Yes",
 	"否":    "No",
 	"备注说明": "Note",
-}
-
-type templateInfo struct {
-	cols      []string
-	titles    [2][]string
-	noteTitle [2]string
-	note      [2][]string
 }
 
 // regexp
@@ -86,15 +80,14 @@ var (
 )
 
 var (
-	logFile           *os.File
-	defaultConfig     map[string]interface{}
-	tier2TemplateInfo templateInfo
-	tier2             xlsxTemplate
-	err               error
-	ts                = []time.Time{time.Now()}
-	step              = 0
-	sampleMap         = make(map[string]bool)
-	stats             = make(map[string]int)
+	logFile       *os.File
+	defaultConfig map[string]interface{}
+	tier2         *xlsxTemplate
+	err           error
+	ts            = []time.Time{time.Now()}
+	step          = 0
+	sampleMap     = make(map[string]bool)
+	stats         = make(map[string]int)
 
 	tier1Xlsx           *xlsx.File
 	filterVariantsTitle []string

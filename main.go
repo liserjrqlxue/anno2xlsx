@@ -4,6 +4,7 @@ import (
 	"flag"
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
+	"github.com/liserjrqlxue/goUtil/textUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
@@ -12,22 +13,7 @@ import (
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/version"
-	"github.com/tealeg/xlsx/v3"
 )
-
-type xlsxTemplate struct {
-	flag      string
-	template  string
-	xlsx      *xlsx.File
-	sheetName string
-	sheet     *xlsx.Sheet
-	title     []string
-	output    string
-}
-
-func (xt *xlsxTemplate) save() error {
-	return xt.xlsx.Save(xt.output)
-}
 
 func init() {
 	version.LogVersion()
@@ -52,6 +38,12 @@ func init() {
 	if osUtil.FileExists(funcitonLevel) {
 		anno.FuncInfo = jsonUtil.JsonFile2MapInt(funcitonLevel)
 	}
+
+	var productEn = textUtil.File2Array(filepath.Join(etcPath, "product.en.list"))
+	for i := range productEn {
+		isEnProduct[productEn[i]] = true
+	}
+	isEN = isEnProduct[*productID]
 }
 
 func main() {

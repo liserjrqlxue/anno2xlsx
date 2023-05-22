@@ -308,7 +308,7 @@ func saveExcel() {
 
 		if *snv != "" {
 			// Tier2 excel
-			simpleUtil.CheckErr(tier2.save(), "Tier2 save fail")
+			simpleUtil.CheckErr(tier2.Save(), "Tier2 save fail")
 			logTime("save Tier2")
 
 			// Tier3 excel
