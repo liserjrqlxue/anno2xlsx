@@ -54,18 +54,22 @@ func main() {
 
 	// 准备excel输出
 	prepareExcel()
+
 	// 填充sheet
 	fillSheet()
+
 	// 保存excel
 	saveExcel()
 
-	// json
+	// 输出json
 	if *outJson {
 		if *qc != "" {
+			// 输出特定字段格式的quality.json
 			qc2json(qualitys[0], *prefix+".quality.json")
 		}
 		if *snv != "" {
-			writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
+			// hash array 输出 json list
+			mapArray2jsonList(tier1Data, *prefix+".tier1.json")
 		}
 	}
 }

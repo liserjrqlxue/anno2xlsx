@@ -148,7 +148,7 @@ func addCnv2Sheet(
 	}
 }
 
-func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
+func addTier2Row(tier2 *xlsxTemplate, item map[string]string) {
 	tier2Row := tier2.sheet.AddRow()
 	for _, str := range tier2.title {
 		switch str {

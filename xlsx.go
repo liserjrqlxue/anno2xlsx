@@ -50,6 +50,8 @@ func (t *templateInfo) Load(template string) {
 }
 
 func prepareExcel() {
+
+	// 使用配置处理Tier1 snv exon large
 	prepareTier1()
 
 	// 使用模板处理Tier2.xlsx
@@ -61,6 +63,7 @@ func prepareExcel() {
 		isEN,
 	)
 
+	// 使用流式写入处理Tier3.xlsx
 	if outputTier3 {
 		prepareTier3()
 	}
