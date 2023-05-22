@@ -20,12 +20,6 @@ keyIndex = [1, 2, 3]
 title = ["REVEL_score"]
 titleIndex = [4]
 
-[annotation.GnomAD.MT]
-file = "gnomad.genomes.v3.1.sites.chrM.reduced_annotations.tsv.db"
-mainKey = "MTmut"
-titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
-title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
-
 [annotation.Mutation.NBSP]
 file = "NBSP.json.aes"
 type = "json"

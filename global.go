@@ -114,11 +114,11 @@ var TomlTree *toml.Tree
 
 // database
 var (
-	aesCode  = "c3d112d6a47a0a04aad2b9d2d2cad266"
-	gene2id  map[string]string
-	chpo     anno.AnnoDb
-	revel    revelDb
-	mtGnomAD anno.AnnoDb
+	aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
+	gene2id map[string]string
+	chpo    anno.AnnoDb
+	revel   revelDb
+
 	// 突变频谱
 	spectrumDb anno.EncodeDb
 	// 基因-疾病

@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
-	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
@@ -261,11 +259,6 @@ func annotate1(item map[string]string) {
 	if *allTier1 {
 		item["Tier"] = "Tier1"
 	}
-	if *mt && isMT.MatchString(item["#Chr"]) {
-		item["Tier"] = "Tier1"
-		item["MTmut"] = getMhgvs(item)
-		mtGnomAD.Anno(item, item["MTmut"])
-	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 		if *ifRedis {
@@ -289,19 +282,6 @@ func annotate1(item map[string]string) {
 		stats["Hom:"+item["#Chr"]]++
 	}
 	stats[item["VarType"]]++
-}
-
-func getMhgvs(item map[string]string) string {
-	var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int) + 1
-	var ref = item["Ref"]
-	var alt = item["Call"]
-	if ref == "." {
-		ref = ""
-	}
-	if alt == "." {
-		alt = ""
-	}
-	return hgvs.GetMhgvs(pos, []byte(ref), []byte(alt))
 }
 
 func annotate1Tier1(item map[string]string) {

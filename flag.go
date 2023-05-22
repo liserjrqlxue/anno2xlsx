@@ -228,11 +228,6 @@ var (
 		false,
 		"if wesim, output result.tsv",
 	)
-	mt = flag.Bool(
-		"mt",
-		false,
-		"force all MT variant to Tier1",
-	)
 	hl = flag.Bool(
 		"hl",
 		false,

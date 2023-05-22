@@ -22,12 +22,6 @@ func loadDb() {
 			TomlTree.Get("annotation.REVEL").(*toml.Tree),
 		)
 	}
-	if *mt {
-		mtGnomAD.Load(
-			TomlTree.Get("annotation.GnomAD.MT").(*toml.Tree),
-			dbPath,
-		)
-	}
 
 	// 孕前数据库
 	if *pp {
