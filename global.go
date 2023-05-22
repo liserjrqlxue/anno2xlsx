@@ -62,8 +62,6 @@ var (
 	isComment = regexp.MustCompile(`^##`)
 	isMT      = regexp.MustCompile(`MT|chrM`)
 	isHom     = regexp.MustCompile(`^Hom`)
-	cHGVSalt  = regexp.MustCompile(`alt: (\S+) \)`)
-	cHGVSstd  = regexp.MustCompile(`std: (\S+) \)`)
 )
 
 var redisDb *redis.Client

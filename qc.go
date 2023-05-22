@@ -79,9 +79,8 @@ func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 	if isWGS {
 		sep = ": "
 	}
-	for i, in := range strings.Split(files, ",") {
-		report := textUtil.File2Array(in)
-		for _, line := range report {
+	for i, path := range strings.Split(files, ",") {
+		for _, line := range textUtil.File2Array(path) {
 			if isSharp.MatchString(line) {
 				if m := isBamPath.FindStringSubmatch(line); m != nil {
 					if osUtil.FileExists(m[1]) {
@@ -96,12 +95,12 @@ func loadQC(files, kinship string, quality []map[string]string, isWGS bool) {
 			}
 		}
 		if isWGS {
-			absPath, err := filepath.Abs(in)
-			if err == nil {
+			absPath, e := filepath.Abs(path)
+			if e == nil {
 				quality[i]["bamPath"] = filepath.Join(filepath.Dir(absPath), "..", "bam_chr")
 			} else {
-				log.Println(err, in)
-				quality[i]["bamPath"] = filepath.Join(filepath.Dir(in), "..", "bam_chr")
+				log.Println(e, path)
+				quality[i]["bamPath"] = filepath.Join(filepath.Dir(path), "..", "bam_chr")
 			}
 		}
 		kinshipInfo, ok := kinshipHash[quality[i]["样本编号"]]
@@ -168,10 +167,10 @@ func parseQC() {
 }
 
 func parseMTQC(files string, qualitys []map[string]string) {
-	for i, s := range strings.Split(files, ",") {
-		var qc, err = textUtil.File2Map(s, "\t", false)
-		simpleUtil.CheckErr(err)
-		for k, v := range qc {
+	for i, path := range strings.Split(files, ",") {
+		var qcMap, e = textUtil.File2Map(path, "\t", false)
+		simpleUtil.CheckErr(e)
+		for k, v := range qcMap {
 			qualitys[i][k] = v
 		}
 	}
@@ -179,20 +178,20 @@ func parseMTQC(files string, qualitys []map[string]string) {
 
 func parseIMQC(files string, qualitys []map[string]string) {
 	var imqc = make(map[string]map[string]string)
-	for _, s := range strings.Split(files, ",") {
-		var qc, _ = textUtil.File2MapMap(s, "sampleID", "\t", nil)
-		for s, m := range qc {
+	for _, path := range strings.Split(files, ",") {
+		var qcMap, _ = textUtil.File2MapMap(path, "sampleID", "\t", nil)
+		for s, m := range qcMap {
 			imqc[s] = m
 		}
 	}
 	for _, quality := range qualitys {
 		var sampleID = quality["样本编号"]
-		var qc, ok = imqc[sampleID]
+		var qcMap, ok = imqc[sampleID]
 		if ok {
-			quality["Q20 碱基的比例"] = qc["Q20_clean"] + "%"
-			quality["Q30 碱基的比例"] = qc["Q30_clean"] + "%"
-			quality["测序数据的 GC 含量"] = qc["GC_clean"] + "%"
-			quality["低质量 reads 比例"] = qc["lowQual"] + "%"
+			quality["Q20 碱基的比例"] = qcMap["Q20_clean"] + "%"
+			quality["Q30 碱基的比例"] = qcMap["Q30_clean"] + "%"
+			quality["测序数据的 GC 含量"] = qcMap["GC_clean"] + "%"
+			quality["低质量 reads 比例"] = qcMap["lowQual"] + "%"
 		}
 	}
 }

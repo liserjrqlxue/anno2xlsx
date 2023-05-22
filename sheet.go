@@ -186,12 +186,12 @@ func addTier2Row(tier2 *xlsxTemplate, item map[string]string) {
 }
 
 func appendLOHs(excel *xlsxUtil.File, lohs, lohSheetName string, sampleList []string) {
-	for i, loh := range strings.Split(lohs, ",") {
+	for i, path := range strings.Split(lohs, ",") {
 		var sampleID = strconv.Itoa(i)
 		if i < len(sampleList) {
 			sampleID = sampleList[i]
 		}
-		excel.AppendSheet(*xlsxUtil.OpenFile(loh).File.Sheet[lohSheetName], sampleID+"-loh")
+		excel.AppendSheet(*xlsxUtil.OpenFile(path).File.Sheet[lohSheetName], sampleID+"-loh")
 	}
 }
 
