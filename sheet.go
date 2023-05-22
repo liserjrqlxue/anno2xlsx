@@ -148,30 +148,6 @@ func addCnv2Sheet(
 	}
 }
 
-func addSmnResult(sheet *xlsx.Sheet, title, paths []string, sampleMap map[string]bool) {
-	smnDb, _ := simple_util.LongFiles2MapArray(paths, "\t", nil)
-
-	for _, item := range smnDb {
-		sample := item["SampleID"]
-		if sampleMap[sample] {
-			item["Sample"] = item["SampleID"]
-			item["Copy_Num"] = item["SMN1_ex7_cn"]
-			item["Detect"] = item["SMN1_ex7_cn"]
-			item["Chr"] = "chr5"
-			item["Start"] = "70241892"
-			item["End"] = "70242003"
-			item["Gene"] = "SMN1"
-			item["OMIM_Gene"] = "SMN1"
-			item["SMN1_result"] = item["SMN1_ex7_cn"]
-			if item["SMN1_ex7_cn"] == "0" {
-				item["SMN1_result"] = "Hom"
-				isSMN1 = true
-			}
-			xlsxUtil.AddMap2Row(item, title, sheet.AddRow())
-		}
-	}
-}
-
 func addTier2Row(tier2 xlsxTemplate, item map[string]string) {
 	tier2Row := tier2.sheet.AddRow()
 	for _, str := range tier2.title {
@@ -254,18 +230,6 @@ func addLarge() {
 		)
 		logTime("add large cnv")
 	}
-	if *smn != "" {
-		var paths []string
-		for _, path := range strings.Split(*smn, ",") {
-			if osUtil.FileExists(path) {
-				paths = append(paths, path)
-			} else {
-				log.Printf("ERROR:not exists or not a file:%v \n", path)
-			}
-		}
-		addSmnResult(tier1Xlsx.Sheet["large_cnv"], largeCnvTitle, paths, sampleMap)
-		logTime("add SMN1 result")
-	}
 }
 
 func addExtra() {
@@ -338,12 +302,7 @@ func saveExcel() {
 		if *tag != "" {
 			tagStr = textUtil.File2Array(*tag)[0]
 		}
-		var tier1Output string
-		if isSMN1 && !*wesim {
-			tier1Output = *prefix + ".Tier1" + tagStr + ".SMN1.xlsx"
-		} else {
-			tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
-		}
+		var tier1Output = *prefix + ".Tier1" + tagStr + ".xlsx"
 		simpleUtil.CheckErr(tier1Xlsx.Save(tier1Output))
 		logTime("save Tier1")
 

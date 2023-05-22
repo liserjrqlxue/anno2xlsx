@@ -74,8 +74,6 @@ var (
 
 var redisDb *redis.Client
 
-var isSMN1 bool
-
 var snvs []string
 
 var acmgSFGene = make(map[string]bool)

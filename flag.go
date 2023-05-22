@@ -65,11 +65,6 @@ var (
 		"",
 		"largeCnv file path, comma as sep, only write sample in -list",
 	)
-	smn = flag.String(
-		"smn",
-		"",
-		"smn result file path, comma as sep, require -large and only write sample in -list",
-	)
 	loh = flag.String(
 		"loh",
 		"",
@@ -246,9 +241,9 @@ var (
 )
 
 func checkFlag() {
-	if *snv == "" && *exon == "" && *large == "" && *smn == "" && *loh == "" {
+	if *snv == "" && *exon == "" && *large == "" && *loh == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn,-loh")
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-loh")
 		os.Exit(0)
 	}
 	if *snv == "" {
