@@ -9,7 +9,6 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"path/filepath"
-	"runtime/pprof"
 	"strconv"
 	"strings"
 
@@ -60,12 +59,6 @@ func init() {
 }
 
 func main() {
-	// pprof.StartCPUProfile
-	if *cpuprofile != "" {
-		var f = osUtil.Create(*cpuprofile)
-		simpleUtil.CheckErr(pprof.StartCPUProfile(f))
-		defer pprof.StopCPUProfile()
-	}
 	defer simpleUtil.DeferClose(logFile)
 
 	//  读取数据库
@@ -114,12 +107,5 @@ func main() {
 		if *snv != "" {
 			writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
 		}
-	}
-
-	// pprof.WriteHeapProfile
-	if *memprofile != "" {
-		var f = osUtil.Create(*memprofile)
-		defer simpleUtil.DeferClose(f)
-		simpleUtil.CheckErr(pprof.WriteHeapProfile(f))
 	}
 }

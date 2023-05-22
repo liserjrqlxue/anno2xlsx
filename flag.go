@@ -10,11 +10,6 @@ import (
 
 // flag
 var (
-	assembly = flag.String(
-		"assembly",
-		"hg19",
-		"reference assembly",
-	)
 	cfg = flag.String(
 		"cfg",
 		filepath.Join(etcPath, "config.toml"),
@@ -128,16 +123,6 @@ var (
 		"config",
 		filepath.Join(etcPath, "config.json"),
 		"default config file, config will be overwrite by flag",
-	)
-	cpuprofile = flag.String(
-		"cpuprofile",
-		"",
-		"cpu profile",
-	)
-	memprofile = flag.String(
-		"memprofile",
-		"",
-		"mem profile",
 	)
 	extra = flag.String(
 		"extra",
