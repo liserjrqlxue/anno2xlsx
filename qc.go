@@ -205,3 +205,34 @@ func parseList() {
 		qualitys = append(qualitys, quality)
 	}
 }
+
+// format quality, and write json output
+func qc2json(quality map[string]string, output string) (qualityJson map[string]string) {
+	var qualityJsonInfo, _ = textUtil.File2MapMap(filepath.Join(etcPath, "quality.json.txt"), "name", "\t", nil)
+
+	qualityJson = make(map[string]string)
+	for k, m := range qualityJsonInfo {
+		qualityJson[k] = quality[m["describe"]]
+	}
+
+	var targetRegionSize, e = strconv.ParseFloat(qualityJson["targetRegionSize"], 64)
+	if e == nil {
+		qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", targetRegionSize)
+	}
+
+	for _, s := range []string{
+		"targetRegionCoverage",
+		"averageDepthGt4X",
+		"averageDepthGt10X",
+		"averageDepthGt20X",
+		"averageDepthGt30X",
+		"mtTargetRegionGt2000X",
+	} {
+		if !strings.HasSuffix(qualityJson[s], "%") {
+			qualityJson[s] += "%"
+		}
+	}
+
+	writeBytes(jsonMarshalIndent(qualityJson, "", "  "), output)
+	return
+}

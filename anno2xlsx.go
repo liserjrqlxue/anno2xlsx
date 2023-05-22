@@ -2,19 +2,15 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 	"github.com/liserjrqlxue/goUtil/jsonUtil"
 	"log"
 	_ "net/http/pprof"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/liserjrqlxue/goUtil/osUtil"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
-	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/version"
 	"github.com/tealeg/xlsx/v3"
 )
@@ -74,35 +70,7 @@ func main() {
 	// json
 	if *outJson {
 		if *qc != "" {
-			var qualityJsonInfo, _ = textUtil.File2MapMap(filepath.Join(etcPath, "quality.json.txt"), "name", "\t", nil)
-			var qualityJsonKeyMap = make(map[string]string)
-			for k, m := range qualityJsonInfo {
-				qualityJsonKeyMap[k] = m["describe"]
-			}
-			var qualityJson = make(map[string]string)
-			for k, v := range qualityJsonKeyMap {
-				qualityJson[k] = qualitys[0][v]
-			}
-			var targetRegionSize float64
-			targetRegionSize, err = strconv.ParseFloat(qualityJson["targetRegionSize"], 64)
-			if err == nil {
-				qualityJson["targetRegionSize"] = fmt.Sprintf("%.0f", targetRegionSize)
-			}
-			for _, s := range []string{
-				"targetRegionCoverage",
-				"averageDepthGt4X",
-				"averageDepthGt10X",
-				"averageDepthGt20X",
-				"averageDepthGt30X",
-				"mtTargetRegionGt2000X",
-			} {
-				if !strings.HasSuffix(qualityJson[s], "%") {
-					qualityJson[s] += "%"
-				}
-			}
-			writeBytes(
-				jsonMarshalIndent(qualityJson, "", "  "), *prefix+".quality.json",
-			)
+			qc2json(qualitys[0], *prefix+".quality.json")
 		}
 		if *snv != "" {
 			writeBytes(jsonMarshalIndent(tier1Data, "", "  "), *prefix+".tier1.json")
