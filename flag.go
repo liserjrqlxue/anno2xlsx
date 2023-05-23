@@ -233,6 +233,11 @@ var (
 		false,
 		"if use NewBorn db",
 	)
+	sf = flag.Bool(
+		"sf",
+		false,
+		"if use ACMG SF db",
+	)
 	pp = flag.Bool(
 		"pp",
 		false,

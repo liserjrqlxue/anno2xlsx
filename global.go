@@ -113,6 +113,9 @@ var (
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
+	// ACMG SF
+	acmgSecondaryFindingDb anno.EncodeDb
+	sfCode                 = "b7ea138a9842cbb832271bdcf4478310"
 	// 耳聋数据库
 	hearingLossDb anno.EncodeDb
 	hlCode        = "6d276bc509883dbafe05be835ad243d7"

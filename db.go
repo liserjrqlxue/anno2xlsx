@@ -23,6 +23,15 @@ func loadDb() {
 		)
 	}
 
+	// ACMG SF
+	if *sf {
+		acmgSecondaryFindingDb.Load(
+			TomlTree.Get("annotation.Mutation.ACMGSF").(*toml.Tree),
+			dbPath,
+			[]byte(sfCode),
+		)
+	}
+
 	// 孕前数据库
 	if *pp {
 		prePregnancyDb.Load(

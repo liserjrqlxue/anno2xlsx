@@ -45,6 +45,16 @@ func (db *EncodeDb) Anno(item map[string]string, key string) bool {
 	return ok
 }
 
+func (db *EncodeDb) AnnoMultiKey(item map[string]string, keys []string) (ok bool) {
+	for _, key := range keys {
+		ok = db.Anno(item, key)
+		if ok {
+			break
+		}
+	}
+	return
+}
+
 func (db *EncodeDb) Annos(item map[string]string, sep string, keys []string) {
 	var tmp = make(map[string][]string)
 	for i := range keys {

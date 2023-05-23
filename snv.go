@@ -210,13 +210,15 @@ func annotate1(item map[string]string) {
 	// 突变频谱
 	spectrumDb.Anno(item, id)
 
-	// 孕前数据库
 	var multiKeys = anno.GetKeys(item["Transcript"], item["cHGVS"])
-	for _, key := range multiKeys {
-		if prePregnancyDb.Anno(item, key) {
-			break
-		}
-	}
+	// ACMG SF
+	acmgSecondaryFindingDb.AnnoMultiKey(item, multiKeys)
+	// 孕前数据库
+	prePregnancyDb.AnnoMultiKey(item, multiKeys)
+	// 新生儿数据库
+	newBornDb.AnnoMultiKey(item, multiKeys)
+	// 耳聋数据库
+	hearingLossDb.AnnoMultiKey(item, multiKeys)
 
 	item["Gene"] = item["Omim Gene"]
 	item["OMIM"] = item["OMIM_Phenotype_ID"]
