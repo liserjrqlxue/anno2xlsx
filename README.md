@@ -11,8 +11,8 @@
 | arg          | type    | example                                         | note                                                                                 |
 |--------------|---------|-------------------------------------------------|--------------------------------------------------------------------------------------|
 | -json        | boolean |                                                 | 输出json格式结果                                                                           |
-| -save        | boolean |                                                 | 保持excel                                                                              |
-| -academic    | boolean |                                                 | 学术使用，比如REVEL                                                                         |
+| -save        | boolean |                                                 | 保存excel                                                                              |
+| -academic    | boolean |                                                 | 学术使用，比如REVEL数据库注释                                                                    |
 | -hl          | boolean |                                                 | 使用耳聋变异库                                                                              |
 | -nb          | boolean |                                                 | 使用新筛变异库                                                                              |
 | -pp          | boolean |                                                 | 使用孕前变异库                                                                              |
@@ -273,6 +273,17 @@
 
 ## AES加密数据库
 
+### DATABASE
+
+| name         | version               | note |
+|--------------|-----------------------|------|
+| 全外疾病库        | 2023.Q1-2023.05.17    |      |
+| 基因突变谱        | V6.0.0.20230411       |      |
+| ACMGSF       | V2.0.2023.5           |      |
+| PrePregnancy | PP155-V5.1.2_20230427 |      |
+| NBSP         | V2.3.1.20230505       |      |
+| HLVIP        | 20230509.30952        |      |
+
 ### 疾病库/基因频谱
 
 ```shell
@@ -296,6 +307,33 @@ sh buildDb/buildDb.sh 'db/backup/全外疾病库2023.Q1-2023.05.17.xlsx' '更新
 
 ![buildDb.png](docs/buildDb.png)
 
+### ACMG Secondary Finding
+
+```shell
+sfCode=b7ea138a9842cbb832271bdcf4478310 # 替换成实际密钥
+../NB2xlsx/buildDB/buildDB -code $sfCode -extract "#Chr,Start,Stop,Ref,Call,Gene Symbol,Transcript,cHGVS,证据项,致病等级,参考文献,关联疾病表型OMIM号,关联疾病英文名称,关联疾病中文名称,数据库时间" -input db/backup/ACMG\ 73基因23.05.23.xlsx -output db/ACMGSF.json.aes -keys etc/SF.key.txt
+```
+
+![img.png](docs/ACMGSF.png)
+
+#### 注释校验
+
+- 因本地无 `WES` 注释流程，上传 `db/ACMGSF.json.aes` 和 `db/ACMGSF.json.aes.mut.tsv` 到集群
+- 如本地有WES注释流程，所有操作均可在同一环境下完成
+- 确认 `致病性等级` 的 注释个数 一致
+
+```shell
+## 数据库设置权限保密
+chmod 700 db/ACMGSF.json.aes.mut.tsv
+## 校验注释
+sh check/check.sf.sh
+```
+
+![img.png](docs/ACMGSF.check.1.png)
+![img.png](docs/ACMGSF.check.2.png)
+
+### HLVIP
+
 ## CHPO
 
 ```shell
@@ -303,18 +341,6 @@ buildHPO -chpo chpo-2021.json -g2p genes_to_phenotype.txt -output db/gene2chpo.t
 ```
 
 ## 注意
-
-### 基因-疾病数据库
-
-**基因-疾病数据库**属于保密数据库，仅供内部测试使用  
-~~后续会通过数据库服务获取或者直接创建加密数据库~~  
-已通过aes对json格式进行加密处理
-
-### 突变频谱数据库
-
-**突变频谱数据库**属于保密数据库，仅供内部测试使用，  
-~~后续会通过数据库服务获取或者直接创建加密数据库~~  
-已通过aes对json格式进行加密处理
 
 ### 特殊位点库
 
