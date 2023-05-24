@@ -22,9 +22,6 @@ func parseCfg() {
 
 	initAcmg2015()
 
-	if *specVarList == "" {
-		*specVarList = anno.GuessPath(TomlTree.Get("tier1.specVarList").(string), etcPath)
-	}
 	if *transInfo == "" {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
 	}
@@ -63,19 +60,24 @@ func parseToml() {
 		homFixRatioThreshold = homRatio.(float64)
 	}
 
+	// [tier1]
 	// update tier1 AF threshold
-	var tier1AFThreshold = TomlTree.Get("tier1.Tier1AFThreshold")
+	var tier1AFThreshold = TomlTree.Get("tier1.AFThreshold")
 	if tier1AFThreshold != nil {
 		anno.Tier1AFThreshold = tier1AFThreshold.(float64)
 	}
-	var tier1PLPAFThreshold = TomlTree.Get("tier1.Tier1PLPAFThreshold")
+	var tier1PLPAFThreshold = TomlTree.Get("tier1.PLPAFThreshold")
 	if tier1PLPAFThreshold != nil {
 		anno.Tier1PLPAFThreshold = tier1PLPAFThreshold.(float64)
 	}
-	var tier1InHouseAFThreshold = TomlTree.Get("tier1.Tier1InHouseAFThreshold")
+	var tier1InHouseAFThreshold = TomlTree.Get("tier1.InHouseAFThreshold")
 	if tier1InHouseAFThreshold != nil {
 		anno.Tier1InHouseAFThreshold = tier1InHouseAFThreshold.(float64)
 	}
+	if *specVarList == "" {
+		*specVarList = anno.GuessPath(TomlTree.Get("tier1.SpecVarList").(string), etcPath)
+	}
+
 }
 
 func openRedis() {
