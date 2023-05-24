@@ -121,7 +121,7 @@ var (
 	hlCode        = "6d276bc509883dbafe05be835ad243d7"
 	// 新生儿数据库
 	newBornDb anno.EncodeDb
-	nbCode    = "c3d112d6a47a0a04aad2b9d2d2cad266"
+	nbCode    = "afe0ba6b37644a81cedc2364ee414c7f"
 	// 孕前数据库
 	prePregnancyDb anno.EncodeDb
 	ppCode         = "118b09d39a5d3ecd56f9bd4f351dd6d6"
