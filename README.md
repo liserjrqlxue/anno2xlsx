@@ -10,50 +10,266 @@
 
 | arg          | type    | example                                         | note                                                                                 |
 |--------------|---------|-------------------------------------------------|--------------------------------------------------------------------------------------|
+| -json        | boolean |                                                 | 输出json格式结果                                                                           |
+| -save        | boolean |                                                 | 保持excel                                                                              |
 | -academic    | boolean |                                                 | 学术使用，比如REVEL                                                                         |
+| -hl          | boolean |                                                 | 使用耳聋变异库                                                                              |
+| -nb          | boolean |                                                 | 使用新筛变异库                                                                              |
+| -pp          | boolean |                                                 | 使用孕前变异库                                                                              |
+| -sf          | boolean |                                                 | 使用ACMG SF变异库                                                                         |
 | -acmg        | boolean |                                                 | 使用ACMG2015计算证据项PVS1, PS1,PS4, PM1,PM2,PM4,PM5 PP2,PP3, BA1, BS1,BS2, BP1,BP3,BP4,BP7 |
 | -autoPVS1    | boolean |                                                 | 使用autoPVS1结果处理证据项PVS1                                                                |
 | -allTier1    | boolean |                                                 | 不进行tier1过滤                                                                           |
 | -allgene     | boolean |                                                 | tier1过滤不过滤基因                                                                         |
-| -cfg         | string  | etc/config.toml                                 | toml配置文件                                                                             |
 | -cnvAnnot    | boolean |                                                 | 重新进行UpdateCnvAnnot                                                                   |
 | -cnvFlter    | boolean |                                                 | 进行 cnv 结果过滤                                                                          |
-| -config      | string  | etc/config.json                                 | json配置文件                                                                             |
+| -warn        | boolean |                                                 | 警告基因名无法识别问题，而非中断                                                                     |
+| -wgs         | boolean |                                                 | wgs模式                                                                                |
 | -couple      | boolean |                                                 | 夫妻模式                                                                                 |
-| -exon        | string  | sample1.exon.txt,sample2.exon.txt               | exon CNV 输入文件，逗号分割，过滤 -list 内样品列表                                                    |
-| -extra       | string  | extra1.txt,extra2.txt                           | 额外简单放入excel的额外sheets中                                                                |
-| -extraSheet  | string  | sheet1,sheet2                                   | -extra对应sheet name                                                                   |
+| -trio        | boolean |                                                 | 标准trio模式                                                                             |
+| -trio2       | boolean |                                                 | 非标准trio，但是保持先证者、父亲、母亲顺序                                                              |
+| -redis       | boolean |                                                 | 使用redis服务注释本地频率                                                                      |
+| -redisAddr   | string  | 127.0.0.1:6380                                  | redis服务器地址                                                                           |
+| -cfg         | string  | etc/config.toml                                 | toml配置文件                                                                             |
+| -config      | string  | etc/config.json                                 | json配置文件                                                                             |
+| -geneId      | string  | db/gene.id.txt                                  | 基因名-基因ID 对应数据库                                                                       |
+| -list        | string  | sample1,sample2,sample3                         | 样品编号，逗号分割，**有顺序**                                                                    |
+| -gender      | string  | M,M,F                                           | 样品性别，逗号分割，与 -list 顺序一致                                                               |
 | -qc          | string  | sample1.coverage.report,sample2.coverage.report | bamdst质控文件，逗号分割，与 -list 顺序一致                                                         |
 | -filterStat  | string  | L01.filter.stat,L02.filter.stat                 | 计算reads QC的文件，逗号分割                                                                   |
 | -imqc        | string  | sample1.QC.txt,sample2.QC.txt                   | 一体机QC.txt格式QC输入，逗号分割，过滤 -list 内样品列表                                                  |
 | -mtqc        | string  | sample1.MT.QC.txt,sample2.MT.QC.txt             | 线粒体QC.txt，逗号分割，过滤 -list 内样品列表                                                        |
-| -gender      | string  | M,M,F                                           | 样品性别，逗号分割，与 -list 顺序一致                                                               |
-| -geneId      | string  | db/gene.id.txt                                  | 基因名-基因ID 对应数据库                                                                       |
-| -hl          | boolean |                                                 | 使用耳聋变异库                                                                              |
-| -json        | boolean |                                                 | 输出json格式结果                                                                           |
 | -karyotype   | string  | sample1.karyotpye.txt,sample2.karyotype.txt     | 核型信息，逗号分割                                                                            |
-| -kinship     | string  | kinship.txt                                     | trio的亲缘关系                                                                            |
-| -large       | string  | sample1.large.txt,sample2.large.txt             | large CNV注释结果，逗号分割                                                                   |
-| -list        | string  | sample1,sample2,sample3                         | 样品编号，逗号分割，**有顺序**                                                                    |
-| -log         | string  | prefix.log                                      | log输出文件                                                                              |
 | -loh         | string  | loh1.xlsx,loh2.xlsx                             | loh结果excel，逗号分割，按 -list 样品编号顺序创建sheet                                                |
-| -lohSheet    | string  | LOH_annotation                                  | sheet name后缀                                                                         |
-| -nb          | boolean |                                                 | 使用新筛变异库                                                                              |
-| -pp          | boolean |                                                 | 使用孕前变异库                                                                              |
-| -prefix      | string  | outputPrefix                                    | 输出前缀，默认 -snv 第一个输入                                                                   |
-| -product     | string  | DX1516                                          | 产品编号                                                                                 |
-| -redis       | boolean |                                                 | 使用redis服务注释本地频率                                                                      |
-| -redisAddr   | string  | 127.0.0.1:6380                                  | redis服务器地址                                                                           |
-| -save        | boolean |                                                 | 保持excel                                                                              |
-| -seqType     | string  | SEQ2000                                         | redis 查询关键词，区分频率库                                                                    |
+| -lohSheet    | string  | LOH_annotation                                  | sheet name                                                                           |
+| -kinship     | string  | kinship.txt                                     | trio的亲缘关系                                                                            |
 | -snv         | string  | snv1.txt,snv2.txt                               | snv注释结果，逗号分割                                                                         |
-| -specVarList | string  | etc/spec.var.lite.txt                           | 特殊变异库                                                                                |
+| -exon        | string  | sample1.exon.txt,sample2.exon.txt               | exon CNV 输入文件，逗号分割，过滤 -list 内样品列表                                                    |
+| -large       | string  | sample1.large.txt,sample2.large.txt             | large CNV注释结果，逗号分割                                                                   |
+| -extra       | string  | extra1.txt,extra2.txt                           | 额外简单放入excel的额外sheets中                                                                |
+| -extraSheet  | string  | sheet1,sheet2                                   | -extra对应sheet name                                                                   |
+| -prefix      | string  | outputPrefix                                    | 输出前缀，默认 -snv 第一个输入                                                                   |
+| -log         | string  | prefix.log                                      | log输出文件                                                                              |
 | -tag         | string  | .tag                                            | tier1结果文件名加入额外标签，[prefix].Tier1[tag].xlsx                                            |
+| -product     | string  | DX1516                                          | 产品编号                                                                                 |
+| -seqType     | string  | SEQ2000                                         | redis 查询关键词，区分频率库                                                                    |
+| -specVarList | string  | etc/spec.var.lite.txt                           | 特殊变异库                                                                                |
 | -transInfo   | string  | db/trans.exonCount.json.new.json                | json格式转录本exon count数据库                                                               |
-| -trio        | boolean |                                                 | 标准trio模式                                                                             |
-| -trio2       | boolean |                                                 | 非标准trio，但是保持先证者、父亲、母亲顺序                                                              |
-| -warn        | boolean |                                                 | 警告基因名无法识别问题，而非中断                                                                     |
-| -wgs         | boolean |                                                 | wgs模式                                                                                |
+
+## 处理逻辑
+
+### CNV
+
+1. 读取 `annotation.Gene.transcript` , 得到基因-转录本对应关系
+2. 读取 `CNV` 数据文件列表到 `paths`
+3. 使用 `addCnv2Sheet(sheet, title, paths, sampleMap, filterSize, filterGene, stats, key, gender, cnvFile)` 写入 sheet
+   - 读取 `paths` 到 `cnvDb`，遍历 `item`
+      1. 跳过其他样品编号
+      2. 一体机模式，进行表头处理
+      3. `anno.CnvPrimer`进行引物设计
+      4. `item["OMIM_Gene"]` 作为 基因，获取 `geneIDs`
+      5. 基于 `geneIDs` 注释 `CHPO` `基因-疾病` `突变频谱`
+      6. `-cnvAnnot` 时
+         1. 转换 `json` 格式写入 `item["CNV_annot"]`
+      7. `item["OMIM_Phenotype_ID"]` -> `item["OMIM"]`
+      8. `-cnvFilter` 时
+         1. `exon cnv` 跳过 `item["OMIM"]` 为空
+         2. `large cnv` 跳过 `长度 < 1M`
+      9. 基于 `title` 写入 `sheet row`
+      10. `-wesim` 时
+         1. 基于 `wesim.cnvColumn` 写入 `cnvFile`
+
+### Extra
+
+1. 解析 `-extra` 和 `-extraSheet` 到 `extraArray` `extraSheetArray`
+2. 校验 `长度` 相等
+3. 遍历 -> `i`
+   1. 识别 `extraArray[i]` 后缀
+      1. 后缀 `xlsx` 时，`AppendSheet` `extraSheetArray[i]` -> `extraSheetArray[i]`
+      2. 其他时，作为 `txt` 读取 `slice` 写入 `sheet` `extraSheetArray[i]`
+
+### fam_info
+
+1. 写表头 "SampleID"
+2. 遍历 `sampleList` -> `sampleID`
+   1. `AddRow().AddCell().SetString(sampleID)` `sampleID` 写入 行
+
+### FV
+
+1. `loadData` 读取到 哈希数值 `data`
+   1. 文件名后缀识别 是否 `gzip` 文件，分别读取
+2. `cycle1`
+   1. `data` 循环1 -> `item`
+      1. `annotate1(item)`
+         1. inhouse_AF -> frequency
+         2. 历史验证假阳次数 <- "重复数"
+         3. score to prediction
+         4. update Function
+         5. update FuncRegion
+         6. gene symbol -> geneID
+         7. 基于 `geneIDs` 注释 `CHPO` `基因-疾病` `突变频谱`
+         8. 注释 孕前数据库
+         9. 注释 新生儿数据库
+         10. 注释 耳聋数据库
+         11. "Omim Gene" -> "Gene"
+         12. "OMIM_Phenotype_ID" -> "OMIM"
+         13. `-acmg` 时
+         14. `anno.UpdateSnv(item, *gender)`
+         15. "引物设计"
+         16. `item["flank"] += " " + item["HGVSc"]`
+         17. "变异来源"
+         18. 注释 Tier
+         19. Tier1 时
+            1. `anno.UpdateSnvTier1(item)`
+            2. `anno.UpdateAutoRule(item)`
+            3. `anno.UpdateManualRule(item)`
+            4. `annotate1Tier1(item)`
+3. `delDupVar`
+   1. `data` 循环1 -> `item`
+      1. `Tier1` 时
+         1. "#Chr"+"Start"+"Stop"+"Ref"+"Call"+"Gene Symbol"+"Transcript" -> `key`
+         2. `countVar[key] > 1` 时
+            1. 加入 `duplicateVar[key]`
+   2. 遍历 `duplicateVar` -> `key,items`
+      1. 最大 `score = anno.FuncInfo[item["Function"]]` -> `maxFunc`
+      2. 遍历 `items` -> `item`
+         1. `score < maxFunc` 时
+            1. `item["delete"] = "Y"`
+            2. `deleteVar[key+"\t"+transcript] = true`
+            3. `countVar[key]--`
+            4. `continue`
+         2. 最小 `transcriptLevel[transcript]` -> `minTrans`
+      3. 遍历 `items` -> `item`
+         1. `item["delete"] != "Y"` 且 `transcriptLevel[transcript] != minTrans`
+            1. `item["delete"] = "Y"`
+            2. `deleteVar[key+"\t"+transcript] = true`
+            3. `countVar[key]--`
+4. `cycle2`
+   1. `data` 循环1 -> `item`
+      1. `Tier1` 时 `anno.InheritCheck(item,inheritDb)`
+         1. 统计 基因-转录本 维度 "Zygosity" "ModeInheritance" 分布计数
+   2. `data` 循环2 -> `item`
+      1. "ClinVar Significance" 拼接 "CLNSIGCONF"
+      2. `Tier1` 时
+         1. "MutationName" 记入 `tier1Db`
+         2. "#Chr"+"Start"+"Stop"+"Ref"+"Call"+"Gene Symbol"+"Transcript" -> `key`
+         3. 非 `deleteVar[key]`
+            1. `annotate2(item)`
+               1. `item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)`
+               2. `item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)`
+               3. `item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)`
+               4. `familyTag = "single"`
+                  1. `-trio || -trio2` 时 `familyTag = "trio"`
+                  2. `-couple` 时 `familyTag = "couple"`
+               5. `item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")`
+               6. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
+               7. `anno.Format(item)`
+                  1. `FloatFormat`
+                     1. 6 位精度
+                  2. `NewLineFormat`
+                     1. `<br/>` -> `\n`
+               8. `-wesim` 时 `annotate2IM`
+                  1. "Gene Symbol" 属于 `acmgSFGene` 时 item["IsACMG59"] = "Y"
+                  2. "DiseaseName/ModeInheritance" 拼接 "DiseaseNameCH"或"DiseaseNameEN"与"ModeInheritance"
+                  3. `-trio` 时，拆分 "Zygosity" 给 "Genotype of Family Member 1" "Genotype of Family Member 2"
+                  4. 基于 `wesim.resultColumn` 写入 `resultArray`
+            2. 写入 Tier1 "filter_variants"
+            3. 非 `-wgs` 时 写入 Tier2
+      3. `outputTier3` 时
+         1. `SteamWriterSetStringMap2Row(tier3SW, 1, tier3RowID, item, tier3Titles)`
+            1. 流式写入 `Tier3`
+5. `-wgs` 时 `wgsCycle`
+   1. 初始化 `wgsXlsx`
+      1. MTTitle 写入 "MT" Sheet，filterVaristsTitle 写入 "intron" Sheet
+   2. `data` 循环1 -> `item`
+      1. 重新计算 `wgs` 模式 `Tier1`
+      2. `Tier1` 时 `anno.InheritCheck(item,inheritDb)`
+         1. 统计 基因-转录本 维度 "Zygosity" "ModeInheritance" 分布计数
+   3. `data` 循环2 -> `item`
+      1. `Tier1` 时
+         1. `annotate4(item)`
+            1. `item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)`
+            2. `item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)`
+            3. `item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)`
+            4. `-trio`时 `item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")`
+            5. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
+         2. 写入 Tier2
+         3. 额外（不在 `tier1Db` ） 非 "no-change" 变异
+            1. 写入 `intronSheet`
+      2. 线粒体 写入 "MT" Sheet
+
+#### 遗传相符
+
+#### familyTag
+
+#### 筛选标签
+
+### LOH
+
+1. `appendLOHs(excel, lohs, lohSheetName, sampleList)`
+   1. 遍历 `lohs` -> `i,path`
+      1. 对应 `sampleID = sampleList[i]`
+      2. `AppendSheet` `lohSheetName` -> `sampleID+"-loh"`
+
+### QC
+
+1. `parseQC`
+   1. `-karyotype` -> `karyotypeMap`
+   2. `-qc`
+      1. `loadQC(*qc, *kinship, qualitys, *wgs)`
+         1. `kinship` -> `kinshipHash`
+         2. `sep="\t"`
+            1. `-wgs` 时 `sep=": "`
+         3. 遍历 `-qc` -> `i,path`
+            1. 遍历 `paht` -> `line`
+               1. `^## Files : (\S+)` -> "bamPath"
+               2. `sep` 分割， `TrimSpace`，填充 `quality[i]`
+            2. `-wgs` 时 修正 "bamPath"
+            3. `kinshipHash[quality[i]["样本编号"]]` 更新 `quality[i]`
+      2. 遍历 `qualitys` -> `quality`
+         1. `qualityKeyMap` 更新列
+         2. `karyotypeMap[quality["样本编号"]]` 更新 "核型预测"
+         3. "原始数据产出（Gb）" 更新 "原始数据产出（Mb）"
+         4. `-wesim` 时
+            1. 基于 `wesim.qcColumn` 写入 `qcFile`
+      3. `-filterStat` -> `loadFilterStat(*filterStat, qualitys[0])`
+         1. 计算 "Q20 碱基的比例" "Q30 碱基的比例" "测序数据的 GC 含量" "低质量 reads 比例"
+      4. `-imqc`
+         1. 遍历 `-imqc` -> `path` 读入 `imqc`
+         2. 遍历 `qualitys` -> `sampleID,quality`
+            1. `imqc[sampleID]` 更新 `quality`
+               1. `quality["Q20 碱基的比例"] = qcMap["Q20_clean"] + "%"`
+               2. `quality["Q30 碱基的比例"] = qcMap["Q30_clean"] + "%"`
+               3. `quality["测序数据的 GC 含量"] = qcMap["GC_clean"] + "%"`
+               4. `quality["低质量 reads 比例"] = qcMap["lowQual"] + "%"`
+      5. `mtqc`
+         1. 遍历 `-mtqc` -> `i,path`
+            1. `path` 读入 `qcMap`
+            2. `qcMap` 更新 `qualitys[i]`
+2. `updateQC`
+   1. "罕见变异占比（Tier1/总）"
+   2. "罕见烈性变异占比 in tier1"
+   3. "罕见纯合变异占比 in tier1"
+   4. "纯合变异占比 in all"
+   5. 循环 -> chr
+      1. "chr"+chr+"纯合变异占比"
+   6. "SNVs_all"
+   7. "SNVs_tier1"
+   8. "Small insertion（包含 dup）_all"
+   9. "Small insertion（包含 dup）_tier1"
+   10. "Small deletion_all"
+   11. "Small deletion_tier1"
+   12. "exon CNV_all"
+   13. "exon CNV_tier1"
+   14. "large CNV_all"
+   15. "large CNV_tier1"
+3. `addQCSheet`
+   1. `AddSheet("quality")`
+   2. 遍历 `qualityColumn` -> `key` 横向赋值
+      1. `row=sheet.AddRow`
+      2. `row.AddCell().SetString(key)`
+      3. 遍历 `qualitys` -> `quality`
+         1. `row.AddCell().SetString(item[key])`
 
 ## AES加密数据库
 
