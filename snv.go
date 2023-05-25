@@ -219,6 +219,20 @@ func annotate1(item map[string]string) {
 	newBornDb.AnnoMultiKey(item, multiKeys)
 	// 耳聋数据库
 	hearingLossDb.AnnoMultiKey(item, multiKeys)
+	// PHGDTag
+	var phgdTag []string
+	for _, db := range phgdTagDb {
+		var v1 = item[db[1]]
+		if v1 != "" {
+			v1 = db[0] + ":" + v1
+			var v2 = item[db[2]]
+			if v2 != "" {
+				v1 += ":" + v2
+			}
+			phgdTag = append(phgdTag, v1)
+		}
+	}
+	item[phgdTagKey] = strings.Join(phgdTag, phgdTagSep)
 
 	item["Gene"] = item["Omim Gene"]
 	item["OMIM"] = item["OMIM_Phenotype_ID"]

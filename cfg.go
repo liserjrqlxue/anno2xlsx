@@ -78,6 +78,9 @@ func parseToml() {
 		*specVarList = anno.GuessPath(TomlTree.Get("tier1.SpecVarList").(string), etcPath)
 	}
 
+	phgdTagKey = TomlTree.Get("annotation.Mutation.PHGDTag.key").(string)
+	phgdTagSep = TomlTree.Get("annotation.Mutation.PHGDTag.sep").(string)
+	phgdTagDb = TomlTree.Get("annotation.Mutation.PHGDTag.db").([][]string)
 }
 
 func openRedis() {

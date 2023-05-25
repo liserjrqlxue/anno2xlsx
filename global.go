@@ -125,6 +125,10 @@ var (
 	// 孕前数据库
 	prePregnancyDb anno.EncodeDb
 	ppCode         = "118b09d39a5d3ecd56f9bd4f351dd6d6"
+	// PHGDTag
+	phgdTagKey string
+	phgdTagSep string
+	phgdTagDb  [][]string
 )
 
 // ACMG

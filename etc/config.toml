@@ -80,6 +80,35 @@ title = [
     "耳聋致病性",
 ]
 
+[annotation.Mutation.PHGDTag]
+key = "PHGDTag"
+sep = "<br/>"
+db = [
+    [
+        "NB",
+        "新生儿致病性",
+        "新生儿证据项",
+    ],
+    [
+        "PP",
+        "孕前致病性",
+        "孕前证据项",
+    ],
+    [
+        "HL",
+        "耳聋致病性",
+        "耳聋证据项",
+    ],
+]
+
+db = [
+    [
+        "",
+        "耳聋证据项",
+        "耳聋致病性",
+    ],
+]
+
 [annotation.Gene]
 transcript = "geneSymbol.transcript.txt"
 
