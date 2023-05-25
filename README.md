@@ -323,16 +323,35 @@ sfCode=b7ea138a9842cbb832271bdcf4478310 # 替换成实际密钥
 - 确认 `致病性等级` 的 注释个数 一致
 
 ```shell
-## 数据库设置权限保密
-chmod 700 db/ACMGSF.json.aes.mut.tsv
-## 校验注释
 sh check/check.sf.sh
 ```
 
 ![img.png](docs/ACMGSF.check.1.png)
 ![img.png](docs/ACMGSF.check.2.png)
 
-### HLVIP
+### VIPHL
+
+- 因原始 `VIPHL` 库文件格式不同，需要转换格式步骤
+- 因建库和注释校验均需 `WES` 注释流程，整个下面示例步骤统一在集群环境处理，注意非加密文件的保密
+- 如本地有 `WES` 注释流程，建议在本地进行处理
+- 核对 `差异`
+
+```shell
+## 生成 check/VIPHL/VIPHL.xlsx
+chmod 700 check/viphl位点唯一结果统计_total_20230509.xlsx
+sh check/build.hl.sh viphl位点唯一结果统计_total_20230509.xlsx
+
+## 构建加密库
+hlCode=6d276bc509883dbafe05be835ad243d7  # 替换成实际密钥
+src/NB2xlsx/buildDB/buildDB -code $hlCode -extract "#Chr,Start,Stop,Ref,Call,Gene Symbol,Transcript,cHGVS,HLinterpretation,HLcriteria" -input check/VIPHL/VIPHL.xlsx -keys etc/HL.key.txt -output db/VIPHL.json.aes -sheet Result
+
+## 注释校验
+sh check/check.hl.sh
+```
+
+![VIPHL format](docs/VIPHL.format.png)
+![VIPHL build](docs/VIPHL.png)
+![VIPHL.check.2](docs/VIPHL.check.2.png)
 
 ## CHPO
 
