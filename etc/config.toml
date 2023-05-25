@@ -103,6 +103,7 @@ db = [
 
 [annotation.Gene]
 transcript = "geneSymbol.transcript.txt"
+exonCount = "trans.exonCount.json.new.json"
 
 [annotation.Gene.spectrum]
 file = "基因突变谱.json.aes"

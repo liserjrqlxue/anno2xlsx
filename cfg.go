@@ -22,10 +22,6 @@ func parseCfg() {
 
 	initAcmg2015()
 
-	if *transInfo == "" {
-		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
-		exonCount = jsonUtil.JsonFile2Map(*transInfo)
-	}
 	if *wgs {
 		qualityColumn = textUtil.File2Array(filepath.Join(etcPath, "wgs.Tier1.quality.txt"))
 	} else {
@@ -78,6 +74,10 @@ func parseToml() {
 	if *specVarList == "" {
 		*specVarList = anno.GuessPath(TomlTree.Get("tier1.SpecVarList").(string), etcPath)
 	}
+	if *transInfo == "" {
+		*transInfo = anno.GuessPath(TomlTree.Get("annotation.Gene.exonCount").(string), dbPath)
+	}
+	exonCount = jsonUtil.JsonFile2Map(*transInfo)
 
 	phgdTagKey = TomlTree.Get("annotation.Mutation.PHGDTag.key").(string)
 	phgdTagSep = TomlTree.Get("annotation.Mutation.PHGDTag.sep").(string)
