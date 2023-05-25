@@ -1,4 +1,4 @@
-tier3 = true
+tier3 = false
 homFixRatioThreshold = 0.78
 
 [tier1]
@@ -98,14 +98,6 @@ db = [
         "HL",
         "耳聋致病性",
         "耳聋证据项",
-    ],
-]
-
-db = [
-    [
-        "",
-        "耳聋证据项",
-        "耳聋致病性",
     ],
 ]
 
