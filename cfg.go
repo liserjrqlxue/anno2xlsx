@@ -81,7 +81,11 @@ func parseToml() {
 	phgdTagKey = TomlTree.Get("annotation.Mutation.PHGDTag.key").(string)
 	phgdTagSep = TomlTree.Get("annotation.Mutation.PHGDTag.sep").(string)
 	for _, db := range TomlTree.Get("annotation.Mutation.PHGDTag.db").([]interface{}) {
-		phgdTagDb = append(phgdTagDb, db.([]string))
+		var info []string
+		for _, v := range db.([]interface{}) {
+			info = append(info, v.(string))
+		}
+		phgdTagDb = append(phgdTagDb, info)
 	}
 }
 
