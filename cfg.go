@@ -24,6 +24,7 @@ func parseCfg() {
 
 	if *transInfo == "" {
 		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
+		exonCount = jsonUtil.JsonFile2Map(*transInfo)
 	}
 	if *wgs {
 		qualityColumn = textUtil.File2Array(filepath.Join(etcPath, "wgs.Tier1.quality.txt"))
