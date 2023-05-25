@@ -78,14 +78,13 @@ var (
 )
 
 var (
-	logFile       *os.File
-	defaultConfig map[string]interface{}
-	tier2         *xlsxTemplate
-	err           error
-	ts            = []time.Time{time.Now()}
-	step          = 0
-	sampleMap     = make(map[string]bool)
-	stats         = make(map[string]int)
+	logFile   *os.File
+	tier2     *xlsxTemplate
+	err       error
+	ts        = []time.Time{time.Now()}
+	step      = 0
+	sampleMap = make(map[string]bool)
+	stats     = make(map[string]int)
 
 	tier1Xlsx           *xlsx.File
 	filterVariantsTitle []string

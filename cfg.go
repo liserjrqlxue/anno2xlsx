@@ -17,9 +17,6 @@ import (
 )
 
 func parseCfg() {
-	// parser etc/config.json
-	defaultConfig = jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
-
 	initAcmg2015()
 
 	if *wgs {
@@ -74,10 +71,7 @@ func parseToml() {
 	if *specVarList == "" {
 		*specVarList = anno.GuessPath(TomlTree.Get("tier1.SpecVarList").(string), etcPath)
 	}
-	if *transInfo == "" {
-		*transInfo = anno.GuessPath(TomlTree.Get("annotation.Gene.exonCount").(string), dbPath)
-	}
-	exonCount = jsonUtil.JsonFile2Map(*transInfo)
+	exonCount = jsonUtil.JsonFile2Map(anno.GuessPath(TomlTree.Get("annotation.Gene.exonCount").(string), dbPath))
 
 	phgdTagKey = TomlTree.Get("annotation.Mutation.PHGDTag.key").(string)
 	phgdTagSep = TomlTree.Get("annotation.Mutation.PHGDTag.sep").(string)

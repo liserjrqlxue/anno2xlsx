@@ -45,11 +45,6 @@ var (
 		"",
 		"特殊位点库",
 	)
-	transInfo = flag.String(
-		"transInfo",
-		"",
-		"info of transcript",
-	)
 	list = flag.String(
 		"list",
 		"proband,father,mother",
@@ -113,11 +108,6 @@ var (
 		"seqType",
 		"SEQ2000",
 		"redis key:[SEQ2000|SEQ500|Hiseq]",
-	)
-	config = flag.String(
-		"config",
-		filepath.Join(etcPath, "config.json"),
-		"default config file, config will be overwrite by flag",
 	)
 	extra = flag.String(
 		"extra",
