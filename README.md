@@ -1,8 +1,40 @@
-# anno2xlsx
+# anno2xlsx <!-- omit in toc -->
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/liserjrqlxue/anno2xlsx)
 [![GoDoc](https://godoc.org/github.com/liserjrqlxue/anno2xlsx?status.svg)](https://pkg.go.dev/github.com/liserjrqlxue/anno2xlsx)
 [![Go Report Card](https://goreportcard.com/badge/github.com/liserjrqlxue/anno2xlsx)](https://goreportcard.com/report/github.com/liserjrqlxue/anno2xlsx)
+
+- [USAGE](#usage)
+  - [PARAM](#param)
+- [处理逻辑](#处理逻辑)
+  - [CNV](#cnv)
+  - [Extra](#extra)
+  - [fam\_info](#fam_info)
+  - [FV](#fv)
+    - [遗传相符](#遗传相符)
+    - [familyTag](#familytag)
+    - [筛选标签](#筛选标签)
+  - [LOH](#loh)
+  - [QC](#qc)
+- [AES加密数据库](#aes加密数据库)
+  - [DATABASE](#database)
+  - [疾病库/基因频谱](#疾病库基因频谱)
+  - [ACMG Secondary Finding](#acmg-secondary-finding)
+    - [注释校验](#注释校验)
+  - [VIPHL](#viphl)
+- [CHPO](#chpo)
+- [注意](#注意)
+  - [特殊位点库](#特殊位点库)
+- [特性](#特性)
+  - [结合性处理](#结合性处理)
+    - [格式转换](#格式转换)
+    - [Het-\>Hom修正](#het-hom修正)
+    - [Hom-\>Hemi修正](#hom-hemi修正)
+- [复用拼接字段](#复用拼接字段)
+- [注意](#注意-1)
+- [UTIL](#util)
+  - [`tier1tags`](#tier1tags)
+    - [TO-DO](#to-do)
 
 ## USAGE
 
@@ -31,7 +63,6 @@
 | -redis       | boolean |                                                 | 使用redis服务注释本地频率                                                                      |
 | -redisAddr   | string  | 127.0.0.1:6380                                  | redis服务器地址                                                                           |
 | -cfg         | string  | etc/config.toml                                 | toml配置文件                                                                             |
-| -config      | string  | etc/config.json                                 | json配置文件                                                                             |
 | -geneId      | string  | db/gene.id.txt                                  | 基因名-基因ID 对应数据库                                                                       |
 | -list        | string  | sample1,sample2,sample3                         | 样品编号，逗号分割，**有顺序**                                                                    |
 | -gender      | string  | M,M,F                                           | 样品性别，逗号分割，与 -list 顺序一致                                                               |
@@ -54,7 +85,6 @@
 | -product     | string  | DX1516                                          | 产品编号                                                                                 |
 | -seqType     | string  | SEQ2000                                         | redis 查询关键词，区分频率库                                                                    |
 | -specVarList | string  | etc/spec.var.lite.txt                           | 特殊变异库                                                                                |
-| -transInfo   | string  | db/trans.exonCount.json.new.json                | json格式转录本exon count数据库                                                               |
 
 ## 处理逻辑
 
@@ -120,10 +150,10 @@
          17. "变异来源"
          18. 注释 Tier
          19. Tier1 时
-            1. `anno.UpdateSnvTier1(item)`
-            2. `anno.UpdateAutoRule(item)`
-            3. `anno.UpdateManualRule(item)`
-            4. `annotate1Tier1(item)`
+           1. `anno.UpdateSnvTier1(item)`
+           2. `anno.UpdateAutoRule(item)`
+           3. `anno.UpdateManualRule(item)`
+           4. `annotate1Tier1(item)`
 3. `delDupVar`
    1. `data` 循环1 -> `item`
       1. `Tier1` 时
