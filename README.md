@@ -225,7 +225,7 @@
             5. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
          2. 写入 Tier2
          3. 额外（不在 `tier1Db` ） 非 "no-change" 变异
-            1. 写入 `intronSheet`
+         1. 写入 `intronSheet`
       2. 线粒体 写入 "MT" Sheet
 
 #### 遗传相符
@@ -234,12 +234,51 @@
 
 #### 筛选标签
 
+- 标签拼接，分号 `;` 分割
+
+- tag1:
+  - 本地频率<=0.01 || 特殊变异库 || HGMD DM || ClinVar P/LP
+    - trio
+      - 遗传相符-经典trio == 相符
+        - 标签 T1
+      - 遗传相符-非经典trio == 相符
+        - 遗传模式: AR || XL || YL
+          - 标签 1
+        - 遗传模式: AD
+          - 频率和纯合记录 均为 0
+            - 标签 1
+    - single
+      - 遗传相符 == 相符
+        - 遗传模式: AR || XL || YL
+          - 标签 1
+        - 遗传模式: AD
+          - 频率和纯合记录 均为 0
+            - 标签 1
+
+- tag2:
+  - 特殊变异库 || HGMD DM || ClinVar P/LP
+    - 标签 2
+
+- tag3:
+  - 本地频率<=0.01 || 烈性突变
+    - 标签 3
+
+- tag4:
+  - 本地频率<=0.01
+    - PP3 || (非重复区域+特定功能)
+      - 标签 4
+      - 特定功能:
+        - stop-loss
+        - cds-ins
+        - cds-del
+        - cds-indel
+
 ### LOH
 
 1. `appendLOHs(excel, lohs, lohSheetName, sampleList)`
-   1. 遍历 `lohs` -> `i,path`
-      1. 对应 `sampleID = sampleList[i]`
-      2. `AppendSheet` `lohSheetName` -> `sampleID+"-loh"`
+1. 遍历 `lohs` -> `i,path`
+  1. 对应 `sampleID = sampleList[i]`
+  2. `AppendSheet` `lohSheetName` -> `sampleID+"-loh"`
 
 ### QC
 
@@ -312,7 +351,7 @@
 | ACMGSF       | V2.0.2023.5           |      |
 | PrePregnancy | PP155-V5.1.2_20230427 |      |
 | NBSP         | V2.3.1.20230505       |      |
-| HLVIP        | 20230509.30952        |      |
+| VIPHL        | 20230509.30952        |      |
 
 ### 疾病库/基因频谱
 
