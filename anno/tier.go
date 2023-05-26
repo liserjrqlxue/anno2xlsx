@@ -59,10 +59,6 @@ var (
 // AddTier add tier to item
 func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio, isWGS, allGene bool, AFlist []string) {
 	if isTrio {
-		if noProband.MatchString(item["Zygosity"]) {
-			stats["noProband"]++
-			return
-		}
 		checkTierTrio(item, stats, geneList, isWGS, allGene, AFlist)
 	} else {
 		checkTierSingle(item, stats, geneList, isWGS, allGene, AFlist)
@@ -98,15 +94,13 @@ func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[st
 func checkHGMDClinVar(item map[string]string, stats map[string]int, AFlist []string) {
 	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) || isPhoenix.MatchString(item["Phoenix Tag"]) {
 		stats["HGMD/ClinVar"]++
-		if checkAF(item, AFlist, Tier1PLPAFThreshold) {
-			stats["HGMD/ClinVar isAF"]++
-			if isChrAXY.MatchString(item["#Chr"]) {
+		if isChrAXY.MatchString(item["#Chr"]) {
+			if checkAF(item, AFlist, Tier1PLPAFThreshold) {
+				stats["HGMD/ClinVar isAF"]++
 				item["Tier"] = "Tier1"
 				stats["HGMD/ClinVar noMT T1"]++
-			}
-		} else {
-			stats["HGMD/ClinVar noAF"]++
-			if isChrAXY.MatchString(item["#Chr"]) {
+			} else {
+				stats["HGMD/ClinVar noAF"]++
 				stats["HGMD/ClinVar noMT T2"]++
 				if item["Tier"] != "Tier1" {
 					item["Tier"] = "Tier2"

@@ -218,15 +218,66 @@
    3. `data` 循环2 -> `item`
       1. `Tier1` 时
          1. `annotate4(item)`
-            1. `item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)`
-            2. `item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)`
-            3. `item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)`
-            4. `-trio`时 `item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")`
-            5. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
+           1. `item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)`
+           2. `item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)`
+           3. `item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)`
+           4. `-trio`时 `item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")`
+           5. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
          2. 写入 Tier2
          3. 额外（不在 `tier1Db` ） 非 "no-change" 变异
          1. 写入 `intronSheet`
       2. 线粒体 写入 "MT" Sheet
+
+#### Tier
+
+- trio
+  - 先证者有检出
+    - 自动化判断 不是 B/LB || 有证据项 PM2
+      - denovo
+        - 公共频率<=0.01
+          - 基因集
+            - 功能集
+              - Tier1
+            - WGS && 非 "no-change"
+              - 本地频率<=0.01
+                - Tier1
+              - Tier2
+            - Tier2
+          - Tier2
+        - Tier2
+      - 非denovo
+        - 公共频率<=0.01
+          - 基因集
+            - 功能集
+              - Tier1
+            - WGS && 非 "no-change"
+              - 本地频率<=0.01
+                - Tier1
+              - Tier3
+            - Tier3
+          - Tier3
+        - Tier3
+- single
+  - 自动化判断 不是 B/LB || 有证据项 PM2
+    - 公共频率<=0.01
+      - 基因集
+        - 功能集
+          - Tier1
+        - WGS && 非 "no-change"
+          - 本地频率<=0.01
+            - Tier1
+          - Tier3
+        - Tier3
+      - Tier3
+    - Tier3
+- HGMD DM || ClinVar P/LP
+  - 非线粒体
+    - 公共频率 <= 0.05
+      - Tier1
+    - 非 Tier1
+      - Tier2
+- 特殊位点库
+  - Tier1
 
 #### 遗传相符
 
