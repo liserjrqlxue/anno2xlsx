@@ -219,16 +219,18 @@
       1. `Tier1` 时
          1. `annotate4(item)`
            1. `item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)`
-           2. `item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)`
-           3. `item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)`
-           4. `-trio`时 `item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")`
-           5. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
+         2. `item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)`
+         3. `item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)`
+         4. `-trio`时 `item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")`
+         5. `item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)`
          2. 写入 Tier2
          3. 额外（不在 `tier1Db` ） 非 "no-change" 变异
          1. 写入 `intronSheet`
       2. 线粒体 写入 "MT" Sheet
 
 #### Tier
+
+- [功能集](etc/function.level.json)
 
 - trio
   - 先证者有检出
@@ -283,6 +285,19 @@
 
 #### familyTag
 
+#### 烈性突变:
+
+- "splice-3"
+- "splice-5"
+- "init-loss"
+- "start_lost"
+- "alt-start"
+- "frameshift"
+- "nonsense"
+- "stop-gain"
+- "stop_gained"
+- "span"
+
 #### 筛选标签
 
 - 标签拼接，分号 `;` 分割
@@ -311,8 +326,9 @@
     - 标签 2
 
 - tag3:
-  - 本地频率<=0.01 || 烈性突变
-    - 标签 3
+  - 本地频率<=0.01
+    - 烈性突变
+      - 标签 3
 
 - tag4:
   - 本地频率<=0.01
