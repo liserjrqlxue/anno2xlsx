@@ -316,7 +316,24 @@
 
 - tag4:
   - 本地频率<=0.01
-    - PP3 || (非重复区域+特定功能)
+    - PP3
+      - 标签 4
+      - PP3:
+        - 非 PVS1
+          - 保守性: {"GERP++_RS_pred","PhyloP Vertebrates Pred","PhyloP Placental Mammals Pred"}
+            - 无 不保守
+              - 至少2个 保守
+                - 有害性b1: {"Ens Condel Pred","SIFT Pred","MutationTaster Pred","Polyphen2 HVAR Pred"}
+                  - 无 良性/多态
+                    - 至少2个 有害
+                      - PP3
+                - 有害性b2: {"dbscSNV_RF_pred","dbscSNV_ADA_pred","SpliceAI Pred"}
+                  - 无 良性/多态
+                    - 至少2个 有害
+                      - PP3
+                    - spliceAI 有害
+                      - PP3
+    - 非重复区域 && 特定功能
       - 标签 4
       - 特定功能:
         - stop-loss
