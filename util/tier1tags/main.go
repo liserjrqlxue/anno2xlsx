@@ -97,7 +97,7 @@ func init() {
 	flag.Parse()
 	if *snv == "" {
 		flag.Usage()
-		fmt.Println("\n-db is required!")
+		fmt.Println("\n-snv is required!")
 		os.Exit(1)
 	}
 	if *prefix == "" {
