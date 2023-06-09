@@ -100,6 +100,7 @@ func delDupVar(data []map[string]string) {
 var (
 	isBLB        = regexp.MustCompile(`B|LB`)
 	isClinVarBLB = regexp.MustCompile(`Benign|Likely_benign`)
+	isHLA        = regexp.MustCompile(`^HLA-`)
 )
 
 var nonCodeFunction = map[string]bool{
@@ -111,6 +112,9 @@ var nonCodeFunction = map[string]bool{
 }
 
 func tier1Filter(item map[string]string) bool {
+	if isHLA.MatchString(item["Gene Symbol"]) {
+		return false
+	}
 	if item["筛选标签"] == "" {
 		if anno.CheckAF(item, []string{"A.Ratio"}, 0.1) || nonCodeFunction[item["Function"]] {
 			return false
