@@ -47,3 +47,12 @@ func convertMap(item map[string]string, keys map[string]string) map[string]strin
 	}
 	return selectItem
 }
+
+func mapArray2jsonList(data []map[string]string, output string) {
+	var f = osUtil.Create(output)
+	defer simpleUtil.DeferClose(f)
+
+	for _, datum := range data {
+		simpleUtil.HandleError(f.Write(jsonMarshal(datum)))
+	}
+}

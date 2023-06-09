@@ -17,17 +17,8 @@ import (
 )
 
 func parseCfg() {
-	// parser etc/config.json
-	defaultConfig = jsonUtil.JsonFile2Interface(*config).(map[string]interface{})
-
 	initAcmg2015()
 
-	if *specVarList == "" {
-		*specVarList = anno.GetPath("specVarList", dbPath, defaultConfig)
-	}
-	if *transInfo == "" {
-		*transInfo = anno.GetPath("transInfo", dbPath, defaultConfig)
-	}
 	if *wgs {
 		qualityColumn = textUtil.File2Array(filepath.Join(etcPath, "wgs.Tier1.quality.txt"))
 	} else {
@@ -63,18 +54,33 @@ func parseToml() {
 		homFixRatioThreshold = homRatio.(float64)
 	}
 
+	// [tier1]
 	// update tier1 AF threshold
-	var tier1AFThreshold = TomlTree.Get("tier1.Tier1AFThreshold")
+	var tier1AFThreshold = TomlTree.Get("tier1.AFThreshold")
 	if tier1AFThreshold != nil {
 		anno.Tier1AFThreshold = tier1AFThreshold.(float64)
 	}
-	var tier1PLPAFThreshold = TomlTree.Get("tier1.Tier1PLPAFThreshold")
+	var tier1PLPAFThreshold = TomlTree.Get("tier1.PLPAFThreshold")
 	if tier1PLPAFThreshold != nil {
 		anno.Tier1PLPAFThreshold = tier1PLPAFThreshold.(float64)
 	}
-	var tier1InHouseAFThreshold = TomlTree.Get("tier1.Tier1InHouseAFThreshold")
+	var tier1InHouseAFThreshold = TomlTree.Get("tier1.InHouseAFThreshold")
 	if tier1InHouseAFThreshold != nil {
 		anno.Tier1InHouseAFThreshold = tier1InHouseAFThreshold.(float64)
+	}
+	if *specVarList == "" {
+		*specVarList = anno.GuessPath(TomlTree.Get("tier1.SpecVarList").(string), etcPath)
+	}
+	exonCount = jsonUtil.JsonFile2Map(anno.GuessPath(TomlTree.Get("annotation.Gene.exonCount").(string), dbPath))
+
+	phgdTagKey = TomlTree.Get("annotation.Mutation.PHGDTag.key").(string)
+	phgdTagSep = TomlTree.Get("annotation.Mutation.PHGDTag.sep").(string)
+	for _, db := range TomlTree.Get("annotation.Mutation.PHGDTag.db").([]interface{}) {
+		var info []string
+		for _, v := range db.([]interface{}) {
+			info = append(info, v.(string))
+		}
+		phgdTagDb = append(phgdTagDb, info)
 	}
 }
 
@@ -95,9 +101,8 @@ func openRedis() {
 
 func initIM() {
 	if *wesim {
-		acmg59GeneList := textUtil.File2Array(anno.GuessPath(TomlTree.Get("acmg.59gene").(string), etcPath))
-		for _, gene := range acmg59GeneList {
-			acmg59Gene[gene] = true
+		for _, gene := range textUtil.File2Array(anno.GuessPath(TomlTree.Get("acmg.SF").(string), etcPath)) {
+			acmgSFGene[gene] = true
 		}
 
 		resultColumn = TomlTree.GetArray("wesim.resultColumn").([]string)

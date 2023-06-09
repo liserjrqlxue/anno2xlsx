@@ -107,23 +107,22 @@ func tag1(tagMap map[string]bool, item map[string]string, specVarDb map[string]b
 }
 
 func tag2(tagMap map[string]bool, item map[string]string, specVarDb map[string]bool) {
-	var flag1 bool
+	var flag bool
 	if specVarDb[item["MutationName"]] {
-		flag1 = true
+		flag = true
 	}
 	if isHgmdDMplus.MatchString(item["HGMD Pred"]) {
-		flag1 = true
+		flag = true
 	}
 	if isClinVarPLP.MatchString(item["ClinVar Significance"]) {
-		flag1 = true
+		flag = true
 	}
-	if flag1 {
+	if flag {
 		tagMap["2"] = true
 	}
 }
 
 func tag3(tagMap map[string]bool, item map[string]string) {
-	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
 		frequency = "0"
@@ -133,13 +132,7 @@ func tag3(tagMap map[string]bool, item map[string]string) {
 		log.Printf("%s ParseFloat error:%v", frequency, e)
 		freq = 0
 	}
-	if freq <= 0.01 {
-		flag1 = true
-	}
-	if item["烈性突变"] == "是" {
-		flag2 = true
-	}
-	if flag1 && flag2 {
+	if freq <= 0.01 && item["烈性突变"] == "是" {
 		tagMap["3"] = true
 	}
 }

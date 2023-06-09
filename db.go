@@ -22,10 +22,13 @@ func loadDb() {
 			TomlTree.Get("annotation.REVEL").(*toml.Tree),
 		)
 	}
-	if *mt {
-		mtGnomAD.Load(
-			TomlTree.Get("annotation.GnomAD.MT").(*toml.Tree),
+
+	// ACMG SF
+	if *sf {
+		acmgSecondaryFindingDb.Load(
+			TomlTree.Get("annotation.Mutation.ACMGSF").(*toml.Tree),
 			dbPath,
+			[]byte(sfCode),
 		)
 	}
 

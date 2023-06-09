@@ -12,9 +12,58 @@ import (
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
 )
 
+type xlsxTemplate struct {
+	template  string
+	xlsx      *xlsx.File
+	sheetName string
+	sheet     *xlsx.Sheet
+	title     []string
+	output    string
+}
+
+func (t *xlsxTemplate) Save() error {
+	return t.xlsx.Save(t.output)
+}
+
+type templateInfo struct {
+	cols      []string
+	titles    [2][]string
+	noteTitle [2]string
+	note      [2][]string
+}
+
+func (t *templateInfo) Load(template string) {
+	var tier2Infos = simpleUtil.HandleError(
+		simpleUtil.HandleError(xlsx.OpenFile(template)).(*xlsx.File).ToSlice(),
+	).([][][]string)
+	for i, item := range tier2Infos[0] {
+		if i > 0 {
+			t.cols = append(t.cols, item[0])
+			t.titles[0] = append(t.titles[0], item[1])
+			t.titles[1] = append(t.titles[1], item[2])
+		}
+	}
+	for _, item := range tier2Infos[1] {
+		t.note[0] = append(t.note[0], item[0])
+		t.note[1] = append(t.note[1], item[1])
+	}
+}
+
 func prepareExcel() {
+
+	// 使用配置处理Tier1 snv exon large
 	prepareTier1()
-	prepareTier2()
+
+	// 使用模板处理Tier2.xlsx
+	tier2 = prepareTier2(
+		sampleList[0],
+		*productID,
+		*prefix+".Tier2.xlsx",
+		filepath.Join(templatePath, "Tier2.xlsx"),
+		isEN,
+	)
+
+	// 使用流式写入处理Tier3.xlsx
 	if outputTier3 {
 		prepareTier3()
 	}
@@ -56,64 +105,45 @@ func prepareTier1() {
 	}
 }
 
-func prepareTier2() {
-	// 准备英文产品列表
-	var productEn = textUtil.File2Array(filepath.Join(etcPath, "product.en.list"))
-	for i := range productEn {
-		isEnProduct[productEn[i]] = true
-	}
-	// tier2
-	tier2 = xlsxTemplate{
-		flag:      "Tier2",
-		sheetName: *productID + "_" + sampleList[0],
-	}
-	if len(tier2.sheetName) > 31 {
-		tier2.sheetName = tier2.sheetName[:31]
-	}
-	tier2.output = *prefix + "." + tier2.flag + ".xlsx"
-	tier2.xlsx = xlsx.NewFile()
-
-	var tier2Infos = simpleUtil.HandleError(
-		simpleUtil.HandleError(xlsx.OpenFile(filepath.Join(templatePath, "Tier2.xlsx"))).(*xlsx.File).ToSlice(),
-	).([][][]string)
-	for i, item := range tier2Infos[0] {
-		if i > 0 {
-			tier2TemplateInfo.cols = append(tier2TemplateInfo.cols, item[0])
-			tier2TemplateInfo.titles[0] = append(tier2TemplateInfo.titles[0], item[1])
-			tier2TemplateInfo.titles[1] = append(tier2TemplateInfo.titles[1], item[2])
+func prepareTier2(sampleID, productID, output, template string, en bool) *xlsxTemplate {
+	var info = &templateInfo{}
+	info.Load(filepath.Join(template))
+	var (
+		sheetName     = productID + "_" + sampleID
+		noteSheetName = "备注说明"
+		xt            = &xlsxTemplate{
+			output:    output,
+			xlsx:      xlsx.NewFile(),
+			sheetName: sheetName,
+			title:     info.cols,
 		}
-	}
-	for _, item := range tier2Infos[1] {
-		tier2TemplateInfo.note[0] = append(tier2TemplateInfo.note[0], item[0])
-		tier2TemplateInfo.note[1] = append(tier2TemplateInfo.note[1], item[1])
+	)
+
+	if len(sheetName) > 31 {
+		xt.sheetName = xt.sheetName[:31]
 	}
 
-	tier2.sheet, err = tier2.xlsx.AddSheet(tier2.sheetName)
-	simpleUtil.CheckErr(err)
-	tier2row := tier2.sheet.AddRow()
-	for i, col := range tier2TemplateInfo.cols {
-		tier2.title = append(tier2.title, col)
-		var title string
-		if isEnProduct[*productID] {
-			title = tier2TemplateInfo.titles[0][i]
+	xt.sheet = simpleUtil.HandleError(xt.xlsx.AddSheet(xt.sheetName)).(*xlsx.Sheet)
+	var row = xt.sheet.AddRow()
+	for i := range xt.title {
+		if en {
+			row.AddCell().SetString(info.titles[1][i])
 		} else {
-			title = tier2TemplateInfo.titles[1][i]
+			row.AddCell().SetString(info.titles[0][i])
 		}
-		tier2row.AddCell().SetString(title)
 	}
 
-	var tier2NoteSheetName = "备注说明"
-	var tier2Note []string
-	if isEnProduct[*productID] {
-		tier2NoteSheetName = transEN[tier2NoteSheetName]
-		tier2Note = tier2TemplateInfo.note[1]
-	} else {
-		tier2Note = tier2TemplateInfo.note[0]
+	var tier2Note = info.note[0]
+	if en {
+		tier2Note = info.note[1]
+		noteSheetName = transEN[noteSheetName]
 	}
-	var tier2NoteSheet = simpleUtil.HandleError(tier2.xlsx.AddSheet(tier2NoteSheetName)).(*xlsx.Sheet)
+	var noteSheet = simpleUtil.HandleError(xt.xlsx.AddSheet(noteSheetName)).(*xlsx.Sheet)
 	for _, line := range tier2Note {
-		tier2NoteSheet.AddRow().AddCell().SetString(line)
+		noteSheet.AddRow().AddCell().SetString(line)
 	}
+
+	return xt
 }
 
 func prepareTier3() {

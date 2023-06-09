@@ -41,17 +41,22 @@ func hgvsDelDup(cHgvs string) string {
 }
 
 // GetKeys get keys from transcript and cHGVS
-func GetKeys(transcript, cHGVS string) []string {
-	var cAlt = cHgvsAlt(cHGVS)
-	var cStd = cHgvsStd(cHGVS)
-	var cAlt1 = hgvsDelDup(cAlt)
-	var cStd1 = hgvsDelDup(cStd)
-	var key1 = transcript + ":" + cHGVS
-	var key2 = transcript + ":" + cAlt
-	var key3 = transcript + ":" + cStd
-	var key4 = transcript + ":" + cAlt1
-	var key5 = transcript + ":" + cStd1
-	return []string{key1, key2, key3, key4, key5}
+func GetKeys(transcript, cHGVS string) (keys []string) {
+	var (
+		cAlt  = cHgvsAlt(cHGVS)
+		cStd  = cHgvsStd(cHGVS)
+		cAlt1 = hgvsDelDup(cAlt)
+		cStd1 = hgvsDelDup(cStd)
+		sep   = []string{":", "\t"}
+		hgvs  = []string{cHGVS, cAlt, cStd, cAlt1, cStd1}
+	)
+	for _, s := range sep {
+		for _, h := range hgvs {
+			keys = append(keys, transcript+s+h)
+		}
+
+	}
+	return
 }
 
 // GetFromMultiKeys loop keys, return info,hit
