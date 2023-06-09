@@ -128,7 +128,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					item["Tier"] = "Tier1"
 					stats["isFunction"]++
 					//}
-				} else if isWGS && item["Function"] != "no-change" {
+				} else if (isWGS || item["SpliceAI Pred"] == "D") && item["Function"] != "no-change" {
 					if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 						item["Tier"] = "Tier1"
 						stats["isFunction"]++
@@ -170,7 +170,7 @@ func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList 
 				item["Tier"] = "Tier1"
 				stats["Function"]++
 				stats["Denovo Function"]++
-			} else if isWGS && item["Function"] != "no-change" {
+			} else if (isWGS || item["SpliceAI Pred"] == "D") && item["Function"] != "no-change" {
 				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
@@ -222,7 +222,7 @@ func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneLis
 				stats["Function"]++
 				stats["noDenovo Function"]++
 				//}
-			} else if isWGS && item["Function"] != "no-change" {
+			} else if (isWGS || item["SpliceAI Pred"] == "D") && item["Function"] != "no-change" {
 				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
