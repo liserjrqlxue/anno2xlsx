@@ -240,7 +240,7 @@
           - 基因集
             - 功能集
               - Tier1
-            - WGS && 非 "no-change"
+            - ( WGS || SpliceAI Pred D ) && 非 "no-change"
               - 本地频率<=0.01
                 - Tier1
               - Tier2
@@ -252,7 +252,7 @@
           - 基因集
             - 功能集
               - Tier1
-            - WGS && 非 "no-change"
+            - ( WGS || SpliceAI Pred D ) && 非 "no-change"
               - 本地频率<=0.01
                 - Tier1
               - Tier3
@@ -265,7 +265,7 @@
       - 基因集
         - 功能集
           - Tier1
-        - WGS && 非 "no-change"
+        - ( WGS || SpliceAI Pred D ) && 非 "no-change"
           - 本地频率<=0.01
             - Tier1
           - Tier3
