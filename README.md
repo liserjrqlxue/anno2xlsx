@@ -301,9 +301,10 @@
 #### 筛选标签
 
 - 标签拼接，分号 `;` 分割
+- Tag1AFThreshold = 0.05
 
 - tag1:
-  - 本地频率<=0.01 || 特殊变异库 || HGMD DM || ClinVar P/LP
+  - 本地频率<=Tag1AFThreshold || 特殊变异库 || HGMD DM || ClinVar P/LP
     - trio
       - 遗传相符-经典trio == 相符
         - 标签 T1
