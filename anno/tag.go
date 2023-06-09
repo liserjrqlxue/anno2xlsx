@@ -82,7 +82,7 @@ func tag1(tagMap map[string]bool, item map[string]string, specVarDb map[string]b
 		freq = 0
 	}
 
-	if freq <= 0.01 ||
+	if freq <= Tag1AFThreshold ||
 		specVarDb[item["MutationName"]] ||
 		isHgmdDMplus.MatchString(item["HGMD Pred"]) ||
 		isClinVarPLP.MatchString(item["ClinVar Significance"]) {

@@ -5,4 +5,6 @@ var (
 	Tier1PLPAFThreshold = 0.05
 	// in-house WGS AF threshold
 	Tier1InHouseAFThreshold = 0.01
+
+	Tag1AFThreshold = 0.05
 )
