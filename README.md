@@ -240,7 +240,7 @@
           - 基因集
             - 功能集
               - Tier1
-            - WGS && 非 "no-change"
+            - ( WGS || SpliceAI Pred D ) && 非 "no-change"
               - 本地频率<=0.01
                 - Tier1
               - Tier2
@@ -252,7 +252,7 @@
           - 基因集
             - 功能集
               - Tier1
-            - WGS && 非 "no-change"
+            - ( WGS || SpliceAI Pred D ) && 非 "no-change"
               - 本地频率<=0.01
                 - Tier1
               - Tier3
@@ -265,7 +265,7 @@
       - 基因集
         - 功能集
           - Tier1
-        - WGS && 非 "no-change"
+        - ( WGS || SpliceAI Pred D ) && 非 "no-change"
           - 本地频率<=0.01
             - Tier1
           - Tier3
@@ -301,9 +301,10 @@
 #### 筛选标签
 
 - 标签拼接，分号 `;` 分割
+- Tag1AFThreshold = 0.05
 
 - tag1:
-  - 本地频率<=0.01 || 特殊变异库 || HGMD DM || ClinVar P/LP
+  - 本地频率<=Tag1AFThreshold || 特殊变异库 || HGMD DM || ClinVar P/LP
     - trio
       - 遗传相符-经典trio == 相符
         - 标签 T1
@@ -311,14 +312,14 @@
         - 遗传模式: AR || XL || YL
           - 标签 1
         - 遗传模式: AD
-          - 频率和纯合记录 均为 0
+          - 纯合记录 均为 0
             - 标签 1
     - single
       - 遗传相符 == 相符
         - 遗传模式: AR || XL || YL
           - 标签 1
         - 遗传模式: AD
-          - 频率和纯合记录 均为 0
+          - 纯合记录 均为 0
             - 标签 1
 
 - tag2:
@@ -356,6 +357,8 @@
         - cds-ins
         - cds-del
         - cds-indel
+    - SpliceAI Pred == D && 功能非 no-change
+      - 标签 4
 
 ### LOH
 

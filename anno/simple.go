@@ -644,8 +644,8 @@ func PrimerDesign(item map[string]string) string {
 	var (
 		transcript = item["Transcript"]
 		flank      = item["Flank"]
-		adepth     = strings.Split(item["A.Depth"], ";")[0]
-		aratio     = strings.Split(item["A.Ratio"], ";")[0]
+		aDepth     = strings.Split(item["A.Depth"], ";")[0]
+		aRatio     = strings.Split(item["A.Ratio"], ";")[0]
 		pos        string
 		Adepth     int
 		Aratio     float64
@@ -662,16 +662,16 @@ func PrimerDesign(item map[string]string) string {
 		flank = reverseComplement(flank)
 	}
 
-	if reInt.MatchString(adepth) {
-		Adepth, err = strconv.Atoi(adepth)
+	if reInt.MatchString(aDepth) {
+		Adepth, err = strconv.Atoi(aDepth)
 		simpleUtil.CheckErr(err, "A.Depth")
 	}
 
-	if ratio.MatchString(aratio) && aratio != "0" {
-		Aratio, err = strconv.ParseFloat(aratio, 32)
+	if ratio.MatchString(aRatio) && aRatio != "0" {
+		Aratio, err = strconv.ParseFloat(aRatio, 32)
 		simpleUtil.CheckErr(err)
 
-		aratio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
+		aRatio = strconv.FormatFloat(Aratio*100, 'f', 0, 32)
 		if item["Depth"] == "" && Adepth > 0 {
 			item["Depth"] = fmt.Sprintf("%.0f", float64(Adepth)/Aratio)
 		} else {
@@ -691,7 +691,7 @@ func PrimerDesign(item map[string]string) string {
 			flank,
 			item["exonCount"],
 			item["Depth"],
-			aratio,
+			aRatio,
 			item["#Chr"], pos,
 		}, "; ",
 	)

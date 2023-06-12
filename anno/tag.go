@@ -14,21 +14,16 @@ var (
 	isHgmdDMplus = regexp.MustCompile(`DM`)
 	//isHgmdDMQ= regexp.MustCompile(`DM\?`)
 	isPP3 = regexp.MustCompile(`PP3`)
+
+	isD = regexp.MustCompile(`D`)
+
+	Tag1AFThreshold = 0.05
 )
 
 var keys = []string{
 	"ExAC HomoAlt Count",
 	"PVFD Homo Count",
 	"GnomAD HomoAlt Count",
-	"1000G EAS AF",
-	"1000G AF",
-	"ESP6500 AF",
-	"ExAC EAS AF",
-	"ExAC AF",
-	"GnomAD EAS AF",
-	"GnomAD AF",
-	"PVFD AF",
-	"Panel AlleleFreq",
 }
 
 func is0(str string) bool {
@@ -91,7 +86,7 @@ func tag1(tagMap map[string]bool, item map[string]string, specVarDb map[string]b
 		freq = 0
 	}
 
-	if freq <= 0.01 ||
+	if freq <= Tag1AFThreshold ||
 		specVarDb[item["MutationName"]] ||
 		isHgmdDMplus.MatchString(item["HGMD Pred"]) ||
 		isClinVarPLP.MatchString(item["ClinVar Significance"]) {
@@ -145,7 +140,6 @@ var tag4Func = map[string]bool{
 }
 
 func tag4(tagMap map[string]bool, item map[string]string) {
-	var flag1, flag2 bool
 	frequency := item["frequency"]
 	if frequency == "" || frequency == "." {
 		frequency = "0"
@@ -155,18 +149,20 @@ func tag4(tagMap map[string]bool, item map[string]string) {
 		log.Printf("%s ParseFloat error:%v", frequency, e)
 		freq = 0
 	}
-	if freq <= 0.01 {
-		flag1 = true
+	if freq > 0.01 {
+		return
 	}
 	if isPP3.MatchString(item["autoRuleName"]) {
-		flag2 = true
+		tagMap["4"] = true
+		return
 	}
 	if tag4Func[item["Function"]] && (item["RepeatTag"] == "." || item["RepeatTag"] == "") {
-		flag2 = true
-	}
-
-	if flag1 && flag2 {
 		tagMap["4"] = true
+		return
+	}
+	if item["Function"] != "no-change" && isD.MatchString(item["SpliceAI Pred"]) {
+		tagMap["4"] = true
+		return
 	}
 }
 

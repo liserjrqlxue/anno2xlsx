@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/liserjrqlxue/acmg2015"
@@ -96,6 +97,35 @@ func delDupVar(data []map[string]string) {
 	}
 }
 
+var (
+	isBLB        = regexp.MustCompile(`B|LB`)
+	isClinVarBLB = regexp.MustCompile(`Benign|Likely_benign`)
+	isHLA        = regexp.MustCompile(`^HLA-`)
+)
+
+var nonCodeFunction = map[string]bool{
+	"utr-3":    true,
+	"utr-5":    true,
+	"intron":   true,
+	"promoter": true,
+	"ncRNA":    true,
+}
+
+func tier1Filter(item map[string]string) bool {
+	if isHLA.MatchString(item["Gene Symbol"]) {
+		return false
+	}
+	if item["筛选标签"] == "" {
+		if anno.CheckAF(item, []string{"A.Ratio"}, 0.1) || nonCodeFunction[item["Function"]] {
+			return false
+		}
+		if isBLB.MatchString(item["自动化判断"]) && isClinVarBLB.MatchString(item["ClinVar Significance"]) {
+			return false
+		}
+	}
+	return true
+}
+
 func cycle2(data []map[string]string) {
 	for _, item := range data {
 		if item["Tier"] == "Tier1" {
@@ -107,7 +137,7 @@ func cycle2(data []map[string]string) {
 		if item["Tier"] == "Tier1" {
 			tier1Db[item["MutationName"]] = true
 			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
-			if !deleteVar[key] {
+			if !deleteVar[key] && tier1Filter(item) {
 				tier1Count++
 				annotate2(item)
 				// Tier1 Sheet
