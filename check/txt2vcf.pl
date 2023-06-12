@@ -9,6 +9,15 @@ while(<HD>){
 }
 close HD;
 
+my%long2short=(
+	"Benign"                 => "B",
+	"Likely_Benign"          => "LB",
+	"Likely Benign"          => "LB",
+	"Uncertain Significance" => "VUS",
+	"Likely Pathogenic"      => "LP",
+	"Pathogenic"             => "P",
+);
+
 chomp(my$header=<>);
 my@header=split /\t/,$header;
 while(<>){
@@ -17,7 +26,7 @@ while(<>){
 	@info{@header}=split /\t/,$_;
 	my@mut=split /-/,$info{variantId};
 	$info{criteria}=~s/\s+//g;
-	print join("\t",$mut[0],$mut[1],".",$mut[2],$mut[3],".",".","HLID=$info{variantId};HLintepretation=$info{intepretation};HLcriteria=$info{criteria}"),"\n";
+	print join("\t",$mut[0],$mut[1],".",$mut[2],$mut[3],".",".","HLID=$info{variantId};HLintepretation=$long2short{$info{intepretation}};HLcriteria=$info{criteria}"),"\n";
 }
 
 __END__
@@ -64,3 +73,10 @@ variantId	gene	chgvs	intepretation	criteria
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
 1	861332	1019397	G	A	.	.	ALLELEID=1003021;CLNDISDB=MedGen:CN517202;CLNDN=not_provided;CLNHGVS=NC_000001.10:g.861332G>A;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Uncertain_significance;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;GENEINFO=SAMD11:148398;MC=SO:0001583|missense_variant;ORIGIN=1;RS=1640863258
 1	861336	1543320	C	T	.	.	ALLELEID=1632777;CLNDISDB=MedGen:CN517202;CLNDN=not_provided;CLNHGVS=NC_000001.10:g.861336C>T;CLNREVSTAT=criteria_provided,_single_submitter;CLNSIG=Likely_benign;CLNVC=single_nucleotide_variant;CLNVCSO=SO:0001483;GENEINFO=SAMD11:148398;MC=SO:0001819|synonymous_variant;ORIGIN=1
+      1 intepretation
+     15 Likely_Benign
+   1106 Pathogenic
+   1344 Benign
+   2461 Likely Pathogenic
+   5624 Likely Benign
+  20402 Uncertain Significance
