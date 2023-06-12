@@ -104,11 +104,16 @@ var (
 )
 
 var nonCodeFunction = map[string]bool{
-	"utr-3":    true,
-	"utr-5":    true,
-	"intron":   true,
-	"promoter": true,
-	"ncRNA":    true,
+	"utr-3":        true,
+	"utr-5":        true,
+	"intron":       true,
+	"promoter":     true,
+	"ncRNA":        true,
+	"coding-synon": true,
+	"splice+10":    true,
+	"splice-10":    true,
+	"splice+20":    true,
+	"splice-20":    true,
 }
 
 func tier1Filter(item map[string]string) bool {
