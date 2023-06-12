@@ -1,8 +1,11 @@
 #!/bin/bash
 set -e
 set -x
+set -o pipefail
 
 umask 0077
+
+input=$(readlink -f $1) # viphl位点唯一结果统计_total_20230509.xlsx
 
 cd $(dirname $(readlink -f $0))
 
@@ -10,7 +13,6 @@ tag=VIPHL
 sheet=Result
 ref=/zfsyt1/B2C_RD_P2/USER/wangyaoshen/wes/wes-annotation/src/db/homo_sapiens_refseq/104_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
 
-input=$1 # viphl位点唯一结果统计_total_20230509.xlsx
 
 chmod 700 $input
 
