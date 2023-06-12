@@ -110,7 +110,7 @@ func init() {
 
 	// 特殊位点库
 	if *specVarList == "" {
-		*specVarList = anno.GuessPath(TomlTree.Get("tier1.specVarList").(string), etcPath)
+		*specVarList = anno.GuessPath(TomlTree.Get("tier1.SpecVarList").(string), etcPath)
 	}
 	for _, key := range textUtil.File2Array(*specVarList) {
 		specVarDb[key] = true
