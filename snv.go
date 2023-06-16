@@ -121,7 +121,7 @@ func tier1Filter(item map[string]string) bool {
 		return false
 	}
 	if item["筛选标签"] == "" {
-		if anno.CheckAF(item, []string{"A.Ratio"}, 0.1) || nonCodeFunction[item["Function"]] {
+		if nonCodeFunction[item["Function"]] {
 			return false
 		}
 		if isBLB.MatchString(item["自动化判断"]) && isClinVarBLB.MatchString(item["ClinVar Significance"]) {
