@@ -143,10 +143,10 @@ func cycle2(data []map[string]string) {
 			tier1Db[item["MutationName"]] = true
 			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
 			if !deleteVar[key] {
-				tier1Count++
 				annotate2(item)
 				// Tier1 Sheet
 				if tier1Filter(item) {
+					tier1Count++
 					xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
 					tier1Data = append(tier1Data, selectMap(item, filterVariantsTitle))
 				}
