@@ -86,6 +86,19 @@
 | -seqType     | string  | SEQ2000                                         | redis 查询关键词，区分频率库                                                                    |
 | -specVarList | string  | etc/spec.var.lite.txt                           | 特殊变异库                                                                                |
 
+#### `-trio`
+
+- `-wesim` 模式 输出 `.result.tsv` 时 额外 处理
+    - 拆分 `Zygosity`
+    - 额外 输出 两列: `Genotype of Family Member 1` `Genotype of Family Member 2`
+- 额外 `Tier1` 统计
+- 额外 `Tier1` 判断规则
+- 额外 `遗传相符` 判断规则
+- 与 `-trio2` 相同
+    - 额外 `筛选标签` 标签规则
+    - `变异来源`
+    - `familyTag` 标签规则
+
 ## 处理逻辑
 
 ### CNV
@@ -93,8 +106,8 @@
 1. 读取 `annotation.Gene.transcript` , 得到基因-转录本对应关系
 2. 读取 `CNV` 数据文件列表到 `paths`
 3. 使用 `addCnv2Sheet(sheet, title, paths, sampleMap, filterSize, filterGene, stats, key, gender, cnvFile)` 写入 sheet
-   - 读取 `paths` 到 `cnvDb`，遍历 `item`
-      1. 跳过其他样品编号
+    - 读取 `paths` 到 `cnvDb`，遍历 `item`
+        1. 跳过其他样品编号
       2. 一体机模式，进行表头处理
       3. `anno.CnvPrimer`进行引物设计
       4. `item["OMIM_Gene"]` 作为 基因，获取 `geneIDs`
