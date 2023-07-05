@@ -1,10 +1,11 @@
-tier3 = true
+tier3 = false
 homFixRatioThreshold = 0.78
 
 [tier1]
-Tier1AFThreshold = 0.01
-Tier1PLPAFThreshold = 0.05
-Tier1InHouseAF = 0.01
+AFThreshold = 0.01
+PLPAFThreshold = 0.05
+InHouseAFThreshold = 0.01
+SpecVarList = "spec.var.lite.txt"
 
 [annotation.hpo]
 file = "gene2hpo.txt"
@@ -19,11 +20,39 @@ keyIndex = [1, 2, 3]
 title = ["REVEL_score"]
 titleIndex = [4]
 
-[annotation.GnomAD.MT]
-file = "gnomad.genomes.v3.1.sites.chrM.reduced_annotations.tsv.db"
-mainKey = "MTmut"
-titleKey = ["AC_hom", "AC_het", "AF_hom", "AF_het", "AN"]
-title = ["MT_AC_hom", "MT_AC_het", "MT_AF_hom", "MT_AF_het", "MT_AN"]
+[annotation.Mutation.ACMGSF]
+file = "ACMGSF.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "证据项",
+    "致病等级",
+    "参考文献",
+    "关联疾病表型OMIM号",
+    "关联疾病英文名称",
+    "关联疾病中文名称",
+    "数据库时间",
+]
+title = [
+    "SecondaryFinding_Var_证据项",
+    "SecondaryFinding_Var_致病等级",
+    "SecondaryFinding_Var_参考文献",
+    "SecondaryFinding_Var_Phenotype_OMIM_ID",
+    "SecondaryFinding_Var_DiseaseNameEN",
+    "SecondaryFinding_Var_DiseaseNameCH",
+    "SecondaryFinding_Var_updatetime",
+]
+
+[annotation.Mutation.NBSP]
+file = "NBSP.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "Definition",
+]
+title = [
+    "新生儿致病性",
+]
 
 [annotation.Mutation.PrePregnancy]
 file = "PrePregnancy.json.aes"
@@ -37,6 +66,44 @@ title = [
     "孕前证据项",
     "孕前致病性",
 ]
+
+[annotation.Mutation.VIPHL]
+file = "VIPHL.json.aes"
+type = "json"
+codeKeys = "****"
+titleKey = [
+    "HLcriteria",
+    "HLinterpretation",
+]
+title = [
+    "耳聋证据项",
+    "耳聋致病性",
+]
+
+[annotation.Mutation.PHGDTag]
+key = "PHGDTag"
+sep = "<br/>"
+db = [
+    [
+        "NB",
+        "新生儿致病性",
+        "新生儿证据项",
+    ],
+    [
+        "PP",
+        "孕前致病性",
+        "孕前证据项",
+    ],
+    [
+        "HL",
+        "耳聋致病性",
+        "耳聋证据项",
+    ],
+]
+
+[annotation.Gene]
+transcript = "geneSymbol.transcript.txt"
+exonCount = "trans.exonCount.json.new.json"
 
 [annotation.Gene.spectrum]
 file = "基因突变谱.json.aes"
@@ -86,7 +153,7 @@ title = [
 
 [acmg]
 list = "acmg.db.list.txt"
-59gene = "ACMG59Gene.list"
+SF = "ACMG59Gene.list"
 
 [template.tier1]
 filter_variants="Tier1.filter_variants.txt"

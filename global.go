@@ -48,18 +48,12 @@ var qualityKeyMap = make(map[string]string)
 
 // tier2
 var isEnProduct = make(map[string]bool)
+var isEN bool
 
 var transEN = map[string]string{
 	"是":    "Yes",
 	"否":    "No",
 	"备注说明": "Note",
-}
-
-type templateInfo struct {
-	cols      []string
-	titles    [2][]string
-	noteTitle [2]string
-	note      [2][]string
 }
 
 // regexp
@@ -68,17 +62,13 @@ var (
 	isComment = regexp.MustCompile(`^##`)
 	isMT      = regexp.MustCompile(`MT|chrM`)
 	isHom     = regexp.MustCompile(`^Hom`)
-	cHGVSalt  = regexp.MustCompile(`alt: (\S+) \)`)
-	cHGVSstd  = regexp.MustCompile(`std: (\S+) \)`)
 )
 
 var redisDb *redis.Client
 
-var isSMN1 bool
-
 var snvs []string
 
-var acmg59Gene = make(map[string]bool)
+var acmgSFGene = make(map[string]bool)
 
 // WGS
 var (
@@ -88,15 +78,13 @@ var (
 )
 
 var (
-	logFile           *os.File
-	defaultConfig     map[string]interface{}
-	tier2TemplateInfo templateInfo
-	tier2             xlsxTemplate
-	err               error
-	ts                = []time.Time{time.Now()}
-	step              = 0
-	sampleMap         = make(map[string]bool)
-	stats             = make(map[string]int)
+	logFile   *os.File
+	tier2     *xlsxTemplate
+	err       error
+	ts        = []time.Time{time.Now()}
+	step      = 0
+	sampleMap = make(map[string]bool)
+	stats     = make(map[string]int)
 
 	tier1Xlsx           *xlsx.File
 	filterVariantsTitle []string
@@ -114,19 +102,32 @@ var TomlTree *toml.Tree
 
 // database
 var (
-	aesCode  = "c3d112d6a47a0a04aad2b9d2d2cad266"
-	gene2id  map[string]string
-	chpo     anno.AnnoDb
-	revel    revelDb
-	mtGnomAD anno.AnnoDb
+	aesCode = "c3d112d6a47a0a04aad2b9d2d2cad266"
+	gene2id map[string]string
+	chpo    anno.AnnoDb
+	revel   revelDb
+
 	// 突变频谱
 	spectrumDb anno.EncodeDb
 	// 基因-疾病
 	diseaseDb anno.EncodeDb
 	geneList  = make(map[string]bool)
+	// ACMG SF
+	acmgSecondaryFindingDb anno.EncodeDb
+	sfCode                 = "b7ea138a9842cbb832271bdcf4478310"
+	// 耳聋数据库
+	hearingLossDb anno.EncodeDb
+	hlCode        = "6d276bc509883dbafe05be835ad243d7"
+	// 新生儿数据库
+	newBornDb anno.EncodeDb
+	nbCode    = "afe0ba6b37644a81cedc2364ee414c7f"
 	// 孕前数据库
 	prePregnancyDb anno.EncodeDb
 	ppCode         = "118b09d39a5d3ecd56f9bd4f351dd6d6"
+	// PHGDTag
+	phgdTagKey string
+	phgdTagSep string
+	phgdTagDb  [][]string
 )
 
 // ACMG

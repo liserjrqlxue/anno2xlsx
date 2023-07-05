@@ -59,10 +59,6 @@ var (
 // AddTier add tier to item
 func AddTier(item map[string]string, stats map[string]int, geneList, specVarDb map[string]bool, isTrio, isWGS, allGene bool, AFlist []string) {
 	if isTrio {
-		if noProband.MatchString(item["Zygosity"]) {
-			stats["noProband"]++
-			return
-		}
 		checkTierTrio(item, stats, geneList, isWGS, allGene, AFlist)
 	} else {
 		checkTierSingle(item, stats, geneList, isWGS, allGene, AFlist)
@@ -98,15 +94,13 @@ func checkSpecVar(item map[string]string, stats map[string]int, specVarDb map[st
 func checkHGMDClinVar(item map[string]string, stats map[string]int, AFlist []string) {
 	if isHgmd.MatchString(item["HGMD Pred"]) || isClinvar.MatchString(item["ClinVar Significance"]) || isPhoenix.MatchString(item["Phoenix Tag"]) {
 		stats["HGMD/ClinVar"]++
-		if checkAF(item, AFlist, Tier1PLPAFThreshold) {
-			stats["HGMD/ClinVar isAF"]++
-			if isChrAXY.MatchString(item["#Chr"]) {
+		if isChrAXY.MatchString(item["#Chr"]) {
+			if CheckAF(item, AFlist, Tier1PLPAFThreshold) {
+				stats["HGMD/ClinVar isAF"]++
 				item["Tier"] = "Tier1"
 				stats["HGMD/ClinVar noMT T1"]++
-			}
-		} else {
-			stats["HGMD/ClinVar noAF"]++
-			if isChrAXY.MatchString(item["#Chr"]) {
+			} else {
+				stats["HGMD/ClinVar noAF"]++
 				stats["HGMD/ClinVar noMT T2"]++
 				if item["Tier"] != "Tier1" {
 					item["Tier"] = "Tier2"
@@ -121,7 +115,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 	// Tier
 	if item["自动化判断"] != "B" && item["自动化判断"] != "LB" || item["PM2"] == "1" {
 		stats["noB/LB"]++
-		if checkAF(item, AFlist, Tier1AFThreshold) {
+		if CheckAF(item, AFlist, Tier1AFThreshold) {
 			stats["isAF"]++
 			if geneList[gene] || allGene {
 				stats["isGene"]++
@@ -134,8 +128,8 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 					item["Tier"] = "Tier1"
 					stats["isFunction"]++
 					//}
-				} else if isWGS && item["Function"] != "no-change" {
-					if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
+				} else if (isWGS || item["SpliceAI Pred"] == "D") && item["Function"] != "no-change" {
+					if CheckAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 						item["Tier"] = "Tier1"
 						stats["isFunction"]++
 					} else {
@@ -160,7 +154,7 @@ func checkTierSingle(item map[string]string, stats map[string]int, geneList map[
 func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
 	var gene = item["Gene Symbol"]
 	stats["isDenovo noB/LB"]++
-	if checkAF(item, AFlist, Tier1AFThreshold) {
+	if CheckAF(item, AFlist, Tier1AFThreshold) {
 		stats["low AF"]++
 		stats["Denovo AF"]++
 		if geneList[gene] || allGene {
@@ -176,8 +170,8 @@ func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList 
 				item["Tier"] = "Tier1"
 				stats["Function"]++
 				stats["Denovo Function"]++
-			} else if isWGS && item["Function"] != "no-change" {
-				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
+			} else if (isWGS || item["SpliceAI Pred"] == "D") && item["Function"] != "no-change" {
+				if CheckAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["Denovo Function"]++
@@ -211,7 +205,7 @@ func checkTierTrioDenovo(item map[string]string, stats map[string]int, geneList 
 func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneList map[string]bool, isWGS, allGene bool, AFlist []string) {
 	var gene = item["Gene Symbol"]
 	stats["noDenovo noB/LB"]++
-	if checkAF(item, AFlist, Tier1AFThreshold) {
+	if CheckAF(item, AFlist, Tier1AFThreshold) {
 		stats["low AF"]++
 		stats["noDenovo AF"]++
 		if geneList[gene] || allGene {
@@ -228,8 +222,8 @@ func checkTierTrioNoDenovo(item map[string]string, stats map[string]int, geneLis
 				stats["Function"]++
 				stats["noDenovo Function"]++
 				//}
-			} else if isWGS && item["Function"] != "no-change" {
-				if checkAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
+			} else if (isWGS || item["SpliceAI Pred"] == "D") && item["Function"] != "no-change" {
+				if CheckAF(item, []string{"inhouse_AF"}, Tier1InHouseAFThreshold) {
 					item["Tier"] = "Tier1"
 					stats["Function"]++
 					stats["noDenovo Function"]++
@@ -277,7 +271,7 @@ func checkTierTrio(item map[string]string, stats map[string]int, geneList map[st
 	}
 }
 
-func checkAF(item map[string]string, AFlist []string, threshold float64) bool {
+func CheckAF(item map[string]string, AFlist []string, threshold float64) bool {
 	for _, key := range AFlist {
 		af := item[key]
 		if af == "" || af == "." {

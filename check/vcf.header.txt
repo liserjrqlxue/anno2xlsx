@@ -1,0 +1,9 @@
+##fileformat=VCFv4.1
+##fileDate=2023-05-09
+##source=VIPHL
+##count=30952
+##reference=GRCh37
+##INFO=<ID=HLID,Number=.,Type=String,Description="hearing loss variantId">
+##INFO=<ID=HLintepretation,Number=.,Type=String,Description="hearing loss intepretation">
+##INFO=<ID=HLcriteria,Number=.,Type=String,Description="hearing loss criteria">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO

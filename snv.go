@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"strconv"
+	"regexp"
 	"strings"
 
 	"github.com/liserjrqlxue/acmg2015"
 	"github.com/liserjrqlxue/anno2xlsx/v2/anno"
-	"github.com/liserjrqlxue/anno2xlsx/v2/hgvs"
 	"github.com/liserjrqlxue/goUtil/simpleUtil"
 	"github.com/liserjrqlxue/goUtil/textUtil"
 	"github.com/liserjrqlxue/goUtil/xlsxUtil"
@@ -28,7 +27,9 @@ func addFV() {
 		delDupVar(data)
 		cycle2(data)
 		// WGS
-		wgsCycle(data)
+		if *wgs {
+			wgsCycle(data)
+		}
 
 		logTime("update info")
 	}
@@ -71,14 +72,14 @@ func delDupVar(data []map[string]string) {
 				item["delete"] = "Y"
 				deleteVar[key+"\t"+transcript] = true
 				countVar[key]--
-			} else {
-				if transcriptLevel[transcript] > 0 {
-					if minTrans == 0 {
-						minTrans = transcriptLevel[transcript]
-					}
-					if minTrans > transcriptLevel[transcript] {
-						minTrans = transcriptLevel[transcript]
-					}
+				continue
+			}
+			if transcriptLevel[transcript] > 0 {
+				if minTrans == 0 {
+					minTrans = transcriptLevel[transcript]
+				}
+				if minTrans > transcriptLevel[transcript] {
+					minTrans = transcriptLevel[transcript]
 				}
 			}
 		}
@@ -96,6 +97,40 @@ func delDupVar(data []map[string]string) {
 	}
 }
 
+var (
+	isBLB        = regexp.MustCompile(`B|LB`)
+	isClinVarBLB = regexp.MustCompile(`Benign|Likely_benign`)
+	isHLA        = regexp.MustCompile(`^HLA-`)
+)
+
+var nonCodeFunction = map[string]bool{
+	"utr-3":        true,
+	"utr-5":        true,
+	"intron":       true,
+	"promoter":     true,
+	"ncRNA":        true,
+	"coding-synon": true,
+	"splice+10":    true,
+	"splice-10":    true,
+	"splice+20":    true,
+	"splice-20":    true,
+}
+
+func tier1Filter(item map[string]string) bool {
+	if isHLA.MatchString(item["Gene Symbol"]) {
+		return false
+	}
+	if item["筛选标签"] == "" {
+		if nonCodeFunction[item["Function"]] {
+			return false
+		}
+		if isBLB.MatchString(item["自动化判断"]) && isClinVarBLB.MatchString(item["ClinVar Significance"]) {
+			return false
+		}
+	}
+	return true
+}
+
 func cycle2(data []map[string]string) {
 	for _, item := range data {
 		if item["Tier"] == "Tier1" {
@@ -105,22 +140,20 @@ func cycle2(data []map[string]string) {
 	for _, item := range data {
 		item["ClinVar Significance"] = anno.AddClnsigConf(item)
 		if item["Tier"] == "Tier1" {
+			tier1Db[item["MutationName"]] = true
 			var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"], item["Transcript"]}, "\t")
 			if !deleteVar[key] {
-				tier1Count++
 				annotate2(item)
 				// Tier1 Sheet
-				xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
-				tier1Data = append(tier1Data, selectMap(item, filterVariantsTitle))
+				if tier1Filter(item) {
+					tier1Count++
+					xlsxUtil.AddMap2Row(item, filterVariantsTitle, tier1Xlsx.Sheet["filter_variants"].AddRow())
+					tier1Data = append(tier1Data, selectMap(item, filterVariantsTitle))
+				}
 				if !*wgs {
 					addTier2Row(tier2, item)
-				} else {
-					tier1Db[item["MutationName"]] = true
 				}
-			} else {
-				if *wgs {
-					tier1Db[item["MutationName"]] = true
-				}
+
 			}
 		}
 		// add to tier3
@@ -141,51 +174,50 @@ func cycle2(data []map[string]string) {
 }
 
 func wgsCycle(data []map[string]string) {
-	if *wgs {
-		wgsXlsx = xlsx.NewFile()
-		// MT sheet
-		var MTSheet = xlsxUtil.AddSheet(wgsXlsx, "MT")
-		xlsxUtil.AddArray2Row(MTTitle, MTSheet.AddRow())
-		// intron sheet
-		var intronSheet = xlsxUtil.AddSheet(wgsXlsx, "intron")
-		xlsxUtil.AddArray2Row(filterVariantsTitle, intronSheet.AddRow())
+	wgsXlsx = xlsx.NewFile()
+	// MT sheet
+	var MTSheet = xlsxUtil.AddSheet(wgsXlsx, "MT")
+	xlsxUtil.AddArray2Row(MTTitle, MTSheet.AddRow())
+	// intron sheet
+	var intronSheet = xlsxUtil.AddSheet(wgsXlsx, "intron")
+	xlsxUtil.AddArray2Row(filterVariantsTitle, intronSheet.AddRow())
 
-		inheritDb = make(map[string]map[string]int)
-		for _, item := range data {
-			anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, anno.AFlist)
-			// 遗传相符
-			// only for Tier1
-			if item["Tier"] == "Tier1" {
-				anno.InheritCheck(item, inheritDb)
-			}
+	inheritDb = make(map[string]map[string]int)
+	for _, item := range data {
+		anno.AddTier(item, stats, geneList, specVarDb, *trio, true, *allGene, anno.AFlist)
+		// 遗传相符
+		// only for Tier1
+		if item["Tier"] == "Tier1" {
+			anno.InheritCheck(item, inheritDb)
 		}
-		logTime("load snv cycle 3")
-		var extraIntronCount = 0
-		for _, item := range data {
+	}
+	logTime("load snv cycle 3")
+	var extraIntronCount = 0
+	for _, item := range data {
+
+		if item["Tier"] == "Tier1" {
 			annotate4(item)
+			addTier2Row(tier2, item)
 
-			if isMT.MatchString(item["#Chr"]) {
-				xlsxUtil.AddMap2Row(item, MTTitle, MTSheet.AddRow())
-			}
-			if item["Tier"] == "Tier1" {
-				addTier2Row(tier2, item)
-
-				if item["Function"] != "no-change" && !tier1Db[item["MutationName"]] {
-					extraIntronCount++
-					intronRow := intronSheet.AddRow()
-					for _, str := range filterVariantsTitle {
-						intronRow.AddCell().SetString(item[str])
-					}
+			if item["Function"] != "no-change" && !tier1Db[item["MutationName"]] {
+				extraIntronCount++
+				intronRow := intronSheet.AddRow()
+				for _, str := range filterVariantsTitle {
+					intronRow.AddCell().SetString(item[str])
 				}
 			}
 		}
-		log.Printf("add %d extra intron variant for wgs", extraIntronCount)
-		logTime("load snv cycle 4")
+
+		if isMT.MatchString(item["#Chr"]) {
+			xlsxUtil.AddMap2Row(item, MTTitle, MTSheet.AddRow())
+		}
 	}
+	log.Printf("add %d extra intron variant for wgs", extraIntronCount)
+	logTime("load snv cycle 4")
 }
 
 func annotate1(item map[string]string) {
-	// inhouse af -> frequency
+	// inhouse_AF -> frequency
 	item["frequency"] = item["inhouse_AF"]
 	// 历史验证假阳次数
 	item["历史验证假阳次数"] = fpDb[item["Transcript"]+":"+strings.Replace(item["cHGVS"], " ", "", -1)]["重复数"]
@@ -199,6 +231,7 @@ func annotate1(item map[string]string) {
 	// update FuncRegion
 	anno.UpdateFuncRegion(item)
 
+	// gene symbol -> geneID
 	var gene = item["Gene Symbol"]
 	var id, ok = gene2id[gene]
 	if !ok {
@@ -208,21 +241,36 @@ func annotate1(item map[string]string) {
 	}
 	item["geneID"] = id
 
+	// CHPO
 	chpo.Anno(item, id)
 	// 基因-疾病
 	diseaseDb.Anno(item, id)
 	// 突变频谱
 	spectrumDb.Anno(item, id)
 
+	var multiKeys = anno.GetKeys(item["Transcript"], item["cHGVS"])
+	// ACMG SF
+	acmgSecondaryFindingDb.AnnoMultiKey(item, multiKeys)
 	// 孕前数据库
-	var key1 = item["Transcript"] + ":" + item["cHGVS"]
-	var key2 = item["Transcript"] + ":" + cHgvsAlt(item["cHGVS"])
-	var key3 = item["Transcript"] + ":" + cHgvsStd(item["cHGVS"])
-	if !prePregnancyDb.Anno(item, key1) {
-		if !prePregnancyDb.Anno(item, key2) {
-			prePregnancyDb.Anno(item, key3)
+	prePregnancyDb.AnnoMultiKey(item, multiKeys)
+	// 新生儿数据库
+	newBornDb.AnnoMultiKey(item, multiKeys)
+	// 耳聋数据库
+	hearingLossDb.AnnoMultiKey(item, multiKeys)
+	// PHGDTag
+	var phgdTag []string
+	for _, db := range phgdTagDb {
+		var v1 = item[db[1]]
+		if v1 != "" {
+			v1 = db[0] + ":" + v1
+			var v2 = item[db[2]]
+			if v2 != "" {
+				v1 += ":" + v2
+			}
+			phgdTag = append(phgdTag, v1)
 		}
 	}
+	item[phgdTagKey] = strings.Join(phgdTag, phgdTagSep)
 
 	item["Gene"] = item["Omim Gene"]
 	item["OMIM"] = item["OMIM_Phenotype_ID"]
@@ -261,11 +309,6 @@ func annotate1(item map[string]string) {
 	if *allTier1 {
 		item["Tier"] = "Tier1"
 	}
-	if *mt && isMT.MatchString(item["#Chr"]) {
-		item["Tier"] = "Tier1"
-		item["MTmut"] = getMhgvs(item)
-		mtGnomAD.Anno(item, item["MTmut"])
-	}
 
 	if item["Tier"] == "Tier1" || item["Tier"] == "Tier2" {
 		if *ifRedis {
@@ -289,19 +332,6 @@ func annotate1(item map[string]string) {
 		stats["Hom:"+item["#Chr"]]++
 	}
 	stats[item["VarType"]]++
-}
-
-func getMhgvs(item map[string]string) string {
-	var pos = simpleUtil.HandleError(strconv.Atoi(item["Start"])).(int) + 1
-	var ref = item["Ref"]
-	var alt = item["Call"]
-	if ref == "." {
-		ref = ""
-	}
-	if alt == "." {
-		alt = ""
-	}
-	return hgvs.GetMhgvs(pos, []byte(ref), []byte(alt))
 }
 
 func annotate1Tier1(item map[string]string) {
@@ -330,83 +360,76 @@ func annotate2(item map[string]string) {
 		stats["遗传相符"]++
 	}
 	// familyTag
+	var familyTag = "single"
 	if *trio || *trio2 {
-		item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+		familyTag = "trio"
 	} else if *couple {
-		item["familyTag"] = anno.FamilyTag(item, inheritDb, "couple")
-	} else {
-		item["familyTag"] = anno.FamilyTag(item, inheritDb, "single")
+		familyTag = "couple"
 	}
+	item["familyTag"] = anno.FamilyTag(item, inheritDb, familyTag)
 	item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 
 	anno.Format(item)
 
 	// WESIM
-	annotate2IM(item)
-	var key = strings.Join([]string{item["#Chr"], item["Start"], item["Stop"], item["Ref"], item["Call"], item["Gene Symbol"]}, "\t")
-	if countVar[key] > 1 {
-		log.Printf("Duplicate:%s\t%s\t%s\t%s\n", key, item["Transcript"], item["cHGVS"], item["Function"])
-		duplicateVar[key] = append(duplicateVar[key], item)
+	if *wesim {
+		annotate2IM(item)
 	}
 }
 
 func annotate2IM(item map[string]string) {
-	if *wesim {
-		var zygo = item["Zygosity"]
-		if acmg59Gene[item["Gene Symbol"]] {
-			item["IsACMG59"] = "Y"
-		} else {
-			item["IsACMG59"] = "N"
-		}
-
-		var inheritance = strings.Split(item["ModeInheritance"], "\n")
-		var disease []string
-		if isEnProduct[*productID] {
-			disease = strings.Split(item["DiseaseNameEN"], "\n")
-		} else {
-			disease = strings.Split(item["DiseaseNameCH"], "\n")
-		}
-		if len(disease) == len(inheritance) {
-			for i, text := range disease {
-				inheritance[i] = text + "/" + inheritance[i]
-			}
-		} else {
-			log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
-		}
-		item["DiseaseName/ModeInheritance"] = strings.Join(inheritance, "<br>")
-
-		if *trio {
-			zygosity := strings.Split(item["Zygosity"], ";")
-			zygosity = append(zygosity, "NA", "NA")
-			item["Zygosity"] = zygosity[0]
-			item["Genotype of Family Member 1"] = zygosity[1]
-			item["Genotype of Family Member 2"] = zygosity[2]
-		}
-		var resultArray []string
-		for _, key := range resultColumn {
-			resultArray = append(resultArray, item[key])
-		}
-		_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
-		simpleUtil.CheckErr(err)
-		item["Zygosity"] = zygo
+	var zygo = item["Zygosity"]
+	if acmgSFGene[item["Gene Symbol"]] {
+		item["IsACMG59"] = "Y"
+	} else {
+		item["IsACMG59"] = "N"
 	}
+
+	var inheritance = strings.Split(item["ModeInheritance"], "\n")
+	var disease []string
+	if isEN {
+		disease = strings.Split(item["DiseaseNameEN"], "\n")
+	} else {
+		disease = strings.Split(item["DiseaseNameCH"], "\n")
+	}
+	if len(disease) == len(inheritance) {
+		for i, text := range disease {
+			inheritance[i] = text + "/" + inheritance[i]
+		}
+	} else {
+		log.Fatalf("Disease error:%s\t%v vs %v\n", item["Gene Symbol"], disease, inheritance)
+	}
+	item["DiseaseName/ModeInheritance"] = strings.Join(inheritance, "<br>")
+
+	if *trio {
+		zygosity := strings.Split(item["Zygosity"], ";")
+		zygosity = append(zygosity, "NA", "NA")
+		item["Zygosity"] = zygosity[0]
+		item["Genotype of Family Member 1"] = zygosity[1]
+		item["Genotype of Family Member 2"] = zygosity[2]
+	}
+	var resultArray []string
+	for _, key := range resultColumn {
+		resultArray = append(resultArray, item[key])
+	}
+	_, err = fmt.Fprintln(resultFile, strings.Join(resultArray, "\t"))
+	simpleUtil.CheckErr(err)
+	item["Zygosity"] = zygo
 }
 
 func annotate4(item map[string]string) {
-	if item["Tier"] == "Tier1" {
-		// 遗传相符
-		item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
-		item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
-		item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
-		if item["遗传相符"] == "相符" {
-			stats["遗传相符"]++
-		}
-		// familyTag
-		if *trio {
-			item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
-		}
-		item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
+	// 遗传相符
+	item["遗传相符"] = anno.InheritCoincide(item, inheritDb, *trio)
+	item["遗传相符-经典trio"] = anno.InheritCoincide(item, inheritDb, true)
+	item["遗传相符-非经典trio"] = anno.InheritCoincide(item, inheritDb, false)
+	if item["遗传相符"] == "相符" {
+		stats["遗传相符"]++
 	}
+	// familyTag
+	if *trio {
+		item["familyTag"] = anno.FamilyTag(item, inheritDb, "trio")
+	}
+	item["筛选标签"] = anno.UpdateTags(item, specVarDb, *trio, *trio2)
 }
 
 func loadData() (data []map[string]string) {
@@ -421,18 +444,4 @@ func loadData() (data []map[string]string) {
 	}
 	logTime("load anno file")
 	return
-}
-
-func cHgvsAlt(cHgvs string) string {
-	if m := cHGVSalt.FindStringSubmatch(cHgvs); m != nil {
-		return m[1]
-	}
-	return cHgvs
-}
-
-func cHgvsStd(cHgvs string) string {
-	if m := cHGVSstd.FindStringSubmatch(cHgvs); m != nil {
-		return m[1]
-	}
-	return cHgvs
 }

@@ -10,11 +10,6 @@ import (
 
 // flag
 var (
-	assembly = flag.String(
-		"assembly",
-		"hg19",
-		"reference assembly",
-	)
 	cfg = flag.String(
 		"cfg",
 		filepath.Join(etcPath, "config.toml"),
@@ -50,11 +45,6 @@ var (
 		"",
 		"特殊位点库",
 	)
-	transInfo = flag.String(
-		"transInfo",
-		"",
-		"info of transcript",
-	)
 	list = flag.String(
 		"list",
 		"proband,father,mother",
@@ -69,11 +59,6 @@ var (
 		"large",
 		"",
 		"largeCnv file path, comma as sep, only write sample in -list",
-	)
-	smn = flag.String(
-		"smn",
-		"",
-		"smn result file path, comma as sep, require -large and only write sample in -list",
 	)
 	loh = flag.String(
 		"loh",
@@ -123,21 +108,6 @@ var (
 		"seqType",
 		"SEQ2000",
 		"redis key:[SEQ2000|SEQ500|Hiseq]",
-	)
-	config = flag.String(
-		"config",
-		filepath.Join(etcPath, "config.json"),
-		"default config file, config will be overwrite by flag",
-	)
-	cpuprofile = flag.String(
-		"cpuprofile",
-		"",
-		"cpu profile",
-	)
-	memprofile = flag.String(
-		"memprofile",
-		"",
-		"mem profile",
 	)
 	extra = flag.String(
 		"extra",
@@ -243,22 +213,32 @@ var (
 		false,
 		"if wesim, output result.tsv",
 	)
-	mt = flag.Bool(
-		"mt",
+	hl = flag.Bool(
+		"hl",
 		false,
-		"force all MT variant to Tier1",
+		"if use HearingLoss db",
+	)
+	nb = flag.Bool(
+		"nb",
+		false,
+		"if use NewBorn db",
+	)
+	sf = flag.Bool(
+		"sf",
+		false,
+		"if use ACMG SF db",
 	)
 	pp = flag.Bool(
 		"pp",
 		false,
-		"is use PrePregnancy db",
+		"if use PrePregnancy db",
 	)
 )
 
 func checkFlag() {
-	if *snv == "" && *exon == "" && *large == "" && *smn == "" && *loh == "" {
+	if *snv == "" && *exon == "" && *large == "" && *loh == "" {
 		flag.Usage()
-		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-smn,-loh")
+		fmt.Println("\nshold have at least one input:-snv,-exon,-large,-loh")
 		os.Exit(0)
 	}
 	if *snv == "" {
