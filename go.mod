@@ -25,7 +25,7 @@ require (
 	github.com/frankban/quicktest v1.5.0 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/klauspost/compress v1.15.6 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
